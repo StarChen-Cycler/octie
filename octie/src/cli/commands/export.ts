@@ -4,6 +4,8 @@
 
 import { Command } from 'commander';
 import { getProjectPath, loadGraph, success, error } from '../utils/helpers.js';
+import { formatProjectMarkdown } from '../output/markdown.js';
+import { formatProjectJSON } from '../output/json.js';
 import chalk from 'chalk';
 import { writeFileSync } from 'node:fs';
 
@@ -25,35 +27,12 @@ export const exportCommand = new Command('export')
 
       switch (options.format) {
         case 'md':
-          // Generate markdown export
-          const tasks = graph.getAllTasks();
-          const lines: string[] = [];
-
-          const metadata = graph.metadata;
-          lines.push(`# ${metadata.project_name}`);
-          lines.push('');
-          lines.push(`Exported: ${new Date().toISOString()}`);
-          lines.push('');
-          lines.push(`## Tasks (${tasks.length})`);
-          lines.push('');
-
-          for (const task of tasks) {
-            const checkbox = task.status === 'completed' ? '[x]' : '[ ]';
-            lines.push(`### ${checkbox} ${task.title}`);
-            lines.push(`**ID**: \`${task.id}\``);
-            lines.push(`**Status**: ${task.status}`);
-            lines.push(`**Priority**: ${task.priority}`);
-            lines.push('');
-            lines.push(task.description);
-            lines.push('');
-          }
-
-          output = lines.join('\n');
+          output = formatProjectMarkdown(graph);
           defaultFileName = 'tasks.md';
           break;
 
         default:
-          output = JSON.stringify(graph.toJSON(), null, 2);
+          output = formatProjectJSON(graph);
           defaultFileName = 'tasks.json';
           break;
       }

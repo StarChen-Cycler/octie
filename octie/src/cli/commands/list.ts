@@ -31,7 +31,7 @@ function formatTaskAsRow(task: TaskNode, showId: boolean = true): string[] {
 }
 
 /**
- * Format task as markdown
+ * Format task as markdown (brief for list view)
  */
 function formatTaskAsMarkdown(task: TaskNode): string {
   const checkbox = task.status === 'completed' ? '[x]' : '[ ]';
