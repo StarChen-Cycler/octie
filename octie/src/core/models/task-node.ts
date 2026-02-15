@@ -1,32 +1,1000 @@
 /**
- * Task Node model
+ * Task Node Model
  *
- * This module will contain the TaskNode class implementation.
- * Placeholder for type checking.
+ * Implements the TaskNode class with:
+ * - Required field validation
+ * - Atomic task validation
+ * - Auto-timestamp management (created_at, updated_at, completed_at)
+ * - Status transition validation
+ * - Success criteria and deliverable tracking
+ *
+ * @module core/models/task-node
  */
 
-import type { TaskNode as TaskNodeType } from '../../types/index.js';
+import { v4 as uuidv4 } from 'uuid';
+import type {
+  TaskNode as TaskNodeType,
+  TaskStatus,
+  TaskPriority,
+  SuccessCriterion,
+  Deliverable,
+  C7Verification,
+} from '../../types/index.js';
+import {
+  ValidationError,
+  AtomicTaskViolationError,
+} from '../../types/index.js';
 
+/**
+ * Action verbs that indicate specific, executable tasks
+ */
+const ACTION_VERBS = [
+  'implement',
+  'create',
+  'add',
+  'fix',
+  'remove',
+  'update',
+  'refactor',
+  'write',
+  'test',
+  'document',
+  'deploy',
+  'configure',
+  'setup',
+  'design',
+  'analyze',
+  'optimize',
+  'migrate',
+  'integrate',
+  'build',
+  'install',
+  'check',
+  'verify',
+  'validate',
+  'extract',
+  'generate',
+  'parse',
+  'compile',
+  'debug',
+  'resolve',
+  'handle',
+  'process',
+  'transform',
+  'convert',
+  'compress',
+  'encrypt',
+  'decrypt',
+  'sanitize',
+  'normalize',
+  'format',
+  'render',
+  'display',
+  'calculate',
+  'compute',
+  'measure',
+  'track',
+  'monitor',
+  'log',
+  'cache',
+  'store',
+  'retrieve',
+  'fetch',
+  'load',
+  'save',
+  'export',
+  'import',
+  'sync',
+  'merge',
+  'split',
+  'parse',
+  'serialize',
+  'deserialize',
+  'encode',
+  'decode',
+  'hash',
+  'sign',
+  'verify',
+  'authenticate',
+  'authorize',
+  'connect',
+  'disconnect',
+  'bind',
+  'unbind',
+  'attach',
+  'detach',
+  'mount',
+  'unmount',
+  'register',
+  'unregister',
+  'subscribe',
+  'unsubscribe',
+  'publish',
+  'listen',
+  'emit',
+  'dispatch',
+  'route',
+  'forward',
+  'redirect',
+  'proxy',
+  'mirror',
+  'replicate',
+  'shard',
+  'partition',
+  'index',
+  'search',
+  'query',
+  'filter',
+  'sort',
+  'group',
+  'aggregate',
+  'reduce',
+  'map',
+  'flatMap',
+  'collect',
+  'stream',
+  'buffer',
+  'flush',
+  'drain',
+  'close',
+  'open',
+  'read',
+  'write',
+  'seek',
+  'truncate',
+  'append',
+  'prepend',
+  'insert',
+  'delete',
+  'erase',
+  'clear',
+  'reset',
+  'rollback',
+  'commit',
+  'transact',
+  'lock',
+  'unlock',
+  'acquire',
+  'release',
+  'wait',
+  'notify',
+  'signal',
+  'interrupt',
+  'cancel',
+  'abort',
+  'retry',
+  'replay',
+  'schedule',
+  'queue',
+  'enqueue',
+  'dequeue',
+  'push',
+  'pop',
+  'shift',
+  'unshift',
+  'splice',
+  'slice',
+  'copy',
+  'clone',
+  'deepClone',
+  'merge',
+  'patch',
+  'diff',
+  'compare',
+  'match',
+  'replace',
+  'substitute',
+  'translate',
+  'localize',
+  'format',
+  'parse',
+  'tokenize',
+  'lex',
+  'parse',
+  'evaluate',
+  'execute',
+  'interpret',
+  'compile',
+  'link',
+  'build',
+  'assemble',
+  'package',
+  'distribute',
+  'release',
+  'version',
+  'tag',
+  'branch',
+  'merge',
+  'rebase',
+  'cherry-pick',
+  'stash',
+  'apply',
+  'checkout',
+  'clone',
+  'fork',
+  'pull',
+  'push',
+  'fetch',
+  'remote',
+  'init',
+  'status',
+  'log',
+  'diff',
+  'show',
+  'blame',
+  'grep',
+  'find',
+  'locate',
+  'search',
+];
+
+/**
+ * Vague patterns that indicate non-specific tasks
+ */
+const VAGUE_PATTERNS = [
+  'stuff',
+  'things',
+  'etc',
+  'various',
+  'multiple',
+  'some',
+  'something',
+  'fix',
+  'update',
+  'work on',
+  'handle',
+  'deal with',
+  'manage',
+  'optimize',
+  'improve',
+  'enhance',
+  'refactor',
+];
+
+/**
+ * Subjective words that indicate non-quantitative criteria
+ */
+const SUBJECTIVE_WORDS = [
+  'good',
+  'better',
+  'best',
+  'proper',
+  'nice',
+  'clean',
+  'fast',
+  'slow',
+  'efficient',
+  'effective',
+  'responsive',
+  'user-friendly',
+  'intuitive',
+  'seamless',
+  'smooth',
+  'robust',
+  'reliable',
+  'scalable',
+  'maintainable',
+  'readable',
+  'understandable',
+  'clear',
+  'simple',
+  'easy',
+  'flexible',
+  'extensible',
+  'modular',
+  'well-structured',
+  'well-organized',
+  'well-designed',
+];
+
+/**
+ * Validate atomic task requirements
+ *
+ * Atomic tasks MUST be:
+ * - Specific (clear, focused purpose)
+ * - Executable (can be completed in 2-8 hours typical, max 2 days)
+ * - Verifiable (has quantitative success criteria)
+ * - Independent (minimizes dependencies)
+ *
+ * @param taskData - Task data to validate
+ * @throws {AtomicTaskViolationError} If task violates atomic requirements
+ */
+export function validateAtomicTask(taskData: {
+  title: string;
+  description: string;
+  success_criteria: SuccessCriterion[];
+  deliverables: Deliverable[];
+}): void {
+  const violations: string[] = [];
+  const titleLower = taskData.title.toLowerCase().trim();
+
+  // Check title specificity
+  const hasActionVerb = ACTION_VERBS.some(verb =>
+    titleLower.includes(verb.toLowerCase())
+  );
+
+  if (!hasActionVerb) {
+    violations.push(
+      'Title should contain an action verb (implement, create, fix, add, write, test, etc.)'
+    );
+  }
+
+  // Check for vague titles
+  const isVague = VAGUE_PATTERNS.some(pattern => {
+    const patternLower = pattern.toLowerCase();
+    return titleLower === patternLower || titleLower.startsWith(patternLower + ' ');
+  });
+
+  if (isVague) {
+    violations.push(
+      'Title is too vague. Be specific about what the task does. Avoid words like "stuff", "things", "various", "etc", "fix", "update", "work on"'
+    );
+  }
+
+  // Check title isn't just a generic verb
+  if (titleLower.length < 10) {
+    violations.push(
+      'Title is too short. Provide more context about what will be done (e.g., "Implement login endpoint" instead of just "Implement")'
+    );
+  }
+
+  // Check description length
+  if (taskData.description.trim().length < 50) {
+    violations.push(
+      'Description is too short (min 50 characters). Provide more detail about what this task does and how it will be accomplished.'
+    );
+  }
+
+  if (taskData.description.trim().length > 10000) {
+    violations.push(
+      'Description is too long (max 10000 characters). Consider splitting into smaller tasks.'
+    );
+  }
+
+  // Check success criteria count
+  if (taskData.success_criteria.length > 10) {
+    violations.push(
+      `Too many success criteria (${taskData.success_criteria.length} > 10). This suggests the task is too large and should be split into smaller, focused tasks.`
+    );
+  }
+
+  // Check deliverables count
+  if (taskData.deliverables.length > 5) {
+    violations.push(
+      `Too many deliverables (${taskData.deliverables.length} > 5). This suggests the task is too large and should be split into smaller, focused tasks.`
+    );
+  }
+
+  // Check if criteria are quantitative
+  const hasVagueCriteria = taskData.success_criteria.some(criterion => {
+    const textLower = criterion.text.toLowerCase();
+    return SUBJECTIVE_WORDS.some(word => textLower.includes(word));
+  });
+
+  if (hasVagueCriteria) {
+    violations.push(
+      'Success criteria must be quantitative and measurable. Avoid subjective terms like "good", "better", "proper", "clean", "fast", "efficient", "responsive". Instead use specific metrics: "returns 200 status", "completes in < 100ms", "passes all unit tests", "has 100% code coverage".'
+    );
+  }
+
+  // Check criteria aren't empty or just whitespace
+  const hasEmptyCriterion = taskData.success_criteria.some(
+    c => c.text.trim().length === 0
+  );
+
+  if (hasEmptyCriterion) {
+    violations.push('Success criteria cannot be empty or whitespace.');
+  }
+
+  // Check deliverables aren't empty or just whitespace
+  const hasEmptyDeliverable = taskData.deliverables.some(
+    d => d.text.trim().length === 0
+  );
+
+  if (hasEmptyDeliverable) {
+    violations.push('Deliverables cannot be empty or whitespace.');
+  }
+
+  // Check that all criteria and deliverables start with a verb or are specific
+  const hasVagueCriterion = taskData.success_criteria.some(c => {
+    const textLower = c.text.toLowerCase().trim();
+    return VAGUE_PATTERNS.some(pattern => textLower.startsWith(pattern));
+  });
+
+  if (hasVagueCriterion) {
+    violations.push(
+      'Success criteria must be specific. Avoid vague phrases like "works properly", "is correct", "functions as expected". Use specific outcomes: "endpoint returns 200 with valid JWT", "password is hashed with bcrypt", "test coverage is 100%".'
+    );
+  }
+
+  // Check that deliverables are specific files or outputs
+  const hasVagueDeliverable = taskData.deliverables.some(d => {
+    const textLower = d.text.toLowerCase().trim();
+    // Allow file paths or specific outputs
+    return (
+      !textLower.includes('.') &&
+      !textLower.includes('file') &&
+      !textLower.includes('test') &&
+      !textLower.includes('component') &&
+      !textLower.includes('module') &&
+      !textLower.includes('class') &&
+      !textLower.includes('function') &&
+      !textLower.includes('endpoint') &&
+      !textLower.includes('api') &&
+      !textLower.includes('service') &&
+      textLower.split(' ').length < 3
+    );
+  });
+
+  if (hasVagueDeliverable) {
+    violations.push(
+      'Deliverables must be specific. Include file paths (e.g., "src/auth/login.ts") or specific outputs (e.g., "POST /auth/login endpoint"). Avoid vague terms like "code", "implementation", "feature".'
+    );
+  }
+
+  if (violations.length > 0) {
+    throw new AtomicTaskViolationError(
+      `Task "${taskData.title}" violates atomic task requirements.`,
+      violations
+    );
+  }
+}
+
+/**
+ * Valid status transitions
+ */
+const VALID_TRANSITIONS: Record<TaskStatus, TaskStatus[]> = {
+  not_started: ['pending', 'in_progress', 'blocked'],
+  pending: ['in_progress', 'blocked', 'not_started'],
+  in_progress: ['completed', 'blocked', 'pending'],
+  completed: ['in_progress', 'pending'], // Can reopen completed tasks
+  blocked: ['pending', 'in_progress', 'not_started'],
+};
+
+/**
+ * Task Node Class
+ *
+ * Represents a single task in the graph with:
+ * - Auto-managed timestamps (created_at, updated_at, completed_at)
+ * - Required field validation at creation
+ * - Atomic task validation
+ * - Status transition validation
+ * - Private setters to prevent manual timestamp manipulation
+ */
 export class TaskNode implements TaskNodeType {
-  id = '';
-  title = '';
-  description = '';
-  status: 'not_started' | 'pending' | 'in_progress' | 'completed' | 'blocked' = 'not_started';
-  priority: 'top' | 'second' | 'later' = 'second';
-  success_criteria = [];
-  deliverables = [];
-  blockers = [];
-  dependencies = [];
-  sub_items = [];
-  related_files = [];
-  notes = '';
-  c7_verified = [];
-  created_at = '';
-  updated_at = '';
-  completed_at = null;
-  edges = [];
+  // Public readonly properties (identity)
+  readonly id: string;
 
-  constructor() {
-    // Placeholder
+  // Public properties (can be modified through methods)
+  title: string;
+  description: string;
+  status: TaskStatus;
+  priority: TaskPriority;
+  success_criteria: SuccessCriterion[];
+  deliverables: Deliverable[];
+  blockers: string[];
+  dependencies: string[];
+  sub_items: string[];
+  related_files: string[];
+  notes: string;
+  c7_verified: C7Verification[];
+
+  // Auto-managed timestamps (private with public getters)
+  private _created_at: string;
+  private _updated_at: string;
+  private _completed_at: string | null;
+
+  // Graph edges (outgoing)
+  edges: string[];
+
+  /**
+   * Get the creation timestamp (immutable)
+   */
+  get created_at(): string {
+    return this._created_at;
+  }
+
+  /**
+   * Get the last update timestamp (auto-managed)
+   */
+  get updated_at(): string {
+    return this._updated_at;
+  }
+
+  /**
+   * Get the completion timestamp (auto-managed, null if not complete)
+   */
+  get completed_at(): string | null {
+    return this._completed_at;
+  }
+
+  /**
+   * Create a new TaskNode
+   *
+   * @param data - Task data (title, description, success_criteria, deliverables are REQUIRED)
+   * @throws {ValidationError} If required fields are missing or invalid
+   * @throws {AtomicTaskViolationError} If task violates atomic requirements
+   */
+  constructor(data: {
+    title?: string;
+    description?: string;
+    status?: TaskStatus;
+    priority?: TaskPriority;
+    success_criteria?: SuccessCriterion[];
+    deliverables?: Deliverable[];
+    blockers?: string[];
+    dependencies?: string[];
+    sub_items?: string[];
+    related_files?: string[];
+    notes?: string;
+    c7_verified?: C7Verification[];
+    id?: string;
+    edges?: string[];
+    created_at?: string;
+    updated_at?: string;
+    completed_at?: string | null;
+  }) {
+    // Validate required fields
+    if (!data.title || data.title.trim().length === 0) {
+      throw new ValidationError(
+        'Title is required and cannot be empty or whitespace.',
+        'title'
+      );
+    }
+
+    if (data.title.length > 200) {
+      throw new ValidationError(
+        'Title must be 200 characters or less.',
+        'title'
+      );
+    }
+
+    if (!data.description || data.description.trim().length === 0) {
+      throw new ValidationError(
+        'Description is required and cannot be empty or whitespace.',
+        'description'
+      );
+    }
+
+    if (data.description.length < 50) {
+      throw new ValidationError(
+        'Description must be at least 50 characters.',
+        'description'
+      );
+    }
+
+    if (data.description.length > 10000) {
+      throw new ValidationError(
+        'Description must be 10000 characters or less.',
+        'description'
+      );
+    }
+
+    if (!data.success_criteria || data.success_criteria.length === 0) {
+      throw new ValidationError(
+        'At least one success criterion is required.',
+        'success_criteria'
+      );
+    }
+
+    if (data.success_criteria.length > 10) {
+      throw new ValidationError(
+        'Too many success criteria (max 10). Split into smaller tasks.',
+        'success_criteria'
+      );
+    }
+
+    if (!data.deliverables || data.deliverables.length === 0) {
+      throw new ValidationError(
+        'At least one deliverable is required.',
+        'deliverables'
+      );
+    }
+
+    if (data.deliverables.length > 5) {
+      throw new ValidationError(
+        'Too many deliverables (max 5). Split into smaller tasks.',
+        'deliverables'
+      );
+    }
+
+    // Validate atomic task requirements
+    validateAtomicTask({
+      title: data.title,
+      description: data.description,
+      success_criteria: data.success_criteria,
+      deliverables: data.deliverables,
+    });
+
+    // Set basic properties
+    this.id = data.id || uuidv4();
+    this.title = data.title.trim();
+    this.description = data.description.trim();
+    this.status = data.status || 'not_started';
+    this.priority = data.priority || 'second';
+    this.success_criteria = [...(data.success_criteria || [])];
+    this.deliverables = [...(data.deliverables || [])];
+    this.blockers = [...(data.blockers || [])];
+    this.dependencies = [...(data.dependencies || [])];
+    this.sub_items = [...(data.sub_items || [])];
+    this.related_files = [...(data.related_files || [])];
+    this.notes = (data.notes || '').trim();
+    this.c7_verified = [...(data.c7_verified || [])];
+    this.edges = [...(data.edges || [])];
+
+    // Set timestamps (auto-managed, cannot be set via constructor)
+    const now = new Date().toISOString();
+    this._created_at = now; // Always set on creation
+    this._updated_at = now; // Initially same as created_at
+    this._completed_at = null; // Will be set by _checkCompletion()
+
+    // Check if task is already complete (for loaded tasks)
+    this._checkCompletion();
+  }
+
+  /**
+   * Update the task title
+   * @param title - New title
+   */
+  setTitle(title: string): void {
+    if (title.trim().length === 0) {
+      throw new ValidationError('Title cannot be empty or whitespace.', 'title');
+    }
+    if (title.length > 200) {
+      throw new ValidationError('Title must be 200 characters or less.', 'title');
+    }
+    this.title = title.trim();
+    this._touch();
+  }
+
+  /**
+   * Update the task description
+   * @param description - New description
+   */
+  setDescription(description: string): void {
+    if (description.trim().length < 50) {
+      throw new ValidationError('Description must be at least 50 characters.', 'description');
+    }
+    if (description.length > 10000) {
+      throw new ValidationError('Description must be 10000 characters or less.', 'description');
+    }
+    this.description = description.trim();
+    this._touch();
+  }
+
+  /**
+   * Update the task status
+   * @param status - New status
+   */
+  setStatus(status: TaskStatus): void {
+    // Validate transition
+    const allowedTransitions = VALID_TRANSITIONS[this.status];
+    if (!allowedTransitions.includes(status)) {
+      throw new ValidationError(
+        `Invalid status transition from '${this.status}' to '${status}'. Allowed: ${allowedTransitions.join(', ')}`,
+        'status'
+      );
+    }
+
+    // When manually setting to completed, check all criteria are met FIRST
+    if (status === 'completed') {
+      const allComplete = this._isComplete();
+      if (!allComplete) {
+        throw new ValidationError(
+          'Cannot mark task as completed until all success criteria and deliverables are complete.',
+          'status'
+        );
+      }
+    }
+
+    // Now set the status
+    this.status = status;
+    this._touch();
+  }
+
+  /**
+   * Update the task priority
+   * @param priority - New priority
+   */
+  setPriority(priority: TaskPriority): void {
+    this.priority = priority;
+    this._touch();
+  }
+
+  /**
+   * Add a success criterion
+   * @param criterion - Success criterion to add
+   */
+  addSuccessCriterion(criterion: SuccessCriterion): void {
+    if (this.success_criteria.length >= 10) {
+      throw new ValidationError(
+        'Too many success criteria (max 10). Split into smaller tasks.',
+        'success_criteria'
+      );
+    }
+    this.success_criteria.push(criterion);
+    this._touch();
+    this._checkCompletion();
+  }
+
+  /**
+   * Mark a success criterion as complete
+   * @param criterionId - ID of the criterion to mark complete
+   */
+  completeCriterion(criterionId: string): void {
+    const criterion = this.success_criteria.find(c => c.id === criterionId);
+    if (!criterion) {
+      throw new ValidationError(`Success criterion with ID '${criterionId}' not found.`, 'success_criteria');
+    }
+    criterion.completed = true;
+    criterion.completed_at = new Date().toISOString();
+    this._touch();
+    this._checkCompletion();
+  }
+
+  /**
+   * Unmark a success criterion as complete
+   * @param criterionId - ID of the criterion to unmark
+   */
+  uncompleteCriterion(criterionId: string): void {
+    const criterion = this.success_criteria.find(c => c.id === criterionId);
+    if (!criterion) {
+      throw new ValidationError(`Success criterion with ID '${criterionId}' not found.`, 'success_criteria');
+    }
+    criterion.completed = false;
+    delete criterion.completed_at;
+    this._touch();
+    this._checkCompletion();
+  }
+
+  /**
+   * Add a deliverable
+   * @param deliverable - Deliverable to add
+   */
+  addDeliverable(deliverable: Deliverable): void {
+    if (this.deliverables.length >= 5) {
+      throw new ValidationError(
+        'Too many deliverables (max 5). Split into smaller tasks.',
+        'deliverables'
+      );
+    }
+    this.deliverables.push(deliverable);
+    this._touch();
+    this._checkCompletion();
+  }
+
+  /**
+   * Mark a deliverable as complete
+   * @param deliverableId - ID of the deliverable to mark complete
+   */
+  completeDeliverable(deliverableId: string): void {
+    const deliverable = this.deliverables.find(d => d.id === deliverableId);
+    if (!deliverable) {
+      throw new ValidationError(`Deliverable with ID '${deliverableId}' not found.`, 'deliverables');
+    }
+    deliverable.completed = true;
+    this._touch();
+    this._checkCompletion();
+  }
+
+  /**
+   * Unmark a deliverable as complete
+   * @param deliverableId - ID of the deliverable to unmark
+   */
+  uncompleteDeliverable(deliverableId: string): void {
+    const deliverable = this.deliverables.find(d => d.id === deliverableId);
+    if (!deliverable) {
+      throw new ValidationError(`Deliverable with ID '${deliverableId}' not found.`, 'deliverables');
+    }
+    deliverable.completed = false;
+    this._touch();
+    this._checkCompletion();
+  }
+
+  /**
+   * Add a blocker task ID
+   * @param blockerId - Task ID that blocks this task
+   */
+  addBlocker(blockerId: string): void {
+    if (!this.blockers.includes(blockerId)) {
+      this.blockers.push(blockerId);
+      this._touch();
+    }
+  }
+
+  /**
+   * Remove a blocker task ID
+   * @param blockerId - Task ID to remove from blockers
+   */
+  removeBlocker(blockerId: string): void {
+    const index = this.blockers.indexOf(blockerId);
+    if (index > -1) {
+      this.blockers.splice(index, 1);
+      this._touch();
+    }
+  }
+
+  /**
+   * Add a dependency task ID
+   * @param dependencyId - Task ID this task depends on
+   */
+  addDependency(dependencyId: string): void {
+    if (!this.dependencies.includes(dependencyId)) {
+      this.dependencies.push(dependencyId);
+      this._touch();
+    }
+  }
+
+  /**
+   * Add a related file path
+   * @param filePath - File path relative to project root
+   */
+  addRelatedFile(filePath: string): void {
+    if (!this.related_files.includes(filePath)) {
+      this.related_files.push(filePath);
+      this._touch();
+    }
+  }
+
+  /**
+   * Append notes
+   * @param notes - Notes to append
+   */
+  appendNotes(notes: string): void {
+    if (notes.trim().length > 0) {
+      if (this.notes.length > 0) {
+        this.notes += '\n\n';
+      }
+      this.notes += notes.trim();
+      this._touch();
+    }
+  }
+
+  /**
+   * Add C7 verification
+   * @param verification - C7 verification entry
+   */
+  addC7Verification(verification: C7Verification): void {
+    this.c7_verified.push(verification);
+    this._touch();
+  }
+
+  /**
+   * Add an outgoing edge
+   * @param taskId - Task ID this task points to
+   */
+  addEdge(taskId: string): void {
+    if (!this.edges.includes(taskId)) {
+      this.edges.push(taskId);
+      this._touch();
+    }
+  }
+
+  /**
+   * Remove an outgoing edge
+   * @param taskId - Task ID to remove from edges
+   */
+  removeEdge(taskId: string): void {
+    const index = this.edges.indexOf(taskId);
+    if (index > -1) {
+      this.edges.splice(index, 1);
+      this._touch();
+    }
+  }
+
+  /**
+   * Add a sub-item task ID
+   * @param subItemId - Child task ID
+   */
+  addSubItem(subItemId: string): void {
+    if (!this.sub_items.includes(subItemId)) {
+      this.sub_items.push(subItemId);
+      this._touch();
+    }
+  }
+
+  /**
+   * Remove a sub-item task ID
+   * @param subItemId - Child task ID to remove
+   */
+  removeSubItem(subItemId: string): void {
+    const index = this.sub_items.indexOf(subItemId);
+    if (index > -1) {
+      this.sub_items.splice(index, 1);
+      this._touch();
+    }
+  }
+
+  /**
+   * Check if the task is complete
+   * @returns True if all success criteria and deliverables are complete
+   * @private
+   */
+  private _isComplete(): boolean {
+    const allCriteriaComplete = this.success_criteria.every(c => c.completed);
+    const allDeliverablesComplete = this.deliverables.every(d => d.completed);
+    return allCriteriaComplete && allDeliverablesComplete;
+  }
+
+  /**
+   * Update completed_at timestamp based on completion state
+   * Called automatically after any change to success_criteria or deliverables
+   * @private
+   */
+  private _checkCompletion(): void {
+    const isComplete = this._isComplete();
+
+    if (isComplete && !this._completed_at) {
+      // All complete and not yet set - set the timestamp
+      this._completed_at = new Date().toISOString();
+    } else if (!isComplete && this._completed_at) {
+      // Not all complete but timestamp is set - clear it
+      this._completed_at = null;
+    }
+  }
+
+  /**
+   * Update the updated_at timestamp
+   * Called automatically after any field change
+   * @private
+   */
+  private _touch(): void {
+    this._updated_at = new Date().toISOString();
+  }
+
+  /**
+   * Serialize the task node to plain object
+   * Useful for JSON serialization
+   */
+  toJSON(): TaskNodeType {
+    return {
+      id: this.id,
+      title: this.title,
+      description: this.description,
+      status: this.status,
+      priority: this.priority,
+      success_criteria: this.success_criteria,
+      deliverables: this.deliverables,
+      blockers: this.blockers,
+      dependencies: this.dependencies,
+      sub_items: this.sub_items,
+      related_files: this.related_files,
+      notes: this.notes,
+      c7_verified: this.c7_verified,
+      created_at: this._created_at,
+      updated_at: this._updated_at,
+      completed_at: this._completed_at,
+      edges: this.edges,
+    };
+  }
+
+  /**
+   * Create a TaskNode from plain object
+   * Useful for JSON deserialization
+   */
+  static fromJSON(data: TaskNodeType): TaskNode {
+    const node = new TaskNode({
+      id: data.id,
+      title: data.title,
+      description: data.description,
+      status: data.status,
+      priority: data.priority,
+      success_criteria: data.success_criteria,
+      deliverables: data.deliverables,
+      blockers: data.blockers,
+      dependencies: data.dependencies,
+      sub_items: data.sub_items,
+      related_files: data.related_files,
+      notes: data.notes,
+      c7_verified: data.c7_verified,
+      edges: data.edges,
+    });
+
+    // Preserve timestamps from loaded data
+    node._created_at = data.created_at;
+    node._updated_at = data.updated_at;
+    node._completed_at = data.completed_at;
+
+    return node;
   }
 }
