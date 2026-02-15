@@ -1,13 +1,529 @@
 /**
  * Task Storage for file operations
  *
- * This module will contain the TaskStorage class implementation.
- * Placeholder for type checking.
+ * Manages persistent storage of task graphs using atomic file operations.
+ * Handles project.json, backups, and .octie directory structure.
+ *
+ * Directory Structure:
+ * .octie/
+ * ├── project.json          # Main task storage
+ * ├── project.json.bak      # Latest backup
+ * ├── project.json.bak.{ts} # Rotated backups
+ * ├── indexes/              # Pre-computed indexes
+ * ├── cache/                # Serialized graph cache
+ * └── config.json           # Project configuration
+ *
+ * @module core/storage
  */
 
+import { join } from 'node:path';
+import type { TaskNode, ProjectFile, ProjectIndexes, ProjectMetadata } from '../../types/index.js';
+import { FileOperationError, ValidationError } from '../../types/index.js';
+import { AtomicFileWriter } from './atomic-write.js';
+import { TaskGraphStore } from '../graph/index.js';
+
+/**
+ * Default project file name
+ */
+const DEFAULT_PROJECT_FILE = 'project.json';
+
+/**
+ * Default .octie directory name
+ */
+const OCTIE_DIR_NAME = '.octie';
+
+/**
+ * Task Storage configuration
+ */
+export interface TaskStorageConfig {
+  /** Project directory path */
+  projectDir?: string;
+  /** Octie directory name (default: '.octie') */
+  octieDirName?: string;
+  /** Project file name (default: 'project.json') */
+  projectFileName?: string;
+  /** Auto-backup enabled (default: true) */
+  autoBackup?: boolean;
+  /** Number of backups to keep (default: 5) */
+  backupCount?: number;
+}
+
+/**
+ * Task Storage class
+ *
+ * Manages persistent storage of task graphs with atomic operations.
+ */
 export class TaskStorage {
-  // TODO: Implement TaskStorage class
-  constructor() {
-    // Placeholder
+  private _projectDir: string;
+  private _octieDirName: string;
+  private _projectFileName: string;
+  private _autoBackup: boolean;
+  private _backupCount: number;
+  private _writer: AtomicFileWriter;
+
+  /**
+   * Create a new TaskStorage instance
+   * @param config - Storage configuration
+   */
+  constructor(config: TaskStorageConfig = {}) {
+    this._projectDir = config.projectDir || process.cwd();
+    this._octieDirName = config.octieDirName || OCTIE_DIR_NAME;
+    this._projectFileName = config.projectFileName || DEFAULT_PROJECT_FILE;
+    this._autoBackup = config.autoBackup ?? true;
+    this._backupCount = config.backupCount ?? 5;
+
+    this._writer = new AtomicFileWriter({
+      backupCount: this._backupCount,
+    });
+  }
+
+  /**
+   * Get the Octie directory path
+   */
+  get octieDirPath(): string {
+    return join(this._projectDir, this._octieDirName);
+  }
+
+  /**
+   * Get the project file path
+   */
+  get projectFilePath(): string {
+    return join(this.octieDirPath, this._projectFileName);
+  }
+
+  /**
+   * Get the backup file path
+   */
+  get backupFilePath(): string {
+    return `${this.projectFilePath}.bak`;
+  }
+
+  /**
+   * Get the indexes directory path
+   */
+  get indexesDirPath(): string {
+    return join(this.octieDirPath, 'indexes');
+  }
+
+  /**
+   * Get the cache directory path
+   */
+  get cacheDirPath(): string {
+    return join(this.octieDirPath, 'cache');
+  }
+
+  /**
+   * Get the config file path
+   */
+  get configFilePath(): string {
+    return join(this.octieDirPath, 'config.json');
+  }
+
+  /**
+   * Initialize the Octie directory structure
+   * Creates .octie directory with subdirectories if they don't exist
+   */
+  async init(): Promise<void> {
+    // Ensure .octie directory exists
+    await this._writer.ensureDir(this.octieDirPath);
+
+    // Ensure subdirectories exist
+    await this._writer.ensureDir(this.indexesDirPath);
+    await this._writer.ensureDir(this.cacheDirPath);
+  }
+
+  /**
+   * Check if Octie directory exists
+   * @returns True if .octie directory exists
+   */
+  async exists(): Promise<boolean> {
+    return await this._writer.exists(this.projectFilePath);
+  }
+
+  /**
+   * Load project from file
+   * @returns TaskGraphStore instance
+   * @throws {FileOperationError} If file doesn't exist or is invalid
+   */
+  async load(): Promise<TaskGraphStore> {
+    // Check if project exists
+    if (!await this.exists()) {
+      throw new FileOperationError(
+        'Octie project not found. Run `octie init` to create a new project.',
+        this.projectFilePath
+      );
+    }
+
+    try {
+      // Read and parse project file
+      const projectFile = await this._writer.readJSON<ProjectFile>(this.projectFilePath);
+
+      // Validate project file structure
+      this._validateProjectFile(projectFile);
+
+      // Convert nodes Map from Record
+      const nodes = new Map<string, TaskNode>();
+      for (const [id, node] of Object.entries(projectFile.tasks)) {
+        nodes.set(id, node);
+      }
+
+      // Build edge maps
+      const outgoingEdges = new Map<string, Set<string>>();
+      const incomingEdges = new Map<string, Set<string>>();
+
+      for (const [id, node] of nodes) {
+        outgoingEdges.set(id, new Set(node.edges));
+        if (!incomingEdges.has(id)) {
+          incomingEdges.set(id, new Set());
+        }
+      }
+
+      // Populate incoming edges
+      for (const [fromId, node] of nodes) {
+        for (const toId of node.edges) {
+          if (!incomingEdges.has(toId)) {
+            incomingEdges.set(toId, new Set());
+          }
+          incomingEdges.get(toId)!.add(fromId);
+        }
+      }
+
+      // Create graph from loaded data
+      const graph = new TaskGraphStore(projectFile.metadata);
+      for (const [, node] of nodes) {
+        graph.addNode(node);
+      }
+
+      return graph;
+
+    } catch (error) {
+      if (error instanceof FileOperationError) {
+        throw error;
+      }
+      throw new FileOperationError(
+        `Failed to load project: ${error instanceof Error ? error.message : String(error)}`,
+        this.projectFilePath
+      );
+    }
+  }
+
+  /**
+   * Save project to file
+   * @param graph - TaskGraphStore to save
+   * @param options - Save options
+   */
+  async save(
+    graph: TaskGraphStore,
+    options: { createBackup?: boolean } = {}
+  ): Promise<void> {
+    const createBackup = options.createBackup ?? this._autoBackup;
+
+    // Ensure directory exists
+    await this.init();
+
+    try {
+      // Convert graph to JSON-serializable format
+      const json = graph.toJSON();
+
+      // Build project file structure
+      const projectFile: ProjectFile = {
+        $schema: 'https://octie.dev/schemas/project-v1.json',
+        version: '1.0.0',
+        format: 'octie-project',
+        metadata: json.metadata,
+        tasks: json.nodes,
+        indexes: await this._buildIndexes(graph),
+      };
+
+      // Write atomically
+      await this._writer.write(this.projectFilePath, projectFile, {
+        createBackup,
+      });
+
+    } catch (error) {
+      throw new FileOperationError(
+        `Failed to save project: ${error instanceof Error ? error.message : String(error)}`,
+        this.projectFilePath
+      );
+    }
+  }
+
+  /**
+   * Build indexes for fast lookups
+   * @param graph - TaskGraphStore to index
+   * @returns ProjectIndexes
+   * @private
+   */
+  private async _buildIndexes(graph: TaskGraphStore): Promise<ProjectIndexes> {
+    const byStatus: Record<string, string[]> = {
+      not_started: [],
+      pending: [],
+      in_progress: [],
+      completed: [],
+      blocked: [],
+    };
+
+    const byPriority: Record<string, string[]> = {
+      top: [],
+      second: [],
+      later: [],
+    };
+
+    const searchText: Record<string, string[]> = {};
+    const files: Record<string, string[]> = {};
+
+    // Build indexes from all tasks
+    for (const task of graph.getAllTasks()) {
+      // Status index
+      byStatus[task.status]?.push(task.id);
+
+      // Priority index
+      byPriority[task.priority]?.push(task.id);
+
+      // Full-text search index (tokenize and index)
+      const text = `${task.title} ${task.description} ${task.notes}`.toLowerCase();
+      const tokens = text.match(/\b\w+\b/g) || [];
+      for (const token of tokens) {
+        if (!searchText[token]) {
+          searchText[token] = [];
+        }
+        if (!searchText[token].includes(task.id)) {
+          searchText[token].push(task.id);
+        }
+      }
+
+      // File reference index
+      for (const filePath of task.related_files) {
+        if (!files[filePath]) {
+          files[filePath] = [];
+        }
+        if (!files[filePath].includes(task.id)) {
+          files[filePath].push(task.id);
+        }
+      }
+    }
+
+    // Get root and orphan tasks
+    const rootTasks = graph.getRootTasks();
+    const orphanTasks = graph.getOrphanTasks();
+
+    return {
+      byStatus: byStatus as ProjectIndexes['byStatus'],
+      byPriority: byPriority as ProjectIndexes['byPriority'],
+      rootTasks,
+      orphanTasks,
+      searchText,
+      files,
+    };
+  }
+
+  /**
+   * Validate project file structure
+   * @param projectFile - Project file to validate
+   * @throws {ValidationError} If structure is invalid
+   * @private
+   */
+  private _validateProjectFile(projectFile: ProjectFile): void {
+    if (!projectFile.tasks || typeof projectFile.tasks !== 'object') {
+      throw new ValidationError('Invalid project file: missing or invalid tasks', 'tasks');
+    }
+
+    if (!projectFile.metadata || typeof projectFile.metadata !== 'object') {
+      throw new ValidationError('Invalid project file: missing or invalid metadata', 'metadata');
+    }
+
+    // Validate metadata fields
+    const { metadata } = projectFile;
+    if (!metadata.project_name || typeof metadata.project_name !== 'string') {
+      throw new ValidationError('Invalid metadata: missing project_name', 'metadata.project_name');
+    }
+
+    if (!metadata.created_at || typeof metadata.created_at !== 'string') {
+      throw new ValidationError('Invalid metadata: missing created_at', 'metadata.created_at');
+    }
+
+    if (!metadata.updated_at || typeof metadata.updated_at !== 'string') {
+      throw new ValidationError('Invalid metadata: missing updated_at', 'metadata.updated_at');
+    }
+  }
+
+  /**
+   * Get project metadata only (faster than full load)
+   * @returns Project metadata
+   * @throws {FileOperationError} If file doesn't exist
+   */
+  async getMetadata(): Promise<ProjectMetadata> {
+    if (!await this.exists()) {
+      throw new FileOperationError(
+        'Octie project not found. Run `octie init` to create a new project.',
+        this.projectFilePath
+      );
+    }
+
+    try {
+      const projectFile = await this._writer.readJSON<ProjectFile>(this.projectFilePath);
+      return projectFile.metadata;
+    } catch (error) {
+      throw new FileOperationError(
+        `Failed to load metadata: ${error instanceof Error ? error.message : String(error)}`,
+        this.projectFilePath
+      );
+    }
+  }
+
+  /**
+   * Delete project file and backups
+   * Use with caution - this is destructive
+   */
+  async delete(): Promise<void> {
+    try {
+      // Delete project file
+      await this._writer.delete(this.projectFilePath);
+
+      // Delete backup files
+      await this._writer.delete(this.backupFilePath);
+
+      // Note: We don't delete the entire .octie directory
+      // as it may contain other data (indexes, cache, config)
+
+    } catch (error) {
+      throw new FileOperationError(
+        `Failed to delete project: ${error instanceof Error ? error.message : String(error)}`,
+        this.projectFilePath
+      );
+    }
+  }
+
+  /**
+   * Create a new project with default metadata
+   * @param projectName - Project name
+   * @param description - Optional project description
+   */
+  async createProject(projectName: string, description?: string): Promise<void> {
+    await this.init();
+
+    const metadata: ProjectMetadata = {
+      project_name: projectName,
+      version: '1.0.0',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      description,
+    };
+
+    const projectFile: ProjectFile = {
+      $schema: 'https://octie.dev/schemas/project-v1.json',
+      version: '1.0.0',
+      format: 'octie-project',
+      metadata,
+      tasks: {},
+      indexes: {
+        byStatus: {
+          not_started: [],
+          pending: [],
+          in_progress: [],
+          completed: [],
+          blocked: [],
+        },
+        byPriority: {
+          top: [],
+          second: [],
+          later: [],
+        },
+        rootTasks: [],
+        orphanTasks: [],
+        searchText: {},
+        files: {},
+      },
+    };
+
+    await this._writer.write(this.projectFilePath, projectFile, {
+      createBackup: false, // No backup on initial create
+    });
+  }
+
+  /**
+   * List backup files
+   * @returns Array of backup file paths
+   */
+  async listBackups(): Promise<string[]> {
+    const { promises: fs } = await import('node:fs');
+    const backups: string[] = [];
+
+    try {
+      const files = await fs.readdir(this.octieDirPath);
+      for (const file of files) {
+        if (file.startsWith(`${this._projectFileName}.bak`)) {
+          backups.push(join(this.octieDirPath, file));
+        }
+      }
+    } catch {
+      // Directory might not exist yet
+    }
+
+    return backups.sort().reverse(); // Newest first
+  }
+
+  /**
+   * Restore from latest backup
+   * @throws {FileOperationError} If no backup exists
+   */
+  async restoreFromBackup(): Promise<void> {
+    const backups = await this.listBackups();
+
+    if (backups.length === 0) {
+      throw new FileOperationError('No backup files found', this.backupFilePath);
+    }
+
+    const latestBackup = backups[0];
+
+    if (!latestBackup) {
+      throw new FileOperationError('No backup files found', this.backupFilePath);
+    }
+
+    try {
+      // Copy backup to main file
+      const { promises: fs } = await import('node:fs');
+      await fs.copyFile(latestBackup, this.projectFilePath);
+    } catch (error) {
+      throw new FileOperationError(
+        `Failed to restore from backup: ${error instanceof Error ? error.message : String(error)}`,
+        latestBackup
+      );
+    }
+  }
+}
+
+/**
+ * Get project path for current directory
+ * Searches upward from current directory for .octie folder
+ * @returns Project directory path or undefined if not found
+ */
+export async function findProjectPath(startDir: string = process.cwd()): Promise<string | undefined> {
+  const { resolve } = await import('node:path');
+  const { promises: fs } = await import('node:fs');
+
+  let currentDir = resolve(startDir);
+
+  // Search upward until root directory
+  while (true) {
+    const octieDir = join(currentDir, OCTIE_DIR_NAME);
+    const projectFile = join(octieDir, DEFAULT_PROJECT_FILE);
+
+    try {
+      await fs.access(projectFile);
+      return currentDir;
+    } catch {
+      // Not found, continue searching
+    }
+
+    // Move to parent directory
+    const parentDir = resolve(currentDir, '..');
+
+    // Check if we've reached the root
+    if (parentDir === currentDir) {
+      return undefined;
+    }
+
+    currentDir = parentDir;
   }
 }

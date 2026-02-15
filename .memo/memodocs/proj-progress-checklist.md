@@ -43,39 +43,41 @@
 
 ### Second Priority (After Top Completes)
 
-#### [ ] TaskNode Model Implementation
+#### [x] TaskNode Model Implementation
 **Blockers**: Core Type Definitions
 **Related Files**: octie/src/core/models/task-node.ts
 **C7 MCP Verified**: N/A
 **Deliverables**:
-- [ ] TaskNode class with constructor
-- [ ] **Required field validation (MUST have values at creation)**:
-  - [ ] `title` required (1-200 chars, not empty/whitespace)
-  - [ ] `description` required (50-10000 chars, not empty/whitespace)
-  - [ ] `success_criteria` required (min 1, max 10 items)
-  - [ ] `deliverables` required (min 1, max 5 items)
-  - [ ] All required fields validated before task creation
-- [ ] **Atomic task validation (REQUIRED at creation)**:
-  - [ ] `validateAtomicTask(task)` function
-  - [ ] Title contains action verb (implement, create, fix, etc.)
-  - [ ] Title is not vague (reject "stuff", "things", "various", "etc")
-  - [ ] Description is specific enough (min 50 chars)
-  - [ ] Success criteria are quantitative/measurable (no "good", "better", "proper")
-  - [ ] Not too many criteria (>10 suggests non-atomic)
-  - [ ] Not too many deliverables (>5 suggests non-atomic)
-  - [ ] `AtomicTaskViolationError` with helpful messages
-- [ ] Field validation (title max 200 chars, description max 10000 chars)
-- [ ] Status transition validation
-- [ ] **Auto-timestamp management (REQUIRED)**:
-  - [ ] `created_at` - Auto-generated ISO 8601 on task creation (immutable)
-  - [ ] `updated_at` - Auto-updated ISO 8601 on ANY field change (automatic)
-  - [ ] `completed_at` - Auto-updated when ALL success_criteria AND deliverables are completed (automatic)
-  - [ ] `completed_at` - Set to null when any success criterion or deliverable is un-completed
-- [ ] Success criteria tracking with completion state
-- [ ] Deliverable tracking with completion state and optional file_path
-- [ ] Sub-items and dependencies management
-- [ ] Private setter methods to prevent manual timestamp manipulation
-- [ ] CLI --help flag with atomic task documentation
+- [x] TaskNode class with constructor
+- [x] **Required field validation (MUST have values at creation)**:
+  - [x] `title` required (1-200 chars, not empty/whitespace)
+  - [x] `description` required (50-10000 chars, not empty/whitespace)
+  - [x] `success_criteria` required (min 1, max 10 items)
+  - [x] `deliverables` required (min 1, max 5 items)
+  - [x] All required fields validated before task creation
+- [x] **Atomic task validation (REQUIRED at creation)**:
+  - [x] `validateAtomicTask(task)` function
+  - [x] Title contains action verb (implement, create, fix, etc.)
+  - [x] Title is not vague (reject "stuff", "things", "various", "etc")
+  - [x] Description is specific enough (min 50 chars)
+  - [x] Success criteria are quantitative/measurable (no "good", "better", "proper")
+  - [x] Not too many criteria (>10 suggests non-atomic)
+  - [x] Not too many deliverables (>5 suggests non-atomic)
+  - [x] `AtomicTaskViolationError` with helpful messages
+- [x] Field validation (title max 200 chars, description max 10000 chars)
+- [x] Status transition validation
+- [x] **Auto-timestamp management (REQUIRED)**:
+  - [x] `created_at` - Auto-generated ISO 8601 on task creation (immutable)
+  - [x] `updated_at` - Auto-updated ISO 8601 on ANY field change (automatic)
+  - [x] `completed_at` - Auto-updated when ALL success_criteria AND deliverables are completed (automatic)
+  - [x] `completed_at` - Set to null when any success criterion or deliverable is un-completed
+- [x] Success criteria tracking with completion state
+- [x] Deliverable tracking with completion state and optional file_path
+- [x] Sub-items and dependencies management
+- [x] Private setter methods to prevent manual timestamp manipulation
+- [x] CLI --help flag with atomic task documentation (deferred to CLI commands implementation)
+**Completed**: 2026-02-16
+**Git Commit**: 0b10365
 
 #### [ ] TaskGraph Data Structure
 **Blockers**: Core Type Definitions

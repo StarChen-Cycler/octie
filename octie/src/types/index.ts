@@ -169,6 +169,12 @@ export interface ProjectFile {
   indexes?: ProjectIndexes;
   /** JSON schema reference */
   $schema?: string;
+  /** File format version */
+  version?: string;
+  /** File format identifier */
+  format?: string;
+  /** Index signature for additional properties */
+  [key: string]: unknown;
 }
 
 /**
