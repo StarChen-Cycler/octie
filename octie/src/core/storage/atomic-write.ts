@@ -253,10 +253,12 @@ export class AtomicFileWriter {
    * @private
    */
   private _getTempPath(filePath: string): string {
+    const dir = this._getDirPath(filePath);
     const baseName = this._getBaseName(filePath);
     const timestamp = Date.now();
     const random = Math.random().toString(36).substring(2, 8);
-    return join(this._config.tempDir, `${this._config.tempPrefix}${baseName}-${timestamp}-${random}.tmp`);
+    // Use same directory as target file for cross-device compatibility (Windows EXDEV fix)
+    return join(dir, `${this._config.tempPrefix}${baseName}-${timestamp}-${random}.tmp`);
   }
 
   /**
