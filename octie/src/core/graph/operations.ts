@@ -11,9 +11,9 @@
  */
 
 import type { TaskGraphStore } from './index.js';
-import type { TaskNode, MergeResult } from '../../types/index.js';
+import type { MergeResult } from '../../types/index.js';
+import { TaskNode } from '../models/task-node.js';
 import { TaskNotFoundError, ValidationError } from '../../types/index.js';
-import { randomUUID } from 'node:crypto';
 
 /**
  * Cut a node from the graph, reconnecting its incoming edges to its outgoing edges
@@ -265,69 +265,69 @@ export function mergeTasks(
     );
   }
 
-  const updatedTasks: string[] = [];
+  // Merge properties into target task
+  // Merge descriptions with separator
+  const newDescription = target.description
+    ? `${target.description}\n\n--- Merged from "${source.title}" ---\n${source.description}`
+    : source.description;
+  target.setDescription(newDescription);
 
-  // Merge properties
-  // Use a shallow copy of target to avoid mutation during merge
-  const mergedTask: TaskNode = {
-    ...target,
-    // Merge descriptions with separator
-    description: target.description
-      ? `${target.description}\n\n--- Merged from "${source.title}" ---\n${source.description}`
-      : source.description,
-    // Merge success criteria (avoiding duplicates by ID)
-    success_criteria: [
-      ...target.success_criteria,
-      ...source.success_criteria.filter(sc =>
-        !target.success_criteria.some(tsc => tsc.id === sc.id)
-      )
-    ],
-    // Merge deliverables (avoiding duplicates by ID)
-    deliverables: [
-      ...target.deliverables,
-      ...source.deliverables.filter(d =>
-        !target.deliverables.some(td => td.id === d.id)
-      )
-    ],
-    // Merge related files (avoiding duplicates)
-    related_files: [
-      ...new Set([
-        ...target.related_files,
-        ...source.related_files
-      ])
-    ],
-    // Merge notes with separator
-    notes: target.notes
-      ? `${target.notes}\n\nMerged notes from "${source.title}":\n${source.notes}`
-      : source.notes,
-    // Merge C7 verifications (avoiding duplicates by library_id + timestamp)
-    c7_verified: [
-      ...target.c7_verified,
-      ...source.c7_verified.filter(cv =>
-        !target.c7_verified.some(tcv =>
-          tcv.library_id === cv.library_id && tcv.verified_at === cv.verified_at
-        )
-      )
-    ],
-    // Merge blockers (avoiding duplicates)
-    blockers: [
-      ...new Set([
-        ...target.blockers.filter(b => b !== sourceId),
-        ...source.blockers.filter(b => b !== targetId)
-      ])
-    ],
-    // Merge dependencies (avoiding duplicates)
-    dependencies: [
-      ...new Set([
-        ...target.dependencies.filter(d => d !== sourceId),
-        ...source.dependencies.filter(d => d !== targetId)
-      ])
-    ],
-    // Update timestamp
-    updated_at: new Date().toISOString(),
-    // Keep target's edges for now (we'll update them below)
-    edges: [...target.edges]
-  };
+  // Merge success criteria (avoiding duplicates by ID)
+  for (const sc of source.success_criteria) {
+    if (!target.success_criteria.some(tsc => tsc.id === sc.id)) {
+      target.addSuccessCriterion(sc);
+    }
+  }
+
+  // Merge deliverables (avoiding duplicates by ID)
+  for (const d of source.deliverables) {
+    if (!target.deliverables.some(td => td.id === d.id)) {
+      target.addDeliverable(d);
+    }
+  }
+
+  // Merge related files (avoiding duplicates)
+  for (const file of source.related_files) {
+    target.addRelatedFile(file);
+  }
+
+  // Merge notes with separator
+  const newNotes = target.notes
+    ? `${target.notes}\n\nMerged notes from "${source.title}":\n${source.notes}`
+    : source.notes;
+  target.appendNotes(newNotes);
+
+  // Merge C7 verifications
+  for (const cv of source.c7_verified) {
+    target.addC7Verification(cv);
+  }
+
+  // Remove source from target's blockers (source is being merged/removed)
+  if (target.blockers.includes(sourceId)) {
+    target.removeBlocker(sourceId);
+  }
+
+  // Remove source from target's dependencies (source is being merged/removed)
+  if (target.dependencies.includes(sourceId)) {
+    const idx = target.dependencies.indexOf(sourceId);
+    if (idx !== -1) {
+      target.dependencies.splice(idx, 1);
+    }
+  }
+
+  // Merge blockers (avoiding duplicates and self-references)
+  for (const blockerId of source.blockers) {
+    if (blockerId !== targetId && !target.blockers.includes(blockerId)) {
+      target.addBlocker(blockerId);
+    }
+  }
+
+  // Merge dependencies (avoiding duplicates and self-references)
+  for (const depId of source.dependencies) {
+    if (depId !== targetId && !target.dependencies.includes(depId)) {
+      target.addDependency(depId);
+    }
+  }
 
   // Track which tasks were affected by reconnection
   const reconnectSources: string[] = [];
@@ -355,7 +355,7 @@ export function mergeTasks(
   }
 
   // Update the target task in the graph with merged data
-  graph.updateNode(mergedTask);
+  graph.updateNode(target);
 
   // Remove the source task
   graph.removeNode(sourceId);
@@ -368,7 +368,7 @@ export function mergeTasks(
   ]);
 
   return {
-    task: mergedTask,
+    task: target,
     removedTasks: [sourceId],
     updatedTasks: Array.from(allAffected)
   };

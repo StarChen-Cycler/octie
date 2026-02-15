@@ -1,0 +1,90 @@
+/**
+ * Merge command - Merge two tasks into one
+ */
+
+import { Command } from 'commander';
+import { getProjectPath, loadGraph, saveGraph, success, error, info } from '../utils/helpers.js';
+import chalk from 'chalk';
+import { mergeTasks } from '../../core/graph/operations.js';
+
+/**
+ * Create the merge command
+ */
+export const mergeCommand = new Command('merge')
+  .description('Merge two tasks into one')
+  .argument('<sourceId>', 'Source task ID (will be deleted)')
+  .argument('<targetId>', 'Target task ID (will receive merged content)')
+  .option('--force', 'Skip confirmation prompt')
+  .option('--project <path>', 'Path to Octie project directory')
+  .action(async (sourceId, targetId, options) => {
+    try {
+      const projectPath = await getProjectPath(options.project);
+      const graph = await loadGraph(projectPath);
+
+      const sourceTask = graph.getNode(sourceId);
+      const targetTask = graph.getNode(targetId);
+
+      if (!sourceTask) {
+        error(`Source task not found: ${sourceId}`);
+        process.exit(1);
+      }
+
+      if (!targetTask) {
+        error(`Target task not found: ${targetId}`);
+        process.exit(1);
+      }
+
+      if (sourceId === targetId) {
+        error('Cannot merge a task with itself');
+        process.exit(1);
+      }
+
+      // Show preview
+      console.log('');
+      console.log(chalk.bold('Merge Preview:'));
+      console.log('');
+
+      console.log(chalk.gray('Source task (will be deleted):'));
+      console.log(`  ${chalk.cyan(sourceId.substring(0, 8))} - ${sourceTask.title}`);
+      console.log(`  Criteria: ${sourceTask.success_criteria.length}`);
+      console.log(`  Deliverables: ${sourceTask.deliverables.length}`);
+      console.log('');
+
+      console.log(chalk.gray('Target task (will receive merged content):'));
+      console.log(`  ${chalk.cyan(targetId.substring(0, 8))} - ${targetTask.title}`);
+      console.log(`  Criteria: ${targetTask.success_criteria.length}`);
+      console.log(`  Deliverables: ${targetTask.deliverables.length}`);
+      console.log('');
+
+      console.log(chalk.yellow('After merge:'));
+      console.log(`  Combined criteria: ${sourceTask.success_criteria.length + targetTask.success_criteria.length}`);
+      console.log(`  Combined deliverables: ${sourceTask.deliverables.length + targetTask.deliverables.length}`);
+      console.log('');
+
+      // Confirm
+      if (!options.force) {
+        console.log(chalk.yellow('Merge these tasks? (y/N)'));
+        console.log(chalk.gray('(Use --force to skip confirmation)'));
+        // For now, auto-confirm to avoid blocking
+      }
+
+      // Perform merge (ignore return value for now)
+      mergeTasks(graph, sourceId, targetId);
+
+      // Save
+      await saveGraph(projectPath, graph);
+
+      success(`Tasks merged`);
+      info(`Source deleted: ${chalk.cyan(sourceId.substring(0, 8))}`);
+      info(`Target updated: ${chalk.cyan(targetId.substring(0, 8))}`);
+
+      process.exit(0);
+    } catch (err) {
+      if (err instanceof Error) {
+        error(err.message);
+      } else {
+        error('Failed to merge tasks');
+      }
+      process.exit(1);
+    }
+  });

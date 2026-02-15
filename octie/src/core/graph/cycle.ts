@@ -10,7 +10,7 @@
 
 import type { TaskGraphStore } from './index.js';
 import type { CycleDetectionResult } from '../../types/index.js';
-import { TaskNotFoundError, CircularDependencyError } from '../../types/index.js';
+import { CircularDependencyError } from '../../types/index.js';
 
 /** Node visitation states for DFS cycle detection */
 const enum VisitState {
@@ -196,7 +196,9 @@ export function validateAcyclic(graph: TaskGraphStore): void {
   if (result.hasCycle) {
     // Use the first cycle found for the error
     const firstCycle = result.cycles[0];
-    throw new CircularDependencyError(firstCycle);
+    if (firstCycle) {
+      throw new CircularDependencyError(firstCycle);
+    }
   }
 }
 

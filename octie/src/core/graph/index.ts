@@ -12,8 +12,9 @@
  * @module core/graph
  */
 
-import type { TaskNode, TaskGraph, ProjectMetadata } from '../../types/index.js';
+import type { TaskGraph, ProjectMetadata } from '../../types/index.js';
 import { TaskNotFoundError, ValidationError } from '../../types/index.js';
+import { TaskNode } from '../models/task-node.js';
 
 /**
  * TaskGraphStore class
@@ -407,9 +408,10 @@ export class TaskGraphStore {
   static fromInterface(graph: TaskGraph): TaskGraphStore {
     const store = new TaskGraphStore(graph.metadata);
 
-    // Add all nodes
+    // Add all nodes (convert interface to class instance)
     for (const [id, node] of graph.nodes) {
-      store._nodes.set(id, node);
+      const taskNode = TaskNode.fromJSON(node);
+      store._nodes.set(id, taskNode);
     }
 
     // Copy edge maps

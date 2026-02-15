@@ -2,8 +2,7 @@
  * Tests for graph manipulation operations
  */
 
-import { describe, it, beforeEach } from 'node:test';
-import assert from 'node:assert/strict';
+import { describe, it, beforeEach, expect } from 'vitest';
 
 import { TaskGraphStore } from '../../src/core/graph/index.js';
 import { TaskNode } from '../../src/core/models/task-node.js';
@@ -57,13 +56,13 @@ describe('graph operations', () => {
       cutNode(graph, 'b');
 
       // Result: A -> C, B removed
-      assert.strictEqual(graph.size, 2);
-      assert.ok(graph.hasNode('a'));
-      assert.ok(graph.hasNode('c'));
-      assert.ok(!graph.hasNode('b'));
-      assert.ok(graph.hasEdge('a', 'c'));
-      assert.ok(!graph.hasEdge('a', 'b'));
-      assert.ok(!graph.hasEdge('b', 'c'));
+      expect(graph.size).toBe(2);
+      expect(graph.hasNode('a')).toBe(true);
+      expect(graph.hasNode('c')).toBe(true);
+      expect(graph.hasNode('b')).toBe(false);
+      expect(graph.hasEdge('a', 'c')).toBe(true);
+      expect(graph.hasEdge('a', 'b')).toBe(false);
+      expect(graph.hasEdge('b', 'c')).toBe(false);
     });
 
     it('should reconnect multiple incoming to multiple outgoing', () => {
@@ -88,11 +87,11 @@ describe('graph operations', () => {
       cutNode(graph, 'b');
 
       // Result: A -> C, A -> Y, X -> C, X -> Y
-      assert.ok(graph.hasEdge('a', 'c'));
-      assert.ok(graph.hasEdge('a', 'y'));
-      assert.ok(graph.hasEdge('x', 'c'));
-      assert.ok(graph.hasEdge('x', 'y'));
-      assert.ok(!graph.hasNode('b'));
+      expect(graph.hasEdge('a', 'c')).toBe(true);
+      expect(graph.hasEdge('a', 'y')).toBe(true);
+      expect(graph.hasEdge('x', 'c')).toBe(true);
+      expect(graph.hasEdge('x', 'y')).toBe(true);
+      expect(graph.hasNode('b')).toBe(false);
     });
 
     it('should handle node with no incoming edges', () => {
@@ -107,9 +106,9 @@ describe('graph operations', () => {
       // Cut A (has no incoming)
       cutNode(graph, 'a');
 
-      assert.strictEqual(graph.size, 1);
-      assert.ok(graph.hasNode('b'));
-      assert.ok(!graph.hasNode('a'));
+      expect(graph.size).toBe(1);
+      expect(graph.hasNode('b')).toBe(true);
+      expect(graph.hasNode('a')).toBe(false);
     });
 
     it('should handle node with no outgoing edges', () => {
@@ -124,16 +123,13 @@ describe('graph operations', () => {
       // Cut B (has no outgoing)
       cutNode(graph, 'b');
 
-      assert.strictEqual(graph.size, 1);
-      assert.ok(graph.hasNode('a'));
-      assert.ok(!graph.hasNode('b'));
+      expect(graph.size).toBe(1);
+      expect(graph.hasNode('a')).toBe(true);
+      expect(graph.hasNode('b')).toBe(false);
     });
 
     it('should throw error if node not found', () => {
-      assert.throws(
-        () => cutNode(graph, 'nonexistent'),
-        (err: Error) => err instanceof TaskNotFoundError
-      );
+      expect(() => cutNode(graph, 'nonexistent')).toThrow(TaskNotFoundError);
     });
 
     it('should not create duplicate edges', () => {
@@ -152,8 +148,8 @@ describe('graph operations', () => {
       // Cut B (A -> C already exists, should not throw)
       cutNode(graph, 'b');
 
-      assert.ok(graph.hasEdge('a', 'c'));
-      assert.strictEqual(graph.getOutgoingEdges('a').length, 1);
+      expect(graph.hasEdge('a', 'c')).toBe(true);
+      expect(graph.getOutgoingEdges('a').length).toBe(1);
     });
   });
 
@@ -172,10 +168,10 @@ describe('graph operations', () => {
       insertNodeBetween(graph, taskB, 'a', 'c');
 
       // Result: A -> B -> C
-      assert.ok(graph.hasNode('b'));
-      assert.ok(graph.hasEdge('a', 'b'));
-      assert.ok(graph.hasEdge('b', 'c'));
-      assert.ok(!graph.hasEdge('a', 'c'));
+      expect(graph.hasNode('b')).toBe(true);
+      expect(graph.hasEdge('a', 'b')).toBe(true);
+      expect(graph.hasEdge('b', 'c')).toBe(true);
+      expect(graph.hasEdge('a', 'c')).toBe(false);
     });
 
     it('should throw error if source node not found', () => {
@@ -184,10 +180,7 @@ describe('graph operations', () => {
 
       graph.addNode(taskC);
 
-      assert.throws(
-        () => insertNodeBetween(graph, taskB, 'a', 'c'),
-        (err: Error) => err instanceof TaskNotFoundError
-      );
+      expect(() => insertNodeBetween(graph, taskB, 'a', 'c')).toThrow(TaskNotFoundError);
     });
 
     it('should throw error if target node not found', () => {
@@ -196,10 +189,7 @@ describe('graph operations', () => {
 
       graph.addNode(taskA);
 
-      assert.throws(
-        () => insertNodeBetween(graph, taskB, 'a', 'c'),
-        (err: Error) => err instanceof TaskNotFoundError
-      );
+      expect(() => insertNodeBetween(graph, taskB, 'a', 'c')).toThrow(TaskNotFoundError);
     });
 
     it('should throw error if edge does not exist', () => {
@@ -211,10 +201,7 @@ describe('graph operations', () => {
       graph.addNode(taskC);
       // No edge from A to C
 
-      assert.throws(
-        () => insertNodeBetween(graph, taskB, 'a', 'c'),
-        (err: Error) => err instanceof ValidationError
-      );
+      expect(() => insertNodeBetween(graph, taskB, 'a', 'c')).toThrow(ValidationError);
     });
   });
 
@@ -237,8 +224,8 @@ describe('graph operations', () => {
       moveSubtree(graph, 'y', 'x');
 
       // Result: A -> X -> Y, B (with Y moved)
-      assert.ok(graph.hasEdge('x', 'y'));
-      assert.ok(!graph.hasEdge('b', 'y'));
+      expect(graph.hasEdge('x', 'y')).toBe(true);
+      expect(graph.hasEdge('b', 'y')).toBe(false);
     });
 
     it('should remove from all current parents', () => {
@@ -262,20 +249,17 @@ describe('graph operations', () => {
       moveSubtree(graph, 'y', 'x');
 
       // Result: X -> Y, A, B, C (all edges from old parents removed)
-      assert.ok(graph.hasEdge('x', 'y'));
-      assert.ok(!graph.hasEdge('a', 'y'));
-      assert.ok(!graph.hasEdge('b', 'y'));
-      assert.ok(!graph.hasEdge('c', 'y'));
+      expect(graph.hasEdge('x', 'y')).toBe(true);
+      expect(graph.hasEdge('a', 'y')).toBe(false);
+      expect(graph.hasEdge('b', 'y')).toBe(false);
+      expect(graph.hasEdge('c', 'y')).toBe(false);
     });
 
     it('should throw error for self-loop', () => {
       const taskY = createTask('y', 'Task Y');
       graph.addNode(taskY);
 
-      assert.throws(
-        () => moveSubtree(graph, 'y', 'y'),
-        (err: Error) => err instanceof ValidationError
-      );
+      expect(() => moveSubtree(graph, 'y', 'y')).toThrow(ValidationError);
     });
 
     it('should throw error if edge already exists', () => {
@@ -291,30 +275,21 @@ describe('graph operations', () => {
       graph.addEdge('b', 'y');
 
       // Try to move Y to A (edge already exists)
-      assert.throws(
-        () => moveSubtree(graph, 'y', 'a'),
-        (err: Error) => err instanceof ValidationError
-      );
+      expect(() => moveSubtree(graph, 'y', 'a')).toThrow(ValidationError);
     });
 
     it('should throw error if subtree not found', () => {
       const taskX = createTask('x', 'Task X');
       graph.addNode(taskX);
 
-      assert.throws(
-        () => moveSubtree(graph, 'y', 'x'),
-        (err: Error) => err instanceof TaskNotFoundError
-      );
+      expect(() => moveSubtree(graph, 'y', 'x')).toThrow(TaskNotFoundError);
     });
 
     it('should throw error if new parent not found', () => {
       const taskY = createTask('y', 'Task Y');
       graph.addNode(taskY);
 
-      assert.throws(
-        () => moveSubtree(graph, 'y', 'x'),
-        (err: Error) => err instanceof TaskNotFoundError
-      );
+      expect(() => moveSubtree(graph, 'y', 'x')).toThrow(TaskNotFoundError);
     });
   });
 
@@ -365,28 +340,28 @@ describe('graph operations', () => {
       const result = mergeTasks(graph, 'source', 'target');
 
       // Verify merge result
-      assert.strictEqual(result.task.id, 'target');
-      assert.strictEqual(result.removedTasks.length, 1);
-      assert.strictEqual(result.removedTasks[0], 'source');
-      assert.ok(result.updatedTasks.includes('target'));
+      expect(result.task.id).toBe('target');
+      expect(result.removedTasks.length).toBe(1);
+      expect(result.removedTasks[0]).toBe('source');
+      expect(result.updatedTasks).toContain('target');
 
       // Verify merged properties
-      assert.ok(result.task.description.includes('Source description'));
-      assert.ok(result.task.description.includes('Target description'));
-      assert.strictEqual(result.task.success_criteria.length, 3); // 2 source + 1 target
-      assert.strictEqual(result.task.deliverables.length, 2); // 1 source + 1 target
-      assert.strictEqual(result.task.related_files.length, 3); // 2 source + 1 target
-      assert.ok(result.task.notes.includes('Source notes'));
-      assert.ok(result.task.notes.includes('Target notes'));
+      expect(result.task.description).toContain('Source description');
+      expect(result.task.description).toContain('Target description');
+      expect(result.task.success_criteria.length).toBe(3); // 2 source + 1 target
+      expect(result.task.deliverables.length).toBe(2); // 1 source + 1 target
+      expect(result.task.related_files.length).toBe(3); // 2 source + 1 target
+      expect(result.task.notes).toContain('Source notes');
+      expect(result.task.notes).toContain('Target notes');
 
       // Verify source removed
-      assert.ok(!graph.hasNode('source'));
+      expect(graph.hasNode('source')).toBe(false);
 
       // Verify edges reconnected
-      assert.ok(graph.hasEdge('a', 'target')); // A now points to target
-      assert.ok(graph.hasEdge('target', 'c')); // target now points to C
-      assert.ok(graph.hasEdge('b', 'target')); // B still points to target
-      assert.ok(graph.hasEdge('target', 'd')); // target still points to D
+      expect(graph.hasEdge('a', 'target')).toBe(true); // A now points to target
+      expect(graph.hasEdge('target', 'c')).toBe(true); // target now points to C
+      expect(graph.hasEdge('b', 'target')).toBe(true); // B still points to target
+      expect(graph.hasEdge('target', 'd')).toBe(true); // target still points to D
     });
 
     it('should deduplicate success criteria by ID', () => {
@@ -408,10 +383,10 @@ describe('graph operations', () => {
       const result = mergeTasks(graph, 'source', 'target');
 
       // Should have 3 unique criteria (sc1 not duplicated)
-      assert.strictEqual(result.task.success_criteria.length, 3);
-      assert.ok(result.task.success_criteria.some(sc => sc.id === 'sc1'));
-      assert.ok(result.task.success_criteria.some(sc => sc.id === 'sc2'));
-      assert.ok(result.task.success_criteria.some(sc => sc.id === 'sc3'));
+      expect(result.task.success_criteria.length).toBe(3);
+      expect(result.task.success_criteria.some(sc => sc.id === 'sc1')).toBe(true);
+      expect(result.task.success_criteria.some(sc => sc.id === 'sc2')).toBe(true);
+      expect(result.task.success_criteria.some(sc => sc.id === 'sc3')).toBe(true);
     });
 
     it('should deduplicate deliverables by ID', () => {
@@ -433,37 +408,28 @@ describe('graph operations', () => {
       const result = mergeTasks(graph, 'source', 'target');
 
       // Should have 3 unique deliverables (del1 not duplicated)
-      assert.strictEqual(result.task.deliverables.length, 3);
+      expect(result.task.deliverables.length).toBe(3);
     });
 
     it('should throw error for same task', () => {
       const taskA = createTask('a', 'Task A');
       graph.addNode(taskA);
 
-      assert.throws(
-        () => mergeTasks(graph, 'a', 'a'),
-        (err: Error) => err instanceof ValidationError
-      );
+      expect(() => mergeTasks(graph, 'a', 'a')).toThrow(ValidationError);
     });
 
     it('should throw error if source not found', () => {
       const target = createTask('target', 'Target Task');
       graph.addNode(target);
 
-      assert.throws(
-        () => mergeTasks(graph, 'source', 'target'),
-        (err: Error) => err instanceof TaskNotFoundError
-      );
+      expect(() => mergeTasks(graph, 'source', 'target')).toThrow(TaskNotFoundError);
     });
 
     it('should throw error if target not found', () => {
       const source = createTask('source', 'Source Task');
       graph.addNode(source);
 
-      assert.throws(
-        () => mergeTasks(graph, 'source', 'target'),
-        (err: Error) => err instanceof TaskNotFoundError
-      );
+      expect(() => mergeTasks(graph, 'source', 'target')).toThrow(TaskNotFoundError);
     });
 
     it('should filter out source from target blockers', () => {
@@ -476,8 +442,8 @@ describe('graph operations', () => {
 
       const result = mergeTasks(graph, 'source', 'target');
 
-      assert.ok(!result.task.blockers.includes('source'));
-      assert.ok(result.task.blockers.includes('other'));
+      expect(result.task.blockers).not.toContain('source');
+      expect(result.task.blockers).toContain('other');
     });
 
     it('should filter out source from target dependencies', () => {
@@ -490,8 +456,8 @@ describe('graph operations', () => {
 
       const result = mergeTasks(graph, 'source', 'target');
 
-      assert.ok(!result.task.dependencies.includes('source'));
-      assert.ok(result.task.dependencies.includes('other'));
+      expect(result.task.dependencies).not.toContain('source');
+      expect(result.task.dependencies).toContain('other');
     });
 
     it('should not create duplicate edges during reconnection', () => {
@@ -515,12 +481,12 @@ describe('graph operations', () => {
 
       // Should not throw error about duplicate edges
       // A should still only have one edge to target
-      assert.strictEqual(graph.getOutgoingEdges('a').length, 1);
-      assert.ok(graph.hasEdge('a', 'target'));
+      expect(graph.getOutgoingEdges('a').length).toBe(1);
+      expect(graph.hasEdge('a', 'target')).toBe(true);
 
       // target should still only have one edge to C
-      assert.strictEqual(graph.getOutgoingEdges('target').length, 1);
-      assert.ok(graph.hasEdge('target', 'c'));
+      expect(graph.getOutgoingEdges('target').length).toBe(1);
+      expect(graph.hasEdge('target', 'c')).toBe(true);
     });
   });
 
@@ -542,11 +508,11 @@ describe('graph operations', () => {
 
       const descendants = getDescendants(graph, 'a');
 
-      assert.ok(descendants.has('a'));
-      assert.ok(descendants.has('b'));
-      assert.ok(descendants.has('c'));
-      assert.ok(descendants.has('d'));
-      assert.strictEqual(descendants.size, 4);
+      expect(descendants.has('a')).toBe(true);
+      expect(descendants.has('b')).toBe(true);
+      expect(descendants.has('c')).toBe(true);
+      expect(descendants.has('d')).toBe(true);
+      expect(descendants.size).toBe(4);
     });
 
     it('should handle branching', () => {
@@ -569,12 +535,12 @@ describe('graph operations', () => {
 
       const descendants = getDescendants(graph, 'a');
 
-      assert.strictEqual(descendants.size, 5);
-      assert.ok(descendants.has('a'));
-      assert.ok(descendants.has('b'));
-      assert.ok(descendants.has('c'));
-      assert.ok(descendants.has('d'));
-      assert.ok(descendants.has('e'));
+      expect(descendants.size).toBe(5);
+      expect(descendants.has('a')).toBe(true);
+      expect(descendants.has('b')).toBe(true);
+      expect(descendants.has('c')).toBe(true);
+      expect(descendants.has('d')).toBe(true);
+      expect(descendants.has('e')).toBe(true);
     });
 
     it('should return only the node for leaf', () => {
@@ -583,15 +549,12 @@ describe('graph operations', () => {
 
       const descendants = getDescendants(graph, 'a');
 
-      assert.strictEqual(descendants.size, 1);
-      assert.ok(descendants.has('a'));
+      expect(descendants.size).toBe(1);
+      expect(descendants.has('a')).toBe(true);
     });
 
     it('should throw error if node not found', () => {
-      assert.throws(
-        () => getDescendants(graph, 'nonexistent'),
-        (err: Error) => err instanceof TaskNotFoundError
-      );
+      expect(() => getDescendants(graph, 'nonexistent')).toThrow(TaskNotFoundError);
     });
   });
 
@@ -613,11 +576,11 @@ describe('graph operations', () => {
 
       const ancestors = getAncestors(graph, 'd');
 
-      assert.ok(ancestors.has('d'));
-      assert.ok(ancestors.has('c'));
-      assert.ok(ancestors.has('b'));
-      assert.ok(ancestors.has('a'));
-      assert.strictEqual(ancestors.size, 4);
+      expect(ancestors.has('d')).toBe(true);
+      expect(ancestors.has('c')).toBe(true);
+      expect(ancestors.has('b')).toBe(true);
+      expect(ancestors.has('a')).toBe(true);
+      expect(ancestors.size).toBe(4);
     });
 
     it('should handle multiple parents', () => {
@@ -634,10 +597,10 @@ describe('graph operations', () => {
 
       const ancestors = getAncestors(graph, 'c');
 
-      assert.strictEqual(ancestors.size, 3);
-      assert.ok(ancestors.has('c'));
-      assert.ok(ancestors.has('a'));
-      assert.ok(ancestors.has('b'));
+      expect(ancestors.size).toBe(3);
+      expect(ancestors.has('c')).toBe(true);
+      expect(ancestors.has('a')).toBe(true);
+      expect(ancestors.has('b')).toBe(true);
     });
 
     it('should return only the node for root', () => {
@@ -646,15 +609,12 @@ describe('graph operations', () => {
 
       const ancestors = getAncestors(graph, 'a');
 
-      assert.strictEqual(ancestors.size, 1);
-      assert.ok(ancestors.has('a'));
+      expect(ancestors.size).toBe(1);
+      expect(ancestors.has('a')).toBe(true);
     });
 
     it('should throw error if node not found', () => {
-      assert.throws(
-        () => getAncestors(graph, 'nonexistent'),
-        (err: Error) => err instanceof TaskNotFoundError
-      );
+      expect(() => getAncestors(graph, 'nonexistent')).toThrow(TaskNotFoundError);
     });
   });
 
@@ -672,7 +632,7 @@ describe('graph operations', () => {
       graph.addEdge('b', 'c');
 
       // Moving C to A is valid (won't create cycle)
-      assert.strictEqual(isValidSubtreeMove(graph, 'c', 'a'), true);
+      expect(isValidSubtreeMove(graph, 'c', 'a')).toBe(true);
     });
 
     it('should return false for move that would create cycle', () => {
@@ -688,7 +648,7 @@ describe('graph operations', () => {
       graph.addEdge('b', 'c');
 
       // Moving A to C would create cycle: A -> B -> C -> A
-      assert.strictEqual(isValidSubtreeMove(graph, 'a', 'c'), false);
+      expect(isValidSubtreeMove(graph, 'a', 'c')).toBe(false);
     });
 
     it('should return false for move to descendant', () => {
@@ -707,29 +667,23 @@ describe('graph operations', () => {
       graph.addEdge('c', 'd');
 
       // Moving A to any descendant would create cycle
-      assert.strictEqual(isValidSubtreeMove(graph, 'a', 'b'), false);
-      assert.strictEqual(isValidSubtreeMove(graph, 'a', 'c'), false);
-      assert.strictEqual(isValidSubtreeMove(graph, 'a', 'd'), false);
+      expect(isValidSubtreeMove(graph, 'a', 'b')).toBe(false);
+      expect(isValidSubtreeMove(graph, 'a', 'c')).toBe(false);
+      expect(isValidSubtreeMove(graph, 'a', 'd')).toBe(false);
     });
 
     it('should throw error if subtree not found', () => {
       const taskX = createTask('x', 'Task X');
       graph.addNode(taskX);
 
-      assert.throws(
-        () => isValidSubtreeMove(graph, 'y', 'x'),
-        (err: Error) => err instanceof TaskNotFoundError
-      );
+      expect(() => isValidSubtreeMove(graph, 'y', 'x')).toThrow(TaskNotFoundError);
     });
 
     it('should throw error if new parent not found', () => {
       const taskY = createTask('y', 'Task Y');
       graph.addNode(taskY);
 
-      assert.throws(
-        () => isValidSubtreeMove(graph, 'y', 'x'),
-        (err: Error) => err instanceof TaskNotFoundError
-      );
+      expect(() => isValidSubtreeMove(graph, 'y', 'x')).toThrow(TaskNotFoundError);
     });
   });
 });

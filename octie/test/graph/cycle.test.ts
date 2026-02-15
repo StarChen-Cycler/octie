@@ -3,8 +3,7 @@
  * @module test/graph/cycle
  */
 
-import { describe, it, beforeEach } from 'node:test';
-import assert from 'node:assert/strict';
+import { describe, it, beforeEach, expect } from 'vitest';
 
 import { TaskGraphStore } from '../../src/core/graph/index.js';
 import {
@@ -27,8 +26,8 @@ describe('detectCycle', () => {
 
   it('should return no cycles for empty graph', () => {
     const result = detectCycle(graph);
-    assert.strictEqual(result.hasCycle, false);
-    assert.strictEqual(result.cycles.length, 0);
+    expect(result.hasCycle).toBe(false);
+    expect(result.cycles.length).toBe(0);
   });
 
   it('should return no cycles for graph with no edges', () => {
@@ -54,8 +53,8 @@ describe('detectCycle', () => {
     graph.addNode(task);
 
     const result = detectCycle(graph);
-    assert.strictEqual(result.hasCycle, false);
-    assert.strictEqual(result.cycles.length, 0);
+    expect(result.hasCycle).toBe(false);
+    expect(result.cycles.length).toBe(0);
   });
 
   it('should detect self-loop', () => {
@@ -81,9 +80,9 @@ describe('detectCycle', () => {
     graph.addNode(task);
 
     const result = detectCycle(graph);
-    assert.strictEqual(result.hasCycle, true);
-    assert.strictEqual(result.cycles.length, 1);
-    assert.deepStrictEqual(result.cycles[0], ['a', 'a']);
+    expect(result.hasCycle).toBe(true);
+    expect(result.cycles.length).toBe(1);
+    expect(result.cycles[0]).toEqual(['a', 'a']);
   });
 
   it('should detect simple cycle of two nodes', () => {
@@ -133,9 +132,9 @@ describe('detectCycle', () => {
     }
 
     const result = detectCycle(graph);
-    assert.strictEqual(result.hasCycle, true);
-    assert.ok(result.cycles.length > 0);
-    assert.ok(result.cycles.some(cycle => cycle.includes('a') && cycle.includes('b')));
+    expect(result.hasCycle).toBe(true);
+    expect(result.cycles.length).toBeGreaterThan(0);
+    expect(result.cycles.some(cycle => cycle.includes('a') && cycle.includes('b'))).toBe(true);
   });
 
   it('should detect three-node cycle', () => {
@@ -204,10 +203,10 @@ describe('detectCycle', () => {
     }
 
     const result = detectCycle(graph);
-    assert.strictEqual(result.hasCycle, true);
-    assert.ok(result.cycles.some(cycle =>
+    expect(result.hasCycle).toBe(true);
+    expect(result.cycles.some(cycle =>
       cycle.includes('a') && cycle.includes('b') && cycle.includes('c')
-    ));
+    )).toBe(true);
   });
 
   it('should detect multiple cycles', () => {
@@ -276,8 +275,8 @@ describe('detectCycle', () => {
     }
 
     const result = detectCycle(graph);
-    assert.strictEqual(result.hasCycle, true);
-    assert.ok(result.cycles.length >= 2);
+    expect(result.hasCycle).toBe(true);
+    expect(result.cycles.length).toBeGreaterThanOrEqual(2);
   });
 
   it('should not detect cycles in valid DAG', () => {
@@ -365,8 +364,8 @@ describe('detectCycle', () => {
     }
 
     const result = detectCycle(graph);
-    assert.strictEqual(result.hasCycle, false);
-    assert.strictEqual(result.cycles.length, 0);
+    expect(result.hasCycle).toBe(false);
+    expect(result.cycles.length).toBe(0);
   });
 });
 
@@ -394,7 +393,7 @@ describe('hasCycle', () => {
     };
     graph.addNode(task);
 
-    assert.strictEqual(hasCycle(graph), true);
+    expect(hasCycle(graph)).toBe(true);
   });
 
   it('should return false for acyclic graph', () => {
@@ -420,7 +419,7 @@ describe('hasCycle', () => {
     };
     graph.addNode(task);
 
-    assert.strictEqual(hasCycle(graph), false);
+    expect(hasCycle(graph)).toBe(false);
   });
 });
 
@@ -493,10 +492,10 @@ describe('getCyclicNodes', () => {
     }
 
     const cyclicNodes = getCyclicNodes(graph);
-    assert.strictEqual(cyclicNodes.size, 2);
-    assert.ok(cyclicNodes.has('a'));
-    assert.ok(cyclicNodes.has('b'));
-    assert.ok(!cyclicNodes.has('c'));
+    expect(cyclicNodes.size).toBe(2);
+    expect(cyclicNodes.has('a')).toBe(true);
+    expect(cyclicNodes.has('b')).toBe(true);
+    expect(cyclicNodes.has('c')).toBe(false);
   });
 });
 
@@ -588,7 +587,7 @@ describe('findShortestCycle', () => {
     }
 
     const shortest = findShortestCycle(graph);
-    assert.ok(shortest.length > 0);
+    expect(shortest.length).toBeGreaterThan(0);
     // Should find the a -> b -> a cycle
   });
 
@@ -616,7 +615,7 @@ describe('findShortestCycle', () => {
     graph.addNode(task);
 
     const shortest = findShortestCycle(graph);
-    assert.deepStrictEqual(shortest, []);
+    expect(shortest).toEqual([]);
   });
 });
 
@@ -689,10 +688,10 @@ describe('findCyclesForTask', () => {
     }
 
     const cyclesForA = findCyclesForTask(graph, 'a');
-    assert.ok(cyclesForA.length > 0);
+    expect(cyclesForA.length).toBeGreaterThan(0);
 
     const cyclesForC = findCyclesForTask(graph, 'c');
-    assert.strictEqual(cyclesForC.length, 0);
+    expect(cyclesForC.length).toBe(0);
   });
 });
 
@@ -720,7 +719,7 @@ describe('validateAcyclic', () => {
     };
     graph.addNode(task);
 
-    assert.doesNotThrow(() => validateAcyclic(graph));
+    expect(() => validateAcyclic(graph)).not.toThrow();
   });
 
   it('should throw for cyclic graph', () => {
@@ -746,10 +745,7 @@ describe('validateAcyclic', () => {
     };
     graph.addNode(task);
 
-    assert.throws(
-      () => validateAcyclic(graph),
-      (err: Error) => err.name === 'CircularDependencyError'
-    );
+    expect(() => validateAcyclic(graph)).toThrow(/circular dependency/i);
   });
 });
 
@@ -822,10 +818,9 @@ describe('getCycleStatistics', () => {
     }
 
     const stats = getCycleStatistics(graph);
-    assert.strictEqual(stats.totalNodes, 3);
-    assert.ok(stats.cycleCount > 0);
-    assert.strictEqual(stats.nodesInCycles, 2);
-    assert.ok('3' in stats.cyclesByLength); // 3 in cycle array (a -> b -> a)
-
+    expect(stats.totalNodes).toBe(3);
+    expect(stats.cycleCount).toBeGreaterThan(0);
+    expect(stats.nodesInCycles).toBe(2);
+    expect('3' in stats.cyclesByLength).toBe(true); // 3 in cycle array (a -> b -> a)
   });
 });

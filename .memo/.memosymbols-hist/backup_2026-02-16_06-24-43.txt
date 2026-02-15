@@ -1,57 +1,18 @@
 Memo-dec Symbols (ultra compact - 100 per line):
 --------------------------------------------------------------------------------
-Total symbols: 834
+Total symbols: 692
 
 octie\html\index.html
 2:tag:html 2:att:lang="en" 3:tag:head 4:tag:meta 4:att:charset="UTF-8" 5:tag:link 5:att:rel="icon" 5:att:href="./favicon.svg" 5:att:type="image/svg+xml" 6:tag:meta 6:att:name="viewport" 6:att:content="width=device-width, initial-scale=1.0" 7:tag:title 7:tag:title 8:tag:link 8:att:rel="preconnect" 8:att:href="https://fonts.googleapis.com" 9:tag:link 9:att:rel="preconnect" 9:att:href="https://fonts.gstatic.com" 9:att:crossorigin 10:tag:link 10:att:href="https://fonts.googleapis.com/css2?family=Readex+Pro:wght@300;400&display=swap" 10:att:rel="stylesheet" 11:tag:script 18:tag:script 19:tag:script 19:tag:script 20:tag:script 20:tag:script 20:att:type="module" 20:att:crossorigin 20:att:src="./assets/index-9agQl9q3.js" 21:tag:link 21:att:rel="stylesheet" 21:att:crossorigin 21:att:href="./assets/index-fUmMsp0O.css" 22:tag:head 23:tag:body 24:tag:div 24:tag:div 24:att:id="app" 25:tag:body 26:tag:html
 
-octie\src\cli\commands\create.ts
-14:fun:displayAtomicTaskPolicy 55:var:createCommand 102:var:projectPath 103:var:graph 106:var:successCriteria 112:var:deliverables 140:var:taskId 141:var:taskData 167:var:task 185:var:allTaskIds 186:var:invalidBlockers 187:var:invalidDependencies
-
-octie\src\cli\commands\delete.ts
-13:var:deleteCommand 22:var:projectPath 23:var:graph 25:var:task 32:var:dependents 33:var:blockers 43:var:depTask 54:var:blockerTask
-
-octie\src\cli\commands\export.ts
-13:var:exportCommand 20:var:projectPath 21:var:graph 23:var:output 24:var:defaultFileName 29:var:tasks 30:var:lines 32:var:metadata 41:var:checkbox 62:var:outputPath
-
-octie\src\cli\commands\get.ts
-14:fun:formatTaskAsMarkdown 15:var:lines 31:var:checkbox 40:var:checkbox 41:var:fileRef 94:fun:formatTaskAsTable 95:var:lines 103:var:infoTable 131:var:symbol 141:var:symbol 142:var:fileRef 181:var:getCommand 189:var:projectPath 190:var:graph 193:var:task
-
-octie\src\cli\commands\graph.ts
-15:var:graphCommand 20:var:projectPath 21:var:graph 27:var:totalTasks 28:var:rootTasks 29:var:orphanTasks 37:var:cycleResult 48:var:sortResult 56:var:components 77:var:projectPath 78:var:graph 80:var:cycleResult 105:var:projectPath 106:var:graph 108:var:result 115:var:i 116:var:cycle 122:var:task
-
-octie\src\cli\commands\import.ts
-15:var:importCommand 22:var:projectPath 23:var:storage 26:var:content 28:var:data 48:var:store
-
-octie\src\cli\commands\init.ts
-14:var:initCommand 20:var:projectPath 21:var:projectName 26:var:storage
-
-octie\src\cli\commands\list.ts
-17:fun:formatTaskAsRow 18:var:row 36:fun:formatTaskAsMarkdown 37:var:checkbox 38:var:status 39:var:priority 51:fun:buildTree 52:var:nodes 55:var:task 64:var:roots 65:var:visited 67:fun:visit 73:var:node 76:var:dependents 78:var:child 97:var:listCommand 108:var:projectPath 109:var:graph 112:var:tasks 131:var:incoming 132:var:outgoing 152:var:rootTasks 153:var:tree 176:var:table
-
-octie\src\cli\commands\merge.ts
-13:var:mergeCommand 21:var:projectPath 22:var:graph 24:var:sourceTask 25:var:targetTask
-
-octie\src\cli\commands\serve.ts
-11:var:serveCommand 19:var:projectPath
-
-octie\src\cli\commands\update.ts
-13:var:updateCommand 29:var:projectPath 30:var:graph 32:var:task 38:var:updated
-
-octie\src\cli\index.ts
-23:var:VERSION 28:fun:handleError 49:fun:createProgram 50:var:program 81:fun:main 82:var:program
-
-octie\src\cli\utils\helpers.ts
-13:fun:getProjectPath 19:var:detectedPath 32:fun:loadGraph 33:var:storage 45:fun:saveGraph 46:var:storage 53:fun:success 60:fun:error 67:fun:warning 74:fun:info 81:fun:verbose 90:fun:createSpinner 92:var:dots 93:var:interval 101:var:dotStr 129:fun:parseList 137:fun:isValidUUID 138:var:uuidRegex 146:fun:formatTaskId 153:fun:formatStatus 154:var:statusColors 162:var:colorFn 169:fun:formatPriority 170:var:priorityColors 176:var:colorFn 183:fun:truncate
-
 octie\src\core\graph\cycle.ts
-52:fun:detectCycle 53:var:cycles 54:var:color 55:var:parent 68:fun:dfs 73:var:neighbors 75:var:neighborState 79:var:cycle 82:var:current 130:fun:hasCycle 131:var:result 141:fun:getCyclicNodes 142:var:result 143:var:cyclicNodes 161:fun:findShortestCycle 162:var:result 180:fun:findCyclesForTask 181:var:result 193:fun:validateAcyclic 194:var:result 198:var:firstCycle 211:fun:getCycleStatistics 217:var:result 218:var:cyclicNodes 220:var:cyclesByLength 222:var:len
+52:fun:detectCycle 53:var:cycles 54:var:color 55:var:parent 68:fun:dfs 73:var:neighbors 75:var:neighborState 79:var:cycle 82:var:current 130:fun:hasCycle 131:var:result 141:fun:getCyclicNodes 142:var:result 143:var:cyclicNodes 161:fun:findShortestCycle 162:var:result 180:fun:findCyclesForTask 181:var:result 193:fun:validateAcyclic 194:var:result 198:var:firstCycle 209:fun:getCycleStatistics 215:var:result 216:var:cyclicNodes 218:var:cyclesByLength 220:var:len
 
 octie\src\core\graph\index.ts
-28:cla:TaskGraphStore 45:fun:constructor 60:fun:size 67:fun:metadata 75:fun:setMetadata 89:fun:getNode 100:fun:getNodeOrThrow 101:var:node 114:fun:hasNode 122:fun:getAllTaskIds 130:fun:getAllTasks 140:fun:addNode 173:fun:removeNode 179:var:incomingSources 185:var:outgoingTargets 204:fun:updateNode 219:fun:getOutgoingEdges 229:fun:getIncomingEdges 241:fun:addEdge 270:var:fromNode 286:fun:removeEdge 294:var:outgoingSet 307:var:fromNode 308:var:edgeIndex 323:fun:hasEdge 324:var:outgoingSet 333:fun:getRootTasks 334:var:roots 348:fun:getOrphanTasks 349:var:orphans 351:var:outgoing 352:var:incoming 365:fun:getLeafTasks 366:var:leaves 379:fun:clear 390:fun:toInterface 408:fun:fromInterface 409:var:store 413:var:taskNode 432:fun:toJSON 438:var:nodes 443:var:outgoingEdges 448:var:incomingEdges 466:fun:fromJSON 472:var:store
+27:cla:TaskGraphStore 44:fun:constructor 59:fun:size 66:fun:metadata 74:fun:setMetadata 88:fun:getNode 99:fun:getNodeOrThrow 100:var:node 113:fun:hasNode 121:fun:getAllTaskIds 129:fun:getAllTasks 139:fun:addNode 172:fun:removeNode 178:var:incomingSources 184:var:outgoingTargets 203:fun:updateNode 218:fun:getOutgoingEdges 228:fun:getIncomingEdges 240:fun:addEdge 269:var:fromNode 285:fun:removeEdge 293:var:outgoingSet 306:var:fromNode 307:var:edgeIndex 322:fun:hasEdge 323:var:outgoingSet 332:fun:getRootTasks 333:var:roots 347:fun:getOrphanTasks 348:var:orphans 350:var:outgoing 351:var:incoming 364:fun:getLeafTasks 365:var:leaves 378:fun:clear 389:fun:toInterface 407:fun:fromInterface 408:var:store 430:fun:toJSON 436:var:nodes 441:var:outgoingEdges 446:var:incomingEdges 464:fun:fromJSON 470:var:store
 
 octie\src\core\graph\operations.ts
-43:fun:cutNode 49:var:incomingSources 50:var:outgoingTargets 96:fun:insertNodeBetween 162:fun:moveSubtree 192:var:currentParents 244:fun:mergeTasks 250:var:source 251:var:target 270:var:newDescription 295:var:newNotes 320:var:reconnectSources 321:var:reconnectTargets 324:var:sourceIncoming 326:var:sourceOutgoing 351:var:allAffected 381:fun:getDescendants 386:var:descendants 387:var:stack 390:var:current 399:var:children 427:fun:getAncestors 432:var:ancestors 433:var:stack 436:var:current 445:var:parents 477:fun:isValidSubtreeMove 491:var:descendants
+43:fun:cutNode 49:var:incomingSources 50:var:outgoingTargets 96:fun:insertNodeBetween 162:fun:moveSubtree 192:var:currentParents 244:fun:mergeTasks 250:var:source 251:var:target 268:var:updatedTasks 272:var:mergedTask 333:var:reconnectSources 334:var:reconnectTargets 337:var:sourceIncoming 339:var:sourceOutgoing 364:var:allAffected 394:fun:getDescendants 399:var:descendants 400:var:stack 403:var:current 412:var:children 440:fun:getAncestors 445:var:ancestors 446:var:stack 449:var:current 458:var:parents 490:fun:isValidSubtreeMove 504:var:descendants
 
 octie\src\core\graph\sort.ts
 15:var:sortCache 17:var:CACHE_TTL 24:fun:generateCacheKey 25:var:taskIds 26:var:metadata 34:fun:clearSortCache 65:fun:topologicalSort 68:var:cacheKey 69:var:cached 75:var:result 79:var:cacheKey 91:fun:kahnSort 93:var:inDegree 94:var:allTaskIds 102:var:outgoingEdges 109:var:queue 117:var:sorted 120:var:nodeId 124:var:neighbors 126:var:newDegree 137:var:hasCycle 138:var:cycleNodes 160:fun:findCriticalPath 165:var:sortResult 171:var:earliestStart 172:var:getDuration 183:var:predecessors 184:var:maxPredFinish 193:var:maxFinish 194:var:endNode 197:var:finish 205:var:criticalPath 206:var:current 209:var:predecessors 213:var:currentStart 214:var:criticalPred 215:var:predFinish 237:fun:isValidDAG 238:var:result 250:fun:getExecutionLevels 251:var:sortResult 257:var:levels 258:var:inDegree 259:var:remaining 268:var:currentLevel
@@ -66,7 +27,7 @@ octie\src\core\storage\atomic-write.ts
 22:var:DEFAULT_CONFIG 46:cla:AtomicFileWriter 53:fun:constructor 75:fun:write 83:var:content 96:var:tempPath 103:var:stats 147:fun:read 164:fun:readJSON 166:var:content 184:fun:_createBackup 190:var:backupPath 213:fun:_rotateBackups 214:var:dir 215:var:baseName 219:var:files 220:var:backupFiles 226:var:backupsToDelete 242:fun:_getBackupPath 243:var:dir 244:var:baseName 245:var:timestamp 255:fun:_getTempPath 256:var:baseName 257:var:timestamp 258:var:random 268:fun:_getDirPath 269:var:parts 280:fun:_getBaseName 281:var:parts 282:var:fileName 284:var:lastDot 293:fun:exists 307:fun:delete 326:fun:ensureDir 341:cla:PathUtils 348:fun:normalizePath 357:fun:join 366:fun:isAbsolute 376:fun:relative 388:fun:getConfigPath 389:var:platform 390:var:homedir 408:fun:getDataPath 409:var:platform 410:var:homedir 429:fun:sanitizePath 430:var:normalized 431:var:resolved 434:var:relativePath
 
 octie\src\core\storage\file-store.ts
-29:var:DEFAULT_PROJECT_FILE 34:var:OCTIE_DIR_NAME 57:cla:TaskStorage 69:fun:constructor 84:fun:octieDirPath 91:fun:projectFilePath 98:fun:backupFilePath 105:fun:indexesDirPath 112:fun:cacheDirPath 119:fun:configFilePath 127:fun:init 140:fun:exists 149:fun:load 160:var:projectFile 166:var:graph 169:var:node 191:fun:save 195:var:createBackup 202:var:json 205:var:projectFile 233:fun:_buildIndexes 234:var:byStatus 242:var:byPriority 248:var:searchText 249:var:files 260:var:text 261:var:tokens 283:var:rootTasks 284:var:orphanTasks 302:fun:_validateProjectFile 331:fun:getMetadata 340:var:projectFile 354:fun:delete 378:fun:createProject 381:var:metadata 389:var:projectFile 424:fun:listBackups 426:var:backups 429:var:files 446:fun:restoreFromBackup 447:var:backups 453:var:latestBackup 477:fun:findProjectPath 481:var:currentDir 485:var:octieDir 486:var:projectFile 496:var:parentDir
+28:var:DEFAULT_PROJECT_FILE 33:var:OCTIE_DIR_NAME 56:cla:TaskStorage 68:fun:constructor 83:fun:octieDirPath 90:fun:projectFilePath 97:fun:backupFilePath 104:fun:indexesDirPath 111:fun:cacheDirPath 118:fun:configFilePath 126:fun:init 139:fun:exists 148:fun:load 159:var:projectFile 165:var:nodes 171:var:outgoingEdges 172:var:incomingEdges 192:var:graph 215:fun:save 219:var:createBackup 226:var:json 229:var:projectFile 257:fun:_buildIndexes 258:var:byStatus 266:var:byPriority 272:var:searchText 273:var:files 284:var:text 285:var:tokens 307:var:rootTasks 308:var:orphanTasks 326:fun:_validateProjectFile 355:fun:getMetadata 364:var:projectFile 378:fun:delete 402:fun:createProject 405:var:metadata 413:var:projectFile 448:fun:listBackups 450:var:backups 453:var:files 470:fun:restoreFromBackup 471:var:backups 477:var:latestBackup 501:fun:findProjectPath 505:var:currentDir 509:var:octieDir 510:var:projectFile 520:var:parentDir
 
 octie\src\core\storage\indexer.ts
 25:cla:IndexManager 50:fun:constructor 60:var:statuses 66:var:priorities 81:fun:updateTask 99:fun:_removeTask 107:var:text 108:var:tokens 137:fun:_addTask 151:var:text 152:var:tokens 178:fun:_updateRootOrphanStatus 179:var:incoming 180:var:outgoing 204:fun:rebuildIndexes 214:var:statuses 219:var:priorities 238:fun:getByStatus 247:fun:getByPriority 256:fun:search 257:var:tokens 258:var:results 261:var:matching 277:fun:getByFile 285:fun:getRootTasks 293:fun:getOrphanTasks 303:fun:getIndexes 309:var:result 346:fun:clear 356:var:statuses 361:var:priorities 371:fun:getStats 379:var:statusCounts 391:var:priorityCounts
@@ -78,8 +39,8 @@ octie\test\graph\cycle.test.ts
 22:var:graph 29:var:result 35:var:task 56:var:result 62:var:task 83:var:result 90:var:tasks 135:var:result 142:var:tasks 206:var:result 214:var:tasks 278:var:result 284:var:tasks 367:var:result 375:var:graph 376:var:task 401:var:graph 402:var:task 429:var:graph 431:var:tasks 495:var:cyclicNodes 505:var:graph 507:var:tasks 590:var:shortest 596:var:graph 597:var:task 618:var:shortest 625:var:graph 627:var:tasks 691:var:cyclesForA 694:var:cyclesForC 701:var:graph 702:var:task 727:var:graph 728:var:task 758:var:graph 760:var:tasks 824:var:stats
 
 octie\test\graph\operations.test.ts
-22:var:graph 24:fun:createTask 26:var:atomicTitle 27:var:defaultDescription 46:var:taskA 47:var:taskB 48:var:taskC 71:var:taskA 72:var:taskX 73:var:taskB 74:var:taskC 75:var:taskY 100:var:taskA 101:var:taskB 117:var:taskA 118:var:taskB 141:var:taskA 142:var:taskB 143:var:taskC 163:var:taskA 164:var:taskC 165:var:taskB 182:var:taskC 183:var:taskB 194:var:taskA 195:var:taskB 206:var:taskA 207:var:taskC 208:var:taskB 224:var:taskA 225:var:taskB 226:var:taskX 227:var:taskY 246:var:taskA 247:var:taskB 248:var:taskC 249:var:taskY 250:var:taskX 272:var:taskY 283:var:taskA 284:var:taskB 285:var:taskY 301:var:taskX 311:var:taskY 324:var:taskA 325:var:taskB 326:var:taskC 327:var:taskD 329:var:source 342:var:target
-696:var:taskA 697:var:taskB 698:var:taskC 699:var:taskD 716:var:taskX 726:var:taskY
+22:var:graph 24:fun:createTask 43:var:taskA 44:var:taskB 45:var:taskC 68:var:taskA 69:var:taskX 70:var:taskB 71:var:taskC 72:var:taskY 97:var:taskA 98:var:taskB 114:var:taskA 115:var:taskB 138:var:taskA 139:var:taskB 140:var:taskC 160:var:taskA 161:var:taskC 162:var:taskB 179:var:taskC 180:var:taskB 191:var:taskA 192:var:taskB 203:var:taskA 204:var:taskC 205:var:taskB 221:var:taskA 222:var:taskB 223:var:taskX 224:var:taskY 243:var:taskA 244:var:taskB 245:var:taskC 246:var:taskY 247:var:taskX 269:var:taskY 280:var:taskA 281:var:taskB 282:var:taskY 298:var:taskX 308:var:taskY 321:var:taskA 322:var:taskB 323:var:taskC 324:var:taskD 326:var:source 339:var:target 362:var:result 390:var:source
+695:var:taskC 696:var:taskD 713:var:taskX 723:var:taskY
 
 octie\test\graph\sort.test.ts
 20:var:graph 28:var:result 35:var:task 56:var:result 63:var:tasks 127:var:result 133:var:tasks 216:var:result 222:var:middle 228:var:tasks 292:var:result 298:var:task 319:var:result 325:var:task 346:var:result1 347:var:result2 353:var:graph 360:var:tasks 424:var:result 430:var:tasks 484:var:graph 485:var:task 510:var:graph 511:var:task 538:var:graph 540:var:tasks 623:var:levels

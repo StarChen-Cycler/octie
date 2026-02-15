@@ -3,8 +3,7 @@
  * @module test/graph/sort
  */
 
-import { describe, it, beforeEach } from 'node:test';
-import assert from 'node:assert/strict';
+import { describe, it, beforeEach, expect } from 'vitest';
 
 import { TaskGraphStore } from '../../src/core/graph/index.js';
 import {
@@ -26,9 +25,9 @@ describe('topologicalSort', () => {
 
   it('should return empty array for empty graph', () => {
     const result = topologicalSort(graph);
-    assert.strictEqual(result.sorted.length, 0);
-    assert.strictEqual(result.hasCycle, false);
-    assert.strictEqual(result.cycleNodes.length, 0);
+    expect(result.sorted.length).toBe(0);
+    expect(result.hasCycle).toBe(false);
+    expect(result.cycleNodes.length).toBe(0);
   });
 
   it('should return single node for graph with one node', () => {
@@ -54,9 +53,9 @@ describe('topologicalSort', () => {
     graph.addNode(task);
 
     const result = topologicalSort(graph);
-    assert.deepStrictEqual(result.sorted, ['a']);
-    assert.strictEqual(result.hasCycle, false);
-    assert.strictEqual(result.cycleNodes.length, 0);
+    expect(result.sorted).toEqual(['a']);
+    expect(result.hasCycle).toBe(false);
+    expect(result.cycleNodes.length).toBe(0);
   });
 
   it('should correctly sort linear chain', () => {
@@ -125,8 +124,8 @@ describe('topologicalSort', () => {
     }
 
     const result = topologicalSort(graph);
-    assert.deepStrictEqual(result.sorted, ['a', 'b', 'c']);
-    assert.strictEqual(result.hasCycle, false);
+    expect(result.sorted).toEqual(['a', 'b', 'c']);
+    expect(result.hasCycle).toBe(false);
   });
 
   it('should handle parallel branches', () => {
@@ -214,14 +213,14 @@ describe('topologicalSort', () => {
     }
 
     const result = topologicalSort(graph);
-    assert.strictEqual(result.sorted[0], 'root');
-    assert.strictEqual(result.sorted[3], 'merge');
-    assert.strictEqual(result.hasCycle, false);
+    expect(result.sorted[0]).toBe('root');
+    expect(result.sorted[3]).toBe('merge');
+    expect(result.hasCycle).toBe(false);
 
     // Left and right can be in either order
     const middle = result.sorted.slice(1, 3);
-    assert.ok(middle.includes('left'));
-    assert.ok(middle.includes('right'));
+    expect(middle).toContain('left');
+    expect(middle).toContain('right');
   });
 
   it('should detect cycle', () => {
@@ -290,8 +289,8 @@ describe('topologicalSort', () => {
     }
 
     const result = topologicalSort(graph);
-    assert.strictEqual(result.hasCycle, true);
-    assert.ok(result.cycleNodes.length > 0);
+    expect(result.hasCycle).toBe(true);
+    expect(result.cycleNodes.length).toBeGreaterThan(0);
   });
 
   it('should handle self-loop', () => {
@@ -317,8 +316,8 @@ describe('topologicalSort', () => {
     graph.addNode(task);
 
     const result = topologicalSort(graph);
-    assert.strictEqual(result.hasCycle, true);
-    assert.ok(result.cycleNodes.includes('a'));
+    expect(result.hasCycle).toBe(true);
+    expect(result.cycleNodes).toContain('a');
   });
 
   it('should use cache for repeated calls', () => {
@@ -345,7 +344,7 @@ describe('topologicalSort', () => {
 
     const result1 = topologicalSort(graph);
     const result2 = topologicalSort(graph);
-    assert.deepStrictEqual(result1, result2);
+    expect(result1).toEqual(result2);
   });
 });
 
@@ -422,8 +421,8 @@ describe('findCriticalPath', () => {
     }
 
     const result = findCriticalPath(graph);
-    assert.deepStrictEqual(result.path, ['a', 'b', 'c']);
-    assert.strictEqual(result.duration, 3);
+    expect(result.path).toEqual(['a', 'b', 'c']);
+    expect(result.duration).toBe(3);
   });
 
   it('should throw error for cyclic graph', () => {
@@ -472,10 +471,7 @@ describe('findCriticalPath', () => {
       graph.addNode(task);
     }
 
-    assert.throws(
-      () => findCriticalPath(graph),
-      (err: Error) => err.name === 'CircularDependencyError'
-    );
+    expect(() => findCriticalPath(graph)).toThrow(/circular/i);
   });
 });
 
@@ -503,7 +499,7 @@ describe('isValidDAG', () => {
     };
     graph.addNode(task);
 
-    assert.strictEqual(isValidDAG(graph), true);
+    expect(isValidDAG(graph)).toBe(true);
   });
 
   it('should return false for cyclic graph', () => {
@@ -529,7 +525,7 @@ describe('isValidDAG', () => {
     };
     graph.addNode(task);
 
-    assert.strictEqual(isValidDAG(graph), false);
+    expect(isValidDAG(graph)).toBe(false);
   });
 });
 
@@ -621,10 +617,10 @@ describe('getExecutionLevels', () => {
     }
 
     const levels = getExecutionLevels(graph);
-    assert.strictEqual(levels.length, 3);
-    assert.deepStrictEqual(levels[0], ['a']);
-    assert.ok(levels[1].includes('b'));
-    assert.ok(levels[1].includes('c'));
-    assert.deepStrictEqual(levels[2], ['d']);
+    expect(levels.length).toBe(3);
+    expect(levels[0]).toEqual(['a']);
+    expect(levels[1]).toContain('b');
+    expect(levels[1]).toContain('c');
+    expect(levels[2]).toEqual(['d']);
   });
 });

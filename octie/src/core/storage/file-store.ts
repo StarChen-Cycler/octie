@@ -17,10 +17,11 @@
  */
 
 import { join } from 'node:path';
-import type { TaskNode, ProjectFile, ProjectIndexes, ProjectMetadata } from '../../types/index.js';
+import type { ProjectFile, ProjectIndexes, ProjectMetadata } from '../../types/index.js';
 import { FileOperationError, ValidationError } from '../../types/index.js';
 import { AtomicFileWriter } from './atomic-write.js';
 import { TaskGraphStore } from '../graph/index.js';
+import { TaskNode } from '../models/task-node.js';
 
 /**
  * Default project file name
@@ -161,36 +162,11 @@ export class TaskStorage {
       // Validate project file structure
       this._validateProjectFile(projectFile);
 
-      // Convert nodes Map from Record
-      const nodes = new Map<string, TaskNode>();
-      for (const [id, node] of Object.entries(projectFile.tasks)) {
-        nodes.set(id, node);
-      }
-
-      // Build edge maps
-      const outgoingEdges = new Map<string, Set<string>>();
-      const incomingEdges = new Map<string, Set<string>>();
-
-      for (const [id, node] of nodes) {
-        outgoingEdges.set(id, new Set(node.edges));
-        if (!incomingEdges.has(id)) {
-          incomingEdges.set(id, new Set());
-        }
-      }
-
-      // Populate incoming edges
-      for (const [fromId, node] of nodes) {
-        for (const toId of node.edges) {
-          if (!incomingEdges.has(toId)) {
-            incomingEdges.set(toId, new Set());
-          }
-          incomingEdges.get(toId)!.add(fromId);
-        }
-      }
-
       // Create graph from loaded data
       const graph = new TaskGraphStore(projectFile.metadata);
-      for (const [, node] of nodes) {
+      for (const [, taskData] of Object.entries(projectFile.tasks)) {
+        // Convert plain object to TaskNode class instance
+        const node = TaskNode.fromJSON(taskData);
         graph.addNode(node);
       }
 

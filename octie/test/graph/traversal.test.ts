@@ -3,8 +3,7 @@
  * @module test/graph/traversal
  */
 
-import { describe, it, beforeEach } from 'node:test';
-import assert from 'node:assert/strict';
+import { describe, it, beforeEach, expect } from 'vitest';
 
 import { TaskGraphStore } from '../../src/core/graph/index.js';
 import { TaskNotFoundError } from '../../src/types/index.js';
@@ -49,7 +48,7 @@ describe('bfsTraversal', () => {
     graph.addNode(task);
 
     const result = bfsTraversal(graph, 'a', 'forward');
-    assert.deepStrictEqual(result, ['a']);
+    expect(result).toEqual(['a']);
   });
 
   it('should traverse forward (outgoing edges)', () => {
@@ -137,11 +136,11 @@ describe('bfsTraversal', () => {
     }
 
     const result = bfsTraversal(graph, 'a', 'forward');
-    assert.ok(result.includes('a'));
-    assert.ok(result.includes('b'));
-    assert.ok(result.includes('c'));
-    assert.ok(result.includes('d'));
-    assert.strictEqual(result[0], 'a'); // Start node first
+    expect(result).toContain('a');
+    expect(result).toContain('b');
+    expect(result).toContain('c');
+    expect(result).toContain('d');
+    expect(result[0]).toBe('a'); // Start node first
   });
 
   it('should traverse backward (incoming edges)', () => {
@@ -229,18 +228,15 @@ describe('bfsTraversal', () => {
     }
 
     const result = bfsTraversal(graph, 'd', 'backward');
-    assert.ok(result.includes('a'));
-    assert.ok(result.includes('b'));
-    assert.ok(result.includes('c'));
-    assert.ok(result.includes('d'));
-    assert.strictEqual(result[0], 'd'); // Start node first
+    expect(result).toContain('a');
+    expect(result).toContain('b');
+    expect(result).toContain('c');
+    expect(result).toContain('d');
+    expect(result[0]).toBe('d'); // Start node first
   });
 
   it('should throw error for non-existent start node', () => {
-    assert.throws(
-      () => bfsTraversal(graph, 'nonexistent', 'forward'),
-      (err: Error) => err.name === 'TaskNotFoundError'
-    );
+    expect(() => bfsTraversal(graph, 'nonexistent', 'forward')).toThrow(/task.*not found/i);
   });
 });
 
@@ -317,8 +313,8 @@ describe('dfsFindPath', () => {
     }
 
     const path = dfsFindPath(graph, 'a', 'c');
-    assert.ok(path);
-    assert.deepStrictEqual(path, ['a', 'b', 'c']);
+    expect(path).toBeTruthy();
+    expect(path).toEqual(['a', 'b', 'c']);
   });
 
   it('should return null when no path exists', () => {
@@ -368,7 +364,7 @@ describe('dfsFindPath', () => {
     }
 
     const path = dfsFindPath(graph, 'a', 'b');
-    assert.strictEqual(path, null);
+    expect(path).toBeNull();
   });
 
   it('should return single-node path when start equals end', () => {
@@ -394,7 +390,7 @@ describe('dfsFindPath', () => {
     graph.addNode(task);
 
     const path = dfsFindPath(graph, 'a', 'a');
-    assert.deepStrictEqual(path, ['a']);
+    expect(path).toEqual(['a']);
   });
 });
 
@@ -490,9 +486,9 @@ describe('findAllPaths', () => {
     }
 
     const paths = findAllPaths(graph, 'a', 'd');
-    assert.ok(paths.length >= 2);
-    assert.ok(paths.some(p => p.join(',') === 'a,b,d'));
-    assert.ok(paths.some(p => p.join(',') === 'a,c,d'));
+    expect(paths.length).toBeGreaterThanOrEqual(2);
+    expect(paths.some(p => p.join(',') === 'a,b,d')).toBe(true);
+    expect(paths.some(p => p.join(',') === 'a,c,d')).toBe(true);
   });
 
   it('should return empty array when no path exists', () => {
@@ -542,7 +538,7 @@ describe('findAllPaths', () => {
     }
 
     const paths = findAllPaths(graph, 'a', 'b');
-    assert.deepStrictEqual(paths, []);
+    expect(paths).toEqual([]);
   });
 });
 
@@ -639,8 +635,8 @@ describe('findShortestPath', () => {
 
     // Both paths have length 3
     const path = findShortestPath(graph, 'a', 'd');
-    assert.ok(path);
-    assert.strictEqual(path.length, 3);
+    expect(path).toBeTruthy();
+    expect(path?.length).toBe(3);
   });
 
   it('should return null when no path exists', () => {
@@ -690,7 +686,7 @@ describe('findShortestPath', () => {
     }
 
     const path = findShortestPath(graph, 'a', 'b');
-    assert.strictEqual(path, null);
+    expect(path).toBeNull();
   });
 
   it('should return single-node path when start equals end', () => {
@@ -716,7 +712,7 @@ describe('findShortestPath', () => {
     graph.addNode(task);
 
     const path = findShortestPath(graph, 'a', 'a');
-    assert.deepStrictEqual(path, ['a']);
+    expect(path).toEqual(['a']);
   });
 });
 
@@ -773,7 +769,7 @@ describe('areConnected', () => {
       graph.addNode(task);
     }
 
-    assert.strictEqual(areConnected(graph, 'a', 'b'), true);
+    expect(areConnected(graph, 'a', 'b')).toBe(true);
   });
 
   it('should return false when no path exists', () => {
@@ -822,7 +818,7 @@ describe('areConnected', () => {
       graph.addNode(task);
     }
 
-    assert.strictEqual(areConnected(graph, 'a', 'b'), false);
+    expect(areConnected(graph, 'a', 'b')).toBe(false);
   });
 });
 
@@ -898,9 +894,9 @@ describe('getDistance', () => {
       graph.addNode(task);
     }
 
-    assert.strictEqual(getDistance(graph, 'a', 'c'), 2); // a -> b -> c
-    assert.strictEqual(getDistance(graph, 'a', 'b'), 1); // a -> b
-    assert.strictEqual(getDistance(graph, 'a', 'a'), 0); // Same node
+    expect(getDistance(graph, 'a', 'c')).toBe(2); // a -> b -> c
+    expect(getDistance(graph, 'a', 'b')).toBe(1); // a -> b
+    expect(getDistance(graph, 'a', 'a')).toBe(0); // Same node
   });
 
   it('should return -1 when no path exists', () => {
@@ -949,7 +945,7 @@ describe('getDistance', () => {
       graph.addNode(task);
     }
 
-    assert.strictEqual(getDistance(graph, 'a', 'b'), -1);
+    expect(getDistance(graph, 'a', 'b')).toBe(-1);
   });
 });
 
@@ -1023,12 +1019,12 @@ describe('getConnectedComponents', () => {
 
     const components = getConnectedComponents(graph);
     // Should have 2 components: {a, b} and {c}
-    assert.strictEqual(components.length, 2);
+    expect(components.length).toBe(2);
 
     const flatComponents = components.flat();
-    assert.ok(flatComponents.includes('a'));
-    assert.ok(flatComponents.includes('b'));
-    assert.ok(flatComponents.includes('c'));
+    expect(flatComponents).toContain('a');
+    expect(flatComponents).toContain('b');
+    expect(flatComponents).toContain('c');
   });
 
   it('should return single component for fully connected graph', () => {
@@ -1099,7 +1095,7 @@ describe('getConnectedComponents', () => {
     }
 
     const components = getConnectedComponents(graph);
-    assert.strictEqual(components.length, 1);
-    assert.deepStrictEqual(components[0].sort(), ['a', 'b', 'c']);
+    expect(components.length).toBe(1);
+    expect(components[0].sort()).toEqual(['a', 'b', 'c']);
   });
 });
