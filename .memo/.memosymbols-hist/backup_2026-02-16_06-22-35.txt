@@ -1,6 +1,6 @@
 Memo-dec Symbols (ultra compact - 100 per line):
 --------------------------------------------------------------------------------
-Total symbols: 692
+Total symbols: 560
 
 octie\html\index.html
 2:tag:html 2:att:lang="en" 3:tag:head 4:tag:meta 4:att:charset="UTF-8" 5:tag:link 5:att:rel="icon" 5:att:href="./favicon.svg" 5:att:type="image/svg+xml" 6:tag:meta 6:att:name="viewport" 6:att:content="width=device-width, initial-scale=1.0" 7:tag:title 7:tag:title 8:tag:link 8:att:rel="preconnect" 8:att:href="https://fonts.googleapis.com" 9:tag:link 9:att:rel="preconnect" 9:att:href="https://fonts.gstatic.com" 9:att:crossorigin 10:tag:link 10:att:href="https://fonts.googleapis.com/css2?family=Readex+Pro:wght@300;400&display=swap" 10:att:rel="stylesheet" 11:tag:script 18:tag:script 19:tag:script 19:tag:script 20:tag:script 20:tag:script 20:att:type="module" 20:att:crossorigin 20:att:src="./assets/index-9agQl9q3.js" 21:tag:link 21:att:rel="stylesheet" 21:att:crossorigin 21:att:href="./assets/index-fUmMsp0O.css" 22:tag:head 23:tag:body 24:tag:div 24:tag:div 24:att:id="app" 25:tag:body 26:tag:html
@@ -10,9 +10,6 @@ octie\src\core\graph\cycle.ts
 
 octie\src\core\graph\index.ts
 27:cla:TaskGraphStore 44:fun:constructor 59:fun:size 66:fun:metadata 74:fun:setMetadata 88:fun:getNode 99:fun:getNodeOrThrow 100:var:node 113:fun:hasNode 121:fun:getAllTaskIds 129:fun:getAllTasks 139:fun:addNode 172:fun:removeNode 178:var:incomingSources 184:var:outgoingTargets 203:fun:updateNode 218:fun:getOutgoingEdges 228:fun:getIncomingEdges 240:fun:addEdge 269:var:fromNode 285:fun:removeEdge 293:var:outgoingSet 306:var:fromNode 307:var:edgeIndex 322:fun:hasEdge 323:var:outgoingSet 332:fun:getRootTasks 333:var:roots 347:fun:getOrphanTasks 348:var:orphans 350:var:outgoing 351:var:incoming 364:fun:getLeafTasks 365:var:leaves 378:fun:clear 389:fun:toInterface 407:fun:fromInterface 408:var:store 430:fun:toJSON 436:var:nodes 441:var:outgoingEdges 446:var:incomingEdges 464:fun:fromJSON 470:var:store
-
-octie\src\core\graph\operations.ts
-43:fun:cutNode 49:var:incomingSources 50:var:outgoingTargets 96:fun:insertNodeBetween 162:fun:moveSubtree 192:var:currentParents 244:fun:mergeTasks 250:var:source 251:var:target 268:var:updatedTasks 272:var:mergedTask 333:var:reconnectSources 334:var:reconnectTargets 337:var:sourceIncoming 339:var:sourceOutgoing 364:var:allAffected 394:fun:getDescendants 399:var:descendants 400:var:stack 403:var:current 412:var:children 440:fun:getAncestors 445:var:ancestors 446:var:stack 449:var:current 458:var:parents 490:fun:isValidSubtreeMove 504:var:descendants
 
 octie\src\core\graph\sort.ts
 15:var:sortCache 17:var:CACHE_TTL 24:fun:generateCacheKey 25:var:taskIds 26:var:metadata 34:fun:clearSortCache 65:fun:topologicalSort 68:var:cacheKey 69:var:cached 75:var:result 79:var:cacheKey 91:fun:kahnSort 93:var:inDegree 94:var:allTaskIds 102:var:outgoingEdges 109:var:queue 117:var:sorted 120:var:nodeId 124:var:neighbors 126:var:newDegree 137:var:hasCycle 138:var:cycleNodes 160:fun:findCriticalPath 165:var:sortResult 171:var:earliestStart 172:var:getDuration 183:var:predecessors 184:var:maxPredFinish 193:var:maxFinish 194:var:endNode 197:var:finish 205:var:criticalPath 206:var:current 209:var:predecessors 213:var:currentStart 214:var:criticalPred 215:var:predFinish 237:fun:isValidDAG 238:var:result 250:fun:getExecutionLevels 251:var:sortResult 257:var:levels 258:var:inDegree 259:var:remaining 268:var:currentLevel
@@ -37,10 +34,6 @@ octie\src\types\index.ts
 
 octie\test\graph\cycle.test.ts
 22:var:graph 29:var:result 35:var:task 56:var:result 62:var:task 83:var:result 90:var:tasks 135:var:result 142:var:tasks 206:var:result 214:var:tasks 278:var:result 284:var:tasks 367:var:result 375:var:graph 376:var:task 401:var:graph 402:var:task 429:var:graph 431:var:tasks 495:var:cyclicNodes 505:var:graph 507:var:tasks 590:var:shortest 596:var:graph 597:var:task 618:var:shortest 625:var:graph 627:var:tasks 691:var:cyclesForA 694:var:cyclesForC 701:var:graph 702:var:task 727:var:graph 728:var:task 758:var:graph 760:var:tasks 824:var:stats
-
-octie\test\graph\operations.test.ts
-22:var:graph 24:fun:createTask 43:var:taskA 44:var:taskB 45:var:taskC 68:var:taskA 69:var:taskX 70:var:taskB 71:var:taskC 72:var:taskY 97:var:taskA 98:var:taskB 114:var:taskA 115:var:taskB 138:var:taskA 139:var:taskB 140:var:taskC 160:var:taskA 161:var:taskC 162:var:taskB 179:var:taskC 180:var:taskB 191:var:taskA 192:var:taskB 203:var:taskA 204:var:taskC 205:var:taskB 221:var:taskA 222:var:taskB 223:var:taskX 224:var:taskY 243:var:taskA 244:var:taskB 245:var:taskC 246:var:taskY 247:var:taskX 269:var:taskY 280:var:taskA 281:var:taskB 282:var:taskY 298:var:taskX 308:var:taskY 321:var:taskA 322:var:taskB 323:var:taskC 324:var:taskD 326:var:source 339:var:target 362:var:result 390:var:source
-695:var:taskC 696:var:taskD 713:var:taskX 723:var:taskY
 
 octie\test\graph\sort.test.ts
 20:var:graph 28:var:result 35:var:task 56:var:result 63:var:tasks 127:var:result 133:var:tasks 216:var:result 222:var:middle 228:var:tasks 292:var:result 298:var:task 319:var:result 325:var:task 346:var:result1 347:var:result2 353:var:graph 360:var:tasks 424:var:result 430:var:tasks 484:var:graph 485:var:task 510:var:graph 511:var:task 538:var:graph 540:var:tasks 623:var:levels

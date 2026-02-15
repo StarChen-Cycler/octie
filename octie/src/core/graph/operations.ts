@@ -1,0 +1,506 @@
+/**
+ * Graph manipulation operations
+ *
+ * Implements complex graph operations for task management:
+ * - Cut nodes from graph while reconnecting edges
+ * - Insert nodes between existing nodes
+ * - Move subtrees to new parents
+ * - Merge tasks together
+ *
+ * @module core/graph/operations
+ */
+
+import type { TaskGraphStore } from './index.js';
+import type { TaskNode, MergeResult } from '../../types/index.js';
+import { TaskNotFoundError, ValidationError } from '../../types/index.js';
+import { randomUUID } from 'node:crypto';
+
+/**
+ * Cut a node from the graph, reconnecting its incoming edges to its outgoing edges
+ *
+ * Before: A -> B -> C
+ * After:  A -> C (B removed)
+ *
+ * Algorithm:
+ * 1. Get all incoming edges to the node
+ * 2. Get all outgoing edges from the node
+ * 3. For each incoming source, connect it to all outgoing targets
+ * 4. Remove the node from the graph
+ *
+ * Time Complexity: O(k * m) where k = incoming edges, m = outgoing edges
+ *
+ * @param graph - Task graph store
+ * @param nodeId - Task ID to cut
+ * @throws {TaskNotFoundError} If task not found
+ *
+ * @example
+ * ```ts
+ * // Graph: A -> B -> C
+ * cutNode(graph, 'B');
+ * // Result: A -> C (B removed, A now points directly to C)
+ * ```
+ */
+export function cutNode(graph: TaskGraphStore, nodeId: string): void {
+  if (!graph.hasNode(nodeId)) {
+    throw new TaskNotFoundError(nodeId);
+  }
+
+  // Get all incoming and outgoing edges before removing the node
+  const incomingSources = graph.getIncomingEdges(nodeId);
+  const outgoingTargets = graph.getOutgoingEdges(nodeId);
+
+  // Reconnect: for each incoming source, connect to all outgoing targets
+  for (const sourceId of incomingSources) {
+    for (const targetId of outgoingTargets) {
+      // Only add edge if it doesn't already exist
+      if (!graph.hasEdge(sourceId, targetId)) {
+        graph.addEdge(sourceId, targetId);
+      }
+    }
+  }
+
+  // Remove the node (this also removes all its edges)
+  graph.removeNode(nodeId);
+}
+
+/**
+ * Insert a node between two existing nodes
+ *
+ * Before: A -> C
+ * After:  A -> B -> C
+ *
+ * Algorithm:
+ * 1. Verify both nodes exist
+ * 2. Verify edge exists from afterId to beforeId
+ * 3. Remove the existing edge
+ * 4. Add the new node to the graph
+ * 5. Create edges: afterId -> newNodeId -> beforeId
+ *
+ * Time Complexity: O(1) for edge operations
+ *
+ * @param graph - Task graph store
+ * @param newNode - Task node to insert
+ * @param afterId - Source node ID (edge comes from here)
+ * @param beforeId - Target node ID (edge goes to here)
+ * @throws {TaskNotFoundError} If afterId or beforeId not found
+ * @throws {ValidationError} If edge doesn't exist or would create duplicate
+ *
+ * @example
+ * ```ts
+ * // Graph: A -> C
+ * const newNode = createTaskNode({ title: 'B', ... });
+ * insertNodeBetween(graph, newNode, 'A', 'C');
+ * // Result: A -> B -> C
+ * ```
+ */
+export function insertNodeBetween(
+  graph: TaskGraphStore,
+  newNode: TaskNode,
+  afterId: string,
+  beforeId: string
+): void {
+  // Verify source and target nodes exist
+  if (!graph.hasNode(afterId)) {
+    throw new TaskNotFoundError(afterId);
+  }
+  if (!graph.hasNode(beforeId)) {
+    throw new TaskNotFoundError(beforeId);
+  }
+
+  // Verify edge exists
+  if (!graph.hasEdge(afterId, beforeId)) {
+    throw new ValidationError(
+      `Edge from '${afterId}' to '${beforeId}' does not exist`,
+      'edges'
+    );
+  }
+
+  // Add the new node to the graph first
+  graph.addNode(newNode);
+
+  // Remove the existing edge
+  graph.removeEdge(afterId, beforeId);
+
+  // Add new edges: afterId -> newNodeId -> beforeId
+  graph.addEdge(afterId, newNode.id);
+  graph.addEdge(newNode.id, beforeId);
+}
+
+/**
+ * Move a subtree to a new parent
+ *
+ * Moves a task (and all its descendants) to be under a new parent.
+ * This is useful for reorganizing task hierarchies.
+ *
+ * Before:
+ *   A -> X
+ *   B -> Y
+ * After moveSubtree(graph, 'Y', 'A'):
+ *   A -> X -> Y
+ *   B
+ *
+ * Algorithm:
+ * 1. Get all current parents of the subtree root
+ * 2. Remove edges from all current parents
+ * 3. Add edge from new parent to subtree root
+ *
+ * Time Complexity: O(k) where k = number of current parents
+ *
+ * @param graph - Task graph store
+ * @param subtreeRootId - Root of the subtree to move
+ * @param newParentId - New parent task ID
+ * @throws {TaskNotFoundError} If subtreeRootId or newParentId not found
+ * @throws {ValidationError} If edge already exists or would create self-loop
+ *
+ * @example
+ * ```ts
+ * // Graph: A -> X, B -> Y
+ * moveSubtree(graph, 'Y', 'X');
+ * // Result: A -> X -> Y, B
+ * ```
+ */
+export function moveSubtree(
+  graph: TaskGraphStore,
+  subtreeRootId: string,
+  newParentId: string
+): void {
+  // Verify both nodes exist
+  if (!graph.hasNode(subtreeRootId)) {
+    throw new TaskNotFoundError(subtreeRootId);
+  }
+  if (!graph.hasNode(newParentId)) {
+    throw new TaskNotFoundError(newParentId);
+  }
+
+  // Prevent self-loops
+  if (subtreeRootId === newParentId) {
+    throw new ValidationError(
+      'Cannot move subtree to be its own parent',
+      'subtreeRootId'
+    );
+  }
+
+  // Check if edge already exists
+  if (graph.hasEdge(newParentId, subtreeRootId)) {
+    throw new ValidationError(
+      `Edge from '${newParentId}' to '${subtreeRootId}' already exists`,
+      'edges'
+    );
+  }
+
+  // Get all current parents (nodes that point to subtreeRootId)
+  const currentParents = graph.getIncomingEdges(subtreeRootId);
+
+  // Remove from all current parents
+  for (const parentId of currentParents) {
+    graph.removeEdge(parentId, subtreeRootId);
+  }
+
+  // Add to new parent
+  graph.addEdge(newParentId, subtreeRootId);
+}
+
+/**
+ * Merge two tasks into one
+ *
+ * Combines the source task into the target task by:
+ * 1. Merging all properties (description, success_criteria, deliverables, etc.)
+ * 2. Reconnecting all edges from source to point to target
+ * 3. Removing the source task
+ *
+ * Before:
+ *   A -> source -> C
+ *   B -> target -> D
+ * After mergeTasks(graph, 'source', 'target'):
+ *   A -> target -> C, D
+ *   B -> target -> C, D
+ *   (source is removed)
+ *
+ * Algorithm:
+ * 1. Get source and target tasks
+ * 2. Merge target properties with source properties
+ * 3. Get all incoming edges to source (except target)
+ * 4. Get all outgoing edges from source (except target)
+ * 5. Reconnect edges: incoming -> target, target -> outgoing
+ * 6. Remove source node
+ * 7. Return merge result
+ *
+ * Time Complexity: O(k + m) where k = incoming edges, m = outgoing edges
+ *
+ * @param graph - Task graph store
+ * @param sourceId - Source task ID (will be removed)
+ * @param targetId - Target task ID (will be kept and merged into)
+ * @returns Merge result with merged task and affected task IDs
+ * @throws {TaskNotFoundError} If source or target not found
+ * @throws {ValidationError} If source and target are the same
+ *
+ * @example
+ * ```ts
+ * const result = mergeTasks(graph, 'task-001', 'task-002');
+ * console.log('Merged task:', result.task.id);
+ * console.log('Removed tasks:', result.removedTasks);
+ * ```
+ */
+export function mergeTasks(
+  graph: TaskGraphStore,
+  sourceId: string,
+  targetId: string
+): MergeResult {
+  // Verify both tasks exist
+  const source = graph.getNode(sourceId);
+  const target = graph.getNode(targetId);
+
+  if (!source) {
+    throw new TaskNotFoundError(sourceId);
+  }
+  if (!target) {
+    throw new TaskNotFoundError(targetId);
+  }
+
+  // Cannot merge a task with itself
+  if (sourceId === targetId) {
+    throw new ValidationError(
+      'Cannot merge a task with itself',
+      'sourceId'
+    );
+  }
+
+  const updatedTasks: string[] = [];
+
+  // Merge properties
+  // Use a shallow copy of target to avoid mutation during merge
+  const mergedTask: TaskNode = {
+    ...target,
+    // Merge descriptions with separator
+    description: target.description
+      ? `${target.description}\n\n--- Merged from "${source.title}" ---\n${source.description}`
+      : source.description,
+    // Merge success criteria (avoiding duplicates by ID)
+    success_criteria: [
+      ...target.success_criteria,
+      ...source.success_criteria.filter(sc =>
+        !target.success_criteria.some(tsc => tsc.id === sc.id)
+      )
+    ],
+    // Merge deliverables (avoiding duplicates by ID)
+    deliverables: [
+      ...target.deliverables,
+      ...source.deliverables.filter(d =>
+        !target.deliverables.some(td => td.id === d.id)
+      )
+    ],
+    // Merge related files (avoiding duplicates)
+    related_files: [
+      ...new Set([
+        ...target.related_files,
+        ...source.related_files
+      ])
+    ],
+    // Merge notes with separator
+    notes: target.notes
+      ? `${target.notes}\n\nMerged notes from "${source.title}":\n${source.notes}`
+      : source.notes,
+    // Merge C7 verifications (avoiding duplicates by library_id + timestamp)
+    c7_verified: [
+      ...target.c7_verified,
+      ...source.c7_verified.filter(cv =>
+        !target.c7_verified.some(tcv =>
+          tcv.library_id === cv.library_id && tcv.verified_at === cv.verified_at
+        )
+      )
+    ],
+    // Merge blockers (avoiding duplicates)
+    blockers: [
+      ...new Set([
+        ...target.blockers.filter(b => b !== sourceId),
+        ...source.blockers.filter(b => b !== targetId)
+      ])
+    ],
+    // Merge dependencies (avoiding duplicates)
+    dependencies: [
+      ...new Set([
+        ...target.dependencies.filter(d => d !== sourceId),
+        ...source.dependencies.filter(d => d !== targetId)
+      ])
+    ],
+    // Update timestamp
+    updated_at: new Date().toISOString(),
+    // Keep target's edges for now (we'll update them below)
+    edges: [...target.edges]
+  };
+
+  // Track which tasks were affected by reconnection
+  const reconnectSources: string[] = [];
+  const reconnectTargets: string[] = [];
+
+  // Get source's incoming edges (tasks pointing to source)
+  const sourceIncoming = graph.getIncomingEdges(sourceId);
+  // Get source's outgoing edges (tasks source points to)
+  const sourceOutgoing = graph.getOutgoingEdges(sourceId);
+
+  // Reconnect incoming edges (except target and self-loops)
+  for (const fromId of sourceIncoming) {
+    if (fromId !== targetId && !graph.hasEdge(fromId, targetId)) {
+      graph.addEdge(fromId, targetId);
+      reconnectSources.push(fromId);
+    }
+  }
+
+  // Reconnect outgoing edges (except target and self-loops)
+  for (const toId of sourceOutgoing) {
+    if (toId !== targetId && !graph.hasEdge(targetId, toId)) {
+      graph.addEdge(targetId, toId);
+      reconnectTargets.push(toId);
+    }
+  }
+
+  // Update the target task in the graph with merged data
+  graph.updateNode(mergedTask);
+
+  // Remove the source task
+  graph.removeNode(sourceId);
+
+  // Collect all affected task IDs
+  const allAffected = new Set([
+    ...reconnectSources,
+    ...reconnectTargets,
+    targetId
+  ]);
+
+  return {
+    task: mergedTask,
+    removedTasks: [sourceId],
+    updatedTasks: Array.from(allAffected)
+  };
+}
+
+/**
+ * Get all descendants of a node (transitive closure via outgoing edges)
+ *
+ * Returns all tasks reachable from the given node.
+ *
+ * @param graph - Task graph store
+ * @param nodeId - Starting task ID
+ * @returns Set of descendant task IDs (including the starting node)
+ * @throws {TaskNotFoundError} If node not found
+ *
+ * @example
+ * ```ts
+ * // Graph: A -> B -> C, A -> D
+ * const descendants = getDescendants(graph, 'A');
+ * // Returns: ['A', 'B', 'C', 'D']
+ * ```
+ */
+export function getDescendants(graph: TaskGraphStore, nodeId: string): Set<string> {
+  if (!graph.hasNode(nodeId)) {
+    throw new TaskNotFoundError(nodeId);
+  }
+
+  const descendants = new Set<string>();
+  const stack = [nodeId];
+
+  while (stack.length > 0) {
+    const current = stack.pop()!;
+
+    if (descendants.has(current)) {
+      continue;
+    }
+
+    descendants.add(current);
+
+    // Add all children to the stack
+    const children = graph.getOutgoingEdges(current);
+    for (const child of children) {
+      if (!descendants.has(child)) {
+        stack.push(child);
+      }
+    }
+  }
+
+  return descendants;
+}
+
+/**
+ * Get all ancestors of a node (transitive closure via incoming edges)
+ *
+ * Returns all tasks that can reach the given node.
+ *
+ * @param graph - Task graph store
+ * @param nodeId - Starting task ID
+ * @returns Set of ancestor task IDs (including the starting node)
+ * @throws {TaskNotFoundError} If node not found
+ *
+ * @example
+ * ```ts
+ * // Graph: A -> B -> C
+ * const ancestors = getAncestors(graph, 'C');
+ * // Returns: ['C', 'B', 'A']
+ * ```
+ */
+export function getAncestors(graph: TaskGraphStore, nodeId: string): Set<string> {
+  if (!graph.hasNode(nodeId)) {
+    throw new TaskNotFoundError(nodeId);
+  }
+
+  const ancestors = new Set<string>();
+  const stack = [nodeId];
+
+  while (stack.length > 0) {
+    const current = stack.pop()!;
+
+    if (ancestors.has(current)) {
+      continue;
+    }
+
+    ancestors.add(current);
+
+    // Add all parents to the stack
+    const parents = graph.getIncomingEdges(current);
+    for (const parent of parents) {
+      if (!ancestors.has(parent)) {
+        stack.push(parent);
+      }
+    }
+  }
+
+  return ancestors;
+}
+
+/**
+ * Validate that moving a subtree won't create a cycle
+ *
+ * Checks if adding an edge from newParentId to subtreeRootId would create a cycle.
+ * This is important for moveSubtree operations.
+ *
+ * @param graph - Task graph store
+ * @param subtreeRootId - Root of the subtree to move
+ * @param newParentId - Potential new parent task ID
+ * @returns true if move is safe (won't create cycle), false otherwise
+ * @throws {TaskNotFoundError} If either task not found
+ *
+ * @example
+ * ```ts
+ * // Graph: A -> B -> C
+ * if (isValidSubtreeMove(graph, 'C', 'A')) {
+ *   // This would create a cycle (A -> B -> C -> A)
+ *   // Don't allow the move
+ * }
+ * ```
+ */
+export function isValidSubtreeMove(
+  graph: TaskGraphStore,
+  subtreeRootId: string,
+  newParentId: string
+): boolean {
+  if (!graph.hasNode(subtreeRootId)) {
+    throw new TaskNotFoundError(subtreeRootId);
+  }
+  if (!graph.hasNode(newParentId)) {
+    throw new TaskNotFoundError(newParentId);
+  }
+
+  // Check if newParentId is in the descendants of subtreeRootId
+  // If so, adding edge subtreeRootId -> newParentId would create a cycle
+  const descendants = getDescendants(graph, subtreeRootId);
+  return !descendants.has(newParentId);
+}
