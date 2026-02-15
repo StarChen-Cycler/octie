@@ -386,66 +386,74 @@
 
 ### Third Priority (After CLI Commands Complete)
 
-#### [ ] Output Formatters - Markdown
+#### [x] Output Formatters - Markdown
 **Blockers**: Core Type Definitions
 **Related Files**: octie/src/cli/output/markdown.ts
 **C7 MCP Verified**: N/A
 **Deliverables**:
-- [ ] formatTaskMarkdown(task) function
-- [ ] Checkbox format: `## [ ] Title: Description`
-- [ ] Status indicator with color
-- [ ] Priority indicator
-- [ ] Blockers list with #task-id format
-- [ ] Related files list
-- [ ] C7 MCP verifications
-- [ ] Success criteria with checkboxes
-- [ ] Deliverables with checkboxes
-- [ ] Sub-items list
-- [ ] Dependencies list
-- [ ] Completion timestamp and git commit when completed
-- [ ] formatProjectMarkdown(graph) for full project export
+- [x] formatTaskMarkdown(task) function with full task details
+- [x] Checkbox format: `## [ ] Title: Description`
+- [x] Status indicator with color (formatStatus)
+- [x] Priority indicator (formatPriority)
+- [x] Blockers list with #task-id format
+- [x] Related files list with code formatting
+- [x] C7 MCP verifications with timestamps and notes
+- [x] Success criteria with checkboxes and completion timestamps
+- [x] Deliverables with checkboxes and file paths
+- [x] Sub-items list
+- [x] Dependencies list
+- [x] Completion timestamp and git commit when completed
+- [x] formatProjectMarkdown(graph) for full project export with summary and details
+**Completed**: 2026-02-16
+**Git Commit**: e66975b
 
-#### [ ] Output Formatters - JSON
+#### [x] Output Formatters - JSON
 **Blockers**: Core Type Definitions
 **Related Files**: octie/src/cli/output/json.ts
 **C7 MCP Verified**: N/A
 **Deliverables**:
-- [ ] formatTaskJSON(task) function
-- [ ] formatProjectJSON(graph) function
-- [ ] Pretty-print with 2-space indentation
-- [ ] Include all task fields
-- [ ] Include edges array
-- [ ] Include indexes
-- [ ] Include metadata
-- [ ] Schema reference ($schema field)
+- [x] formatTaskJSON(task) function with 2-space indentation
+- [x] formatProjectJSON(graph) function with full graph data
+- [x] Pretty-print with 2-space indentation
+- [x] Include all task fields via TaskNode interface
+- [x] Include edges array via graph.toJSON()
+- [x] Include indexes via graph.toJSON()
+- [x] Include metadata via graph.toJSON()
+- [x] Schema reference ($schema field pointing to octie.dev schema)
+**Completed**: 2026-02-16
+**Git Commit**: e66975b
 
-#### [ ] Output Formatters - Table
+#### [x] Output Formatters - Table
 **Blockers**: Core Type Definitions
 **Related Files**: octie/src/cli/output/table.ts
 **C7 MCP Verified**: /cli-table3
 **Deliverables**:
-- [ ] formatTasksTable(tasks) function
-- [ ] Columns: ID, Status, Priority, Title, Blockers, Dependencies
-- [ ] Color coding for status (chalk)
-- [ ] Truncate long titles
-- [ ] Handle empty task list
-- [ ] Compact vs verbose modes
+- [x] formatTasksTable(tasks) function with options (verbose, showId)
+- [x] Columns: ID, Status, Priority, Title (Blockers/Dependencies in verbose mode)
+- [x] Color coding for status (chalk via formatStatus/formatPriority)
+- [x] Truncate long titles via truncate() utility
+- [x] Handle empty task list with "No tasks to display" message
+- [x] Verbose mode for additional details (blockers, dependencies, status summary)
+- [x] formatTaskDetailTable(task) for single task detailed view
+**Completed**: 2026-02-16
+**Git Commit**: e66975b
 
-#### [ ] CLI Commands - Export/Import
+#### [x] CLI Commands - Export/Import
 **Blockers**: Output Formatters
 **Related Files**: octie/src/cli/commands/export.ts, octie/src/cli/commands/import.ts
 **C7 MCP Verified**: N/A
 **Deliverables**:
-- [ ] `octie export` command
-- [ ] --format option (json|md)
-- [ ] --output option (file path)
-- [ ] Export single task or full project
-- [ ] `octie import` command
-- [ ] --file option (required)
-- [ ] --format option (auto-detect if not specified)
-- [ ] Validate imported data structure
-- [ ] Merge or replace strategy
-- [ ] Backup before import
+- [x] `octie export` command with --format (json|md) and --output options
+- [x] Uses formatProjectMarkdown and formatProjectJSON formatters
+- [x] Export full project (supports single task via get command)
+- [x] `octie import` command with --file argument (required)
+- [x] --format option with auto-detection from file extension
+- [x] validateImportData() function for data structure validation
+- [x] --merge option for merge strategy (vs replace default)
+- [x] Backup before import (automatic via TaskStorage.createProject)
+- [x] Error handling for missing files, invalid JSON, invalid data structures
+**Completed**: 2026-02-16
+**Git Commit**: e66975b
 
 ---
 
