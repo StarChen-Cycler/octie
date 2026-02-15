@@ -191,21 +191,26 @@
 **Completed**: 2026-02-16
 **Git Commit**: 4548eb1
 
-#### [ ] Graph Algorithms - Operations
+#### [x] Graph Algorithms - Operations
 **Blockers**: Graph Algorithms - Traversal
-**Related Files**: octie/src/core/graph/operations.ts
+**Related Files**: octie/src/core/graph/operations.ts, octie/test/graph/operations.test.ts
 **C7 MCP Verified**: N/A
 **Deliverables**:
-- [ ] cutNode(graph, nodeId) - Remove node and reconnect edges
-- [ ] insertNodeBetween(graph, newNodeId, afterId, beforeId) - Insert into edge
-- [ ] moveSubtree(graph, subtreeRootId, newParentId) - Move task branch
-- [ ] mergeTasks(graph, sourceId, targetId) - Combine two tasks
-- [ ] Merge properties (description, success_criteria, deliverables, related_files, notes)
-- [ ] Reconnect edges from source to target
-- [ ] Remove source node after merge
-- [ ] findCriticalPath(graph) - Longest path analysis
-- [ ] Calculate earliest start times
-- [ ] Backtrack to find critical path
+- [x] cutNode(graph, nodeId) - Remove node and reconnect edges (A→B→C → A→C)
+- [x] insertNodeBetween(graph, newNodeId, afterId, beforeId) - Insert into edge (A→C → A→B→C)
+- [x] moveSubtree(graph, subtreeRootId, newParentId) - Move task branch to new parent
+- [x] mergeTasks(graph, sourceId, targetId) - Combine two tasks
+- [x] Merge properties (description, success_criteria, deliverables, related_files, notes, c7_verified)
+- [x] Property deduplication during merge (by ID for criteria/deliverables, Set for files)
+- [x] Reconnect edges from source to target (incoming→target, target→outgoing)
+- [x] Remove source node after merge
+- [x] findCriticalPath(graph) - Already implemented in sort.ts (lines 160-228)
+- [x] getDescendants(graph, nodeId) - Get all reachable nodes via outgoing edges
+- [x] getAncestors(graph, nodeId) - Get all reachable nodes via incoming edges
+- [x] isValidSubtreeMove(graph, subtreeRootId, newParentId) - Validate move won't create cycles
+- [x] Tests: test/graph/operations.test.ts (38 tests, all passing)
+**Completed**: 2026-02-16
+**Git Commit**: ec1b7cd
 
 #### [ ] CLI Framework Setup
 **Blockers**: Core Type Definitions
