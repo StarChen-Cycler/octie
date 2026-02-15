@@ -79,52 +79,58 @@
 **Completed**: 2026-02-16
 **Git Commit**: 0b10365
 
-#### [ ] TaskGraph Data Structure
+#### [x] TaskGraph Data Structure
 **Blockers**: Core Type Definitions
 **Related Files**: octie/src/core/graph/index.ts
-**C7 MCP Verified**: N/A
+**C7 MCP Verified**: /microsoft/typescript (Map and Set patterns)
 **Deliverables**:
-- [ ] TaskGraphStore class with Map<string, TaskNode> for O(1) lookup
-- [ ] Adjacency list: Map<string, Set<string>> for outgoing edges
-- [ ] Reverse adjacency list: Map<string, Set<string>> for incoming edges
-- [ ] getNode(id) method - O(1) lookup
-- [ ] getOutgoingEdges(nodeId) method - O(k) traversal
-- [ ] getIncomingEdges(nodeId) method - O(k) traversal
-- [ ] addNode(node) method
-- [ ] removeNode(nodeId) method
-- [ ] addEdge(fromId, toId, type) method
-- [ ] removeEdge(fromId, toId) method
-- [ ] size property for task count
+- [x] TaskGraphStore class with Map<string, TaskNode> for O(1) lookup
+- [x] Adjacency list: Map<string, Set<string>> for outgoing edges
+- [x] Reverse adjacency list: Map<string, Set<string>> for incoming edges
+- [x] getNode(id) method - O(1) lookup
+- [x] getOutgoingEdges(nodeId) method - O(k) traversal
+- [x] getIncomingEdges(nodeId) method - O(k) traversal
+- [x] addNode(node) method
+- [x] removeNode(nodeId) method
+- [x] addEdge(fromId, toId, type) method
+- [x] removeEdge(fromId, toId) method
+- [x] size property for task count
+**Completed**: 2026-02-16
+**Git Commit**: 1cc2704
 
-#### [ ] Storage Layer - File Operations
+#### [x] Storage Layer - File Operations
 **Blockers**: Core Type Definitions
 **Related Files**: octie/src/core/storage/file-store.ts, octie/src/core/storage/atomic-write.ts
-**C7 MCP Verified**: N/A
+**C7 MCP Verified**: /nodejs/node (fs.promises atomic operations)
 **Deliverables**:
-- [ ] AtomicFileWriter class with temp file + rename strategy
-- [ ] TaskStorage class for project.json operations
-- [ ] load() method with JSON parsing
-- [ ] save() method with atomic write
-- [ ] Backup rotation (keep last 5 backups)
-- [ ] getProjectPath() utility
-- [ ] getConfigPath() utility for cross-platform config
-- [ ] normalizePath() for consistent path storage
-- [ ] .octie/ directory structure (project.json, project.json.bak, indexes/, cache/, config.json)
+- [x] AtomicFileWriter class with temp file + rename strategy
+- [x] TaskStorage class for project.json operations
+- [x] load() method with JSON parsing
+- [x] save() method with atomic write
+- [x] Backup rotation (keep last 5 backups)
+- [x] getProjectPath() utility (findProjectPath function)
+- [x] getConfigPath() utility for cross-platform config (PathUtils.getConfigPath)
+- [x] normalizePath() for consistent path storage (PathUtils.normalizePath)
+- [x] .octie/ directory structure (project.json, project.json.bak, indexes/, cache/, config.json)
+**Completed**: 2026-02-16
+**Git Commit**: 1cc2704
 
-#### [ ] Storage Layer - Index Management
+#### [x] Storage Layer - Index Management
 **Blockers**: TaskGraph Data Structure, Storage Layer - File Operations
 **Related Files**: octie/src/core/storage/indexer.ts
 **C7 MCP Verified**: N/A
 **Deliverables**:
-- [ ] IndexManager class
-- [ ] updateTaskIndexes(task, oldTask) method - O(1) incremental update
-- [ ] rebuildIndexes(tasks) method - O(n) full rebuild
-- [ ] Status-based index (byStatus: Record<TaskStatus, string[]>)
-- [ ] Priority-based index (byPriority: Record<TaskPriority, string[]>)
-- [ ] Root tasks index (tasks with no incoming edges)
-- [ ] Orphan tasks index (tasks with no edges)
-- [ ] Full-text search index (inverted index: term -> task IDs)
-- [ ] File reference index (file path -> task IDs)
+- [x] IndexManager class
+- [x] updateTaskIndexes(task, oldTask) method - O(1) incremental update
+- [x] rebuildIndexes(tasks) method - O(n) full rebuild
+- [x] Status-based index (byStatus: Record<TaskStatus, string[]>)
+- [x] Priority-based index (byPriority: Record<TaskPriority, string[]>)
+- [x] Root tasks index (tasks with no incoming edges)
+- [x] Orphan tasks index (tasks with no edges)
+- [x] Full-text search index (inverted index: term -> task IDs)
+- [x] File reference index (file path -> task IDs)
+**Completed**: 2026-02-16
+**Git Commit**: 1cc2704
 
 ---
 
