@@ -14,7 +14,7 @@ import { writeFileSync } from 'node:fs';
  */
 export const exportCommand = new Command('export')
   .description('Export project data to file')
-  .option('-f, --format <format>', 'Export format: json, md', 'json')
+  .option('-t, --type <format>', 'Export format: json, md (default: "json")')
   .option('-o, --output <path>', 'Output file path')
   .option('--project <path>', 'Path to Octie project directory')
   .action(async (options) => {
@@ -25,7 +25,7 @@ export const exportCommand = new Command('export')
       let output: string;
       let defaultFileName: string;
 
-      switch (options.format) {
+      switch (options.type) {
         case 'md':
           output = formatProjectMarkdown(graph);
           defaultFileName = 'tasks.md';
