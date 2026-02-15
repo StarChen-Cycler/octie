@@ -136,48 +136,60 @@
 
 ### Second Priority Continued
 
-#### [ ] Graph Algorithms - Topological Sort
+#### [x] Graph Algorithms - Topological Sort
 **Blockers**: TaskGraph Data Structure
-**Related Files**: octie/src/core/graph/sort.ts
+**Related Files**: octie/src/core/graph/sort.ts, octie/src/core/graph/algorithms.ts
 **C7 MCP Verified**: N/A
 **Deliverables**:
-- [ ] topologicalSort(graph) function using Kahn's algorithm
-- [ ] O(V + E) time complexity
-- [ ] Returns { sorted: string[], hasCycle: boolean, cycleNodes: string[] }
-- [ ] Initialize in-degree map for all nodes
-- [ ] Calculate in-degrees from outgoing edges
-- [ ] Queue-based processing of nodes with zero in-degree
-- [ ] Reduce in-degree of neighbors during processing
-- [ ] Cycle detection when sorted.length !== graph.size
-- [ ] Memoization cache for repeated calls
+- [x] topologicalSort(graph) function using Kahn's algorithm
+- [x] O(V + E) time complexity
+- [x] Returns { sorted: string[], hasCycle: boolean, cycleNodes: string[] }
+- [x] Initialize in-degree map for all nodes
+- [x] Calculate in-degrees from outgoing edges
+- [x] Queue-based processing of nodes with zero in-degree
+- [x] Reduce in-degree of neighbors during processing
+- [x] Cycle detection when sorted.length !== graph.size
+- [x] Memoization cache for repeated calls
+- [x] Additional functions: findCriticalPath, isValidDAG, getExecutionLevels
+- [x] Tests: test/graph/sort.test.ts (7 test suites, all passing)
+**Completed**: 2026-02-16
+**Git Commit**: 4548eb1
 
-#### [ ] Graph Algorithms - Cycle Detection
+#### [x] Graph Algorithms - Cycle Detection
 **Blockers**: TaskGraph Data Structure
-**Related Files**: octie/src/core/graph/cycle.ts
+**Related Files**: octie/src/core/graph/cycle.ts, octie/src/core/graph/algorithms.ts
 **C7 MCP Verified**: N/A
 **Deliverables**:
-- [ ] detectCycle(graph) function using DFS with coloring
-- [ ] O(V + E) time complexity
-- [ ] Returns { hasCycle: boolean, cycles: string[][] }
-- [ ] Three-color marking (WHITE=0, GRAY=1, BLACK=2)
-- [ ] Parent tracking for cycle path reconstruction
-- [ ] Detect all cycles in graph
-- [ ] Handle self-loops
-- [ ] Return cycle paths for debugging
+- [x] detectCycle(graph) function using DFS with coloring
+- [x] O(V + E) time complexity
+- [x] Returns { hasCycle: boolean, cycles: string[][] }
+- [x] Three-color marking (WHITE=0, GRAY=1, BLACK=2)
+- [x] Parent tracking for cycle path reconstruction
+- [x] Detect all cycles in graph
+- [x] Handle self-loops
+- [x] Return cycle paths for debugging
+- [x] Additional functions: hasCycle, getCyclicNodes, findShortestCycle, findCyclesForTask, validateAcyclic, getCycleStatistics
+- [x] Tests: test/graph/cycle.test.ts (7 test suites, all passing)
+**Completed**: 2026-02-16
+**Git Commit**: 4548eb1
 
-#### [ ] Graph Algorithms - Traversal
+#### [x] Graph Algorithms - Traversal
 **Blockers**: TaskGraph Data Structure
-**Related Files**: octie/src/core/graph/traversal.ts
+**Related Files**: octie/src/core/graph/traversal.ts, octie/src/core/graph/algorithms.ts
 **C7 MCP Verified**: N/A
 **Deliverables**:
-- [ ] bfsTraversal(graph, startId, direction) function
-- [ ] Support both forward and backward traversal
-- [ ] Returns array of reachable node IDs
-- [ ] Visited set to prevent revisiting
-- [ ] Queue-based BFS implementation
-- [ ] dfsFindPath(graph, startId, endId) function
-- [ ] Returns path array or null if no path exists
-- [ ] Recursive DFS with backtracking
+- [x] bfsTraversal(graph, startId, direction) function
+- [x] Support both forward and backward traversal
+- [x] Returns array of reachable node IDs
+- [x] Visited set to prevent revisiting
+- [x] Queue-based BFS implementation
+- [x] dfsFindPath(graph, startId, endId) function
+- [x] Returns path array or null if no path exists
+- [x] Recursive DFS with backtracking
+- [x] Additional functions: findAllPaths, findShortestPath, areConnected, getDistance, getConnectedComponents
+- [x] Tests: test/graph/traversal.test.ts (7 test suites, all passing)
+**Completed**: 2026-02-16
+**Git Commit**: 4548eb1
 
 #### [ ] Graph Algorithms - Operations
 **Blockers**: Graph Algorithms - Traversal
