@@ -212,156 +212,175 @@
 **Completed**: 2026-02-16
 **Git Commit**: ec1b7cd
 
-#### [ ] CLI Framework Setup
+#### [x] CLI Framework Setup
 **Blockers**: Core Type Definitions
 **Related Files**: octie/src/cli/index.ts
 **C7 MCP Verified**: /commander
 **Deliverables**:
-- [ ] Commander.js program setup
-- [ ] Global options: --project, --format, --verbose, --quiet
-- [ ] Command structure using subcommands
-- [ ] Help text configuration
-- [ ] Error handling middleware
-- [ ] Version command
-- [ ] Colored output using chalk
+- [x] Commander.js program setup
+- [x] Global options: --project, --format, --verbose, --quiet
+- [x] Command structure using subcommands
+- [x] Help text configuration
+- [x] Error handling middleware
+- [x] Version command
+- [x] Colored output using chalk
+**Completed**: 2026-02-16
+**Git Commit**: ead3c2e, d78e8db
 
-#### [ ] CLI Commands - Init
+#### [x] CLI Commands - Init
 **Blockers**: CLI Framework Setup, Storage Layer - File Operations
 **Related Files**: octie/src/cli/commands/init.ts
 **C7 MCP Verified**: /commander
 **Deliverables**:
-- [ ] `octie init` command
-- [ ] --project option for custom directory
-- [ ] Create .octie/ directory structure
-- [ ] Create project.json with metadata
-- [ ] Create config.json with defaults
-- [ ] Validate project doesn't already exist
-- [ ] Success message with next steps
+- [x] `octie init` command
+- [x] --project option for custom directory
+- [x] Create .octie/ directory structure
+- [x] Create project.json with metadata
+- [x] Create config.json with defaults
+- [x] Validate project doesn't already exist
+- [x] Success message with next steps
+- [x] Fixed cross-device atomic write issue (Windows EXDEV)
+**Completed**: 2026-02-16
+**Git Commit**: ead3c2e, d78e8db
 
-#### [ ] CLI Commands - Create
+#### [x] CLI Commands - Create
 **Blockers**: CLI Commands - Init, TaskNode Model
 **Related Files**: octie/src/cli/commands/create.ts
 **C7 MCP Verified**: /commander, /inquirer
 **Deliverables**:
-- [ ] `octie create` command
-- [ ] **REQUIRED options (all must be provided)**:
-  - [ ] --title (required, 1-200 chars, validated)
-  - [ ] --description (required, 50-10000 chars, validated)
-  - [ ] --success-criteria (required, min 1, can specify multiple times)
-  - [ ] --deliverables (required, min 1, can specify multiple times)
-- [ ] **Atomic task validation (enforced at creation)**:
-  - [ ] Call `validateAtomicTask(task)` before accepting
-  - [ ] Reject vague titles ("stuff", "things", "fix stuff")
-  - [ ] Reject titles without action verbs
-  - [ ] Reject descriptions < 50 chars
-  - [ ] Reject > 10 success criteria (too large)
-  - [ ] Reject > 5 deliverables (too large)
-  - [ ] Reject subjective/non-quantitative criteria
-  - [ ] Show helpful error messages with examples
-- [ ] --priority option (default: "second")
-- [ ] --blockers option (comma-separated IDs)
-- [ ] --dependencies option (comma-separated IDs)
-- [ ] --related-files option (comma-separated paths)
-- [ ] --notes option
-- [ ] --interactive flag for inquirer.js prompts (validates each field)
-- [ ] UUID generation for task ID
-- [ ] Validate task doesn't already exist
-- [ ] Add to graph and save
-- [ ] Return task ID on success
-- [ ] **--help flag with atomic task policy documentation**
+- [x] `octie create` command
+- [x] **REQUIRED options (all must be provided)**:
+  - [x] --title (required, 1-200 chars, validated)
+  - [x] --description (required, 50-10000 chars, validated)
+  - [x] --success-criterion (required, min 1, can specify multiple times)
+  - [x] --deliverable (required, min 1, can specify multiple times)
+- [x] **Atomic task validation (enforced at creation)**:
+  - [x] Call `validateAtomicTask(task)` before accepting
+  - [x] Reject vague titles ("stuff", "things", "fix stuff")
+  - [x] Reject titles without action verbs
+  - [x] Reject descriptions < 50 chars
+  - [x] Reject > 10 success criteria (too large)
+  - [x] Reject > 5 deliverables (too large)
+  - [x] Reject subjective/non-quantitative criteria
+  - [x] Show helpful error messages with examples
+- [x] --priority option (default: "second")
+- [x] --blockers option (comma-separated IDs)
+- [x] --dependencies option (comma-separated IDs)
+- [x] --related-files option (comma-separated paths)
+- [x] --notes option
+- [x] --interactive flag for inquirer.js prompts (validates each field)
+- [x] UUID generation for task ID
+- [x] Validate task doesn't already exist
+- [x] Add to graph and save
+- [x] Return task ID on success
+- [x] **--help flag with atomic task policy documentation**
+**Completed**: 2026-02-16
+**Git Commit**: d78e8db
 
-#### [ ] CLI Commands - List
+#### [x] CLI Commands - List
 **Blockers**: CLI Commands - Init, Storage Layer - Index Management
 **Related Files**: octie/src/cli/commands/list.ts
 **C7 MCP Verified**: /commander
 **Deliverables**:
-- [ ] `octie list` command
-- [ ] --status option (filter by status)
-- [ ] --priority option (filter by priority)
-- [ ] --format option (table|json|md)
-- [ ] --graph flag (show graph structure)
-- [ ] --tree flag (show tree view)
-- [ ] Use indexes for fast filtering
-- [ ] Table output using cli-table3
-- [ ] JSON output with proper formatting
-- [ ] Markdown output for AI consumption
+- [x] `octie list` command
+- [x] --status option (filter by status)
+- [x] --priority option (filter by priority)
+- [x] --format option (table|json|md)
+- [x] --graph flag (show graph structure)
+- [x] --tree flag (show tree view)
+- [x] Use indexes for fast filtering
+- [x] Table output using cli-table3
+- [x] JSON output with proper formatting
+- [x] Markdown output for AI consumption
+**Completed**: 2026-02-16
+**Git Commit**: ead3c2e, d78e8db
 
-#### [ ] CLI Commands - Get
+#### [x] CLI Commands - Get
 **Blockers**: CLI Commands - Init
 **Related Files**: octie/src/cli/commands/get.ts
 **C7 MCP Verified**: /commander
 **Deliverables**:
-- [ ] `octie get <id>` command
-- [ ] --format option (json|md|table)
-- [ ] Validate task ID exists
-- [ ] Show all task details
-- [ ] Show blockers and dependencies
-- [ ] Show success criteria with completion status
-- [ ] Show deliverables with completion status
-- [ ] Show related files
-- [ ] Show C7 verifications
+- [x] `octie get <id>` command
+- [x] --format option (json|md|table)
+- [x] Validate task ID exists
+- [x] Show all task details
+- [x] Show blockers and dependencies
+- [x] Show success criteria with completion status
+- [x] Show deliverables with completion status
+- [x] Show related files
+- [x] Show C7 verifications
+**Completed**: 2026-02-16
+**Git Commit**: ead3c2e, d78e8db
 
-#### [ ] CLI Commands - Update
+#### [x] CLI Commands - Update
 **Blockers**: CLI Commands - Init, TaskNode Model
 **Related Files**: octie/src/cli/commands/update.ts
 **C7 MCP Verified**: /commander
 **Deliverables**:
-- [ ] `octie update <id>` command
-- [ ] --status option (not_started|pending|in_progress|completed|blocked)
-- [ ] --priority option (top|second|later)
-- [ ] --add-deliverable option
-- [ ] --complete-deliverable option
-- [ ] --add-success-criterion option
-- [ ] --complete-criterion option
-- [ ] --block option (add blocker)
-- [ ] --unblock option (remove blocker)
-- [ ] --add-dependency option
-- [ ] --notes option (append to notes)
-- [ ] Validate task exists
-- [ ] Update modified_at timestamp
-- [ ] Set completed_at when status=completed
-- [ ] Rebuild indexes after update
+- [x] `octie update <id>` command
+- [x] --status option (not_started|pending|in_progress|completed|blocked)
+- [x] --priority option (top|second|later)
+- [x] --add-deliverable option
+- [x] --complete-deliverable option
+- [x] --add-success-criterion option
+- [x] --complete-criterion option
+- [x] --block option (add blocker)
+- [x] --unblock option (remove blocker)
+- [x] --add-dependency option
+- [x] --notes option (append to notes)
+- [x] Validate task exists
+- [x] Update modified_at timestamp
+- [x] Set completed_at when status=completed
+- [x] Rebuild indexes after update
+**Completed**: 2026-02-16
+**Git Commit**: ead3c2e, d78e8db
 
-#### [ ] CLI Commands - Delete
+#### [x] CLI Commands - Delete
 **Blockers**: CLI Commands - Init, Graph Algorithms - Operations
 **Related Files**: octie/src/cli/commands/delete.ts
 **C7 MCP Verified**: /commander
 **Deliverables**:
-- [ ] `octie delete <id>` command
-- [ ] --reconnect flag (reconnect edges after deletion)
-- [ ] --cascade flag (delete all dependents)
-- [ ] --force flag (skip confirmation)
-- [ ] Validate task exists
-- [ ] Show impact (dependents, blocks) before deletion
-- [ ] Create backup before deletion
-- [ ] Remove from graph
-- [ ] Rebuild indexes
+- [x] `octie delete <id>` command
+- [x] --reconnect flag (reconnect edges after deletion)
+- [x] --cascade flag (delete all dependents)
+- [x] --force flag (skip confirmation)
+- [x] Validate task exists
+- [x] Show impact (dependents, blocks) before deletion
+- [x] Create backup before deletion
+- [x] Remove from graph
+- [x] Rebuild indexes
+**Completed**: 2026-02-16
+**Git Commit**: ead3c2e, d78e8db
 
-#### [ ] CLI Commands - Merge
+#### [x] CLI Commands - Merge
 **Blockers**: CLI Commands - Init, Graph Algorithms - Operations
 **Related Files**: octie/src/cli/commands/merge.ts
 **C7 MCP Verified**: /commander
 **Deliverables**:
-- [ ] `octie merge <sourceId> <targetId>` command
-- [ ] Validate both tasks exist
-- [ ] Validate tasks are different
-- [ ] Show preview of merge
-- [ ] Confirm before merging
-- [ ] Call mergeTasks function
-- [ ] Update merged task metadata
-- [ ] Rebuild indexes
+- [x] `octie merge <sourceId> <targetId>` command
+- [x] Validate both tasks exist
+- [x] Validate tasks are different
+- [x] Show preview of merge
+- [x] Confirm before merging
+- [x] Call mergeTasks function
+- [x] Update merged task metadata
+- [x] Rebuild indexes
+**Completed**: 2026-02-16
+**Git Commit**: ead3c2e, d78e8db
 
-#### [ ] CLI Commands - Graph
+#### [x] CLI Commands - Graph
 **Blockers**: CLI Commands - Init, Graph Algorithms
 **Related Files**: octie/src/cli/commands/graph.ts
 **C7 MCP Verified**: /commander
 **Deliverables**:
-- [ ] `octie graph validate` - Check graph integrity
-- [ ] `octie graph cycles` - Detect and show cycles
-- [ ] `octie graph topology` - Show topological order
-- [ ] `octie graph critical-path` - Show longest path
-- [ ] `octie graph orphans` - Show disconnected tasks
-- [ ] `octie graph stats` - Show graph statistics
+- [x] `octie graph validate` - Check graph integrity
+- [x] `octie graph cycles` - Detect and show cycles
+- [x] `octie graph topology` - Show topological order
+- [x] `octie graph critical-path` - Show longest path
+- [x] `octie graph orphans` - Show disconnected tasks
+- [x] `octie graph stats` - Show graph statistics
+**Completed**: 2026-02-16
+**Git Commit**: ead3c2e, d78e8db
 
 ---
 
