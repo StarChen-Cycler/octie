@@ -146,7 +146,11 @@ export class TaskGraphStore {
 
     this._nodes.set(node.id, node);
     this._outgoingEdges.set(node.id, new Set(node.edges));
-    this._incomingEdges.set(node.id, new Set());
+
+    // Only initialize incoming edges if not already set (from previous node additions)
+    if (!this._incomingEdges.has(node.id)) {
+      this._incomingEdges.set(node.id, new Set());
+    }
 
     // Update incoming edges for all outgoing edges
     for (const targetId of node.edges) {

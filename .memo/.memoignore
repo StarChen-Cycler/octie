@@ -98,3 +98,5 @@ venv/
 *.pyo
 .coverage
 .memoignore
+
+octie\html\assets\index-9agQl9q3.js

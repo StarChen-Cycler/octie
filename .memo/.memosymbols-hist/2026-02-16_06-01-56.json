@@ -1,0 +1,2070 @@
+{
+  "timestamp": "2026-02-16T06:01:56.896804",
+  "symbols": [
+    {
+      "file": "octie\\html\\index.html",
+      "line": 2,
+      "type": "tag",
+      "name": "html"
+    },
+    {
+      "file": "octie\\html\\index.html",
+      "line": 2,
+      "type": "attribute",
+      "name": "lang=\"en\""
+    },
+    {
+      "file": "octie\\html\\index.html",
+      "line": 3,
+      "type": "tag",
+      "name": "head"
+    },
+    {
+      "file": "octie\\html\\index.html",
+      "line": 4,
+      "type": "tag",
+      "name": "meta"
+    },
+    {
+      "file": "octie\\html\\index.html",
+      "line": 4,
+      "type": "attribute",
+      "name": "charset=\"UTF-8\""
+    },
+    {
+      "file": "octie\\html\\index.html",
+      "line": 5,
+      "type": "tag",
+      "name": "link"
+    },
+    {
+      "file": "octie\\html\\index.html",
+      "line": 5,
+      "type": "attribute",
+      "name": "rel=\"icon\""
+    },
+    {
+      "file": "octie\\html\\index.html",
+      "line": 5,
+      "type": "attribute",
+      "name": "href=\"./favicon.svg\""
+    },
+    {
+      "file": "octie\\html\\index.html",
+      "line": 5,
+      "type": "attribute",
+      "name": "type=\"image/svg+xml\""
+    },
+    {
+      "file": "octie\\html\\index.html",
+      "line": 6,
+      "type": "tag",
+      "name": "meta"
+    },
+    {
+      "file": "octie\\html\\index.html",
+      "line": 6,
+      "type": "attribute",
+      "name": "name=\"viewport\""
+    },
+    {
+      "file": "octie\\html\\index.html",
+      "line": 6,
+      "type": "attribute",
+      "name": "content=\"width=device-width, initial-scale=1.0\""
+    },
+    {
+      "file": "octie\\html\\index.html",
+      "line": 7,
+      "type": "tag",
+      "name": "title"
+    },
+    {
+      "file": "octie\\html\\index.html",
+      "line": 7,
+      "type": "tag",
+      "name": "title"
+    },
+    {
+      "file": "octie\\html\\index.html",
+      "line": 8,
+      "type": "tag",
+      "name": "link"
+    },
+    {
+      "file": "octie\\html\\index.html",
+      "line": 8,
+      "type": "attribute",
+      "name": "rel=\"preconnect\""
+    },
+    {
+      "file": "octie\\html\\index.html",
+      "line": 8,
+      "type": "attribute",
+      "name": "href=\"https://fonts.googleapis.com\""
+    },
+    {
+      "file": "octie\\html\\index.html",
+      "line": 9,
+      "type": "tag",
+      "name": "link"
+    },
+    {
+      "file": "octie\\html\\index.html",
+      "line": 9,
+      "type": "attribute",
+      "name": "rel=\"preconnect\""
+    },
+    {
+      "file": "octie\\html\\index.html",
+      "line": 9,
+      "type": "attribute",
+      "name": "href=\"https://fonts.gstatic.com\""
+    },
+    {
+      "file": "octie\\html\\index.html",
+      "line": 9,
+      "type": "attribute",
+      "name": "crossorigin"
+    },
+    {
+      "file": "octie\\html\\index.html",
+      "line": 10,
+      "type": "tag",
+      "name": "link"
+    },
+    {
+      "file": "octie\\html\\index.html",
+      "line": 10,
+      "type": "attribute",
+      "name": "href=\"https://fonts.googleapis.com/css2?family=Readex+Pro:wght@300;400&display=swap\""
+    },
+    {
+      "file": "octie\\html\\index.html",
+      "line": 10,
+      "type": "attribute",
+      "name": "rel=\"stylesheet\""
+    },
+    {
+      "file": "octie\\html\\index.html",
+      "line": 11,
+      "type": "tag",
+      "name": "script"
+    },
+    {
+      "file": "octie\\html\\index.html",
+      "line": 18,
+      "type": "tag",
+      "name": "script"
+    },
+    {
+      "file": "octie\\html\\index.html",
+      "line": 19,
+      "type": "tag",
+      "name": "script"
+    },
+    {
+      "file": "octie\\html\\index.html",
+      "line": 19,
+      "type": "tag",
+      "name": "script"
+    },
+    {
+      "file": "octie\\html\\index.html",
+      "line": 20,
+      "type": "tag",
+      "name": "script"
+    },
+    {
+      "file": "octie\\html\\index.html",
+      "line": 20,
+      "type": "tag",
+      "name": "script"
+    },
+    {
+      "file": "octie\\html\\index.html",
+      "line": 20,
+      "type": "attribute",
+      "name": "type=\"module\""
+    },
+    {
+      "file": "octie\\html\\index.html",
+      "line": 20,
+      "type": "attribute",
+      "name": "crossorigin"
+    },
+    {
+      "file": "octie\\html\\index.html",
+      "line": 20,
+      "type": "attribute",
+      "name": "src=\"./assets/index-9agQl9q3.js\""
+    },
+    {
+      "file": "octie\\html\\index.html",
+      "line": 21,
+      "type": "tag",
+      "name": "link"
+    },
+    {
+      "file": "octie\\html\\index.html",
+      "line": 21,
+      "type": "attribute",
+      "name": "rel=\"stylesheet\""
+    },
+    {
+      "file": "octie\\html\\index.html",
+      "line": 21,
+      "type": "attribute",
+      "name": "crossorigin"
+    },
+    {
+      "file": "octie\\html\\index.html",
+      "line": 21,
+      "type": "attribute",
+      "name": "href=\"./assets/index-fUmMsp0O.css\""
+    },
+    {
+      "file": "octie\\html\\index.html",
+      "line": 22,
+      "type": "tag",
+      "name": "head"
+    },
+    {
+      "file": "octie\\html\\index.html",
+      "line": 23,
+      "type": "tag",
+      "name": "body"
+    },
+    {
+      "file": "octie\\html\\index.html",
+      "line": 24,
+      "type": "tag",
+      "name": "div"
+    },
+    {
+      "file": "octie\\html\\index.html",
+      "line": 24,
+      "type": "tag",
+      "name": "div"
+    },
+    {
+      "file": "octie\\html\\index.html",
+      "line": 24,
+      "type": "attribute",
+      "name": "id=\"app\""
+    },
+    {
+      "file": "octie\\html\\index.html",
+      "line": 25,
+      "type": "tag",
+      "name": "body"
+    },
+    {
+      "file": "octie\\html\\index.html",
+      "line": 26,
+      "type": "tag",
+      "name": "html"
+    },
+    {
+      "file": "octie\\src\\core\\graph\\index.ts",
+      "line": 27,
+      "type": "class",
+      "name": "TaskGraphStore"
+    },
+    {
+      "file": "octie\\src\\core\\graph\\index.ts",
+      "line": 44,
+      "type": "function",
+      "name": "constructor"
+    },
+    {
+      "file": "octie\\src\\core\\graph\\index.ts",
+      "line": 59,
+      "type": "function",
+      "name": "size"
+    },
+    {
+      "file": "octie\\src\\core\\graph\\index.ts",
+      "line": 66,
+      "type": "function",
+      "name": "metadata"
+    },
+    {
+      "file": "octie\\src\\core\\graph\\index.ts",
+      "line": 74,
+      "type": "function",
+      "name": "setMetadata"
+    },
+    {
+      "file": "octie\\src\\core\\graph\\index.ts",
+      "line": 88,
+      "type": "function",
+      "name": "getNode"
+    },
+    {
+      "file": "octie\\src\\core\\graph\\index.ts",
+      "line": 99,
+      "type": "function",
+      "name": "getNodeOrThrow"
+    },
+    {
+      "file": "octie\\src\\core\\graph\\index.ts",
+      "line": 100,
+      "type": "variable",
+      "name": "node"
+    },
+    {
+      "file": "octie\\src\\core\\graph\\index.ts",
+      "line": 113,
+      "type": "function",
+      "name": "hasNode"
+    },
+    {
+      "file": "octie\\src\\core\\graph\\index.ts",
+      "line": 121,
+      "type": "function",
+      "name": "getAllTaskIds"
+    },
+    {
+      "file": "octie\\src\\core\\graph\\index.ts",
+      "line": 129,
+      "type": "function",
+      "name": "getAllTasks"
+    },
+    {
+      "file": "octie\\src\\core\\graph\\index.ts",
+      "line": 139,
+      "type": "function",
+      "name": "addNode"
+    },
+    {
+      "file": "octie\\src\\core\\graph\\index.ts",
+      "line": 168,
+      "type": "function",
+      "name": "removeNode"
+    },
+    {
+      "file": "octie\\src\\core\\graph\\index.ts",
+      "line": 174,
+      "type": "variable",
+      "name": "incomingSources"
+    },
+    {
+      "file": "octie\\src\\core\\graph\\index.ts",
+      "line": 180,
+      "type": "variable",
+      "name": "outgoingTargets"
+    },
+    {
+      "file": "octie\\src\\core\\graph\\index.ts",
+      "line": 199,
+      "type": "function",
+      "name": "updateNode"
+    },
+    {
+      "file": "octie\\src\\core\\graph\\index.ts",
+      "line": 214,
+      "type": "function",
+      "name": "getOutgoingEdges"
+    },
+    {
+      "file": "octie\\src\\core\\graph\\index.ts",
+      "line": 224,
+      "type": "function",
+      "name": "getIncomingEdges"
+    },
+    {
+      "file": "octie\\src\\core\\graph\\index.ts",
+      "line": 236,
+      "type": "function",
+      "name": "addEdge"
+    },
+    {
+      "file": "octie\\src\\core\\graph\\index.ts",
+      "line": 265,
+      "type": "variable",
+      "name": "fromNode"
+    },
+    {
+      "file": "octie\\src\\core\\graph\\index.ts",
+      "line": 281,
+      "type": "function",
+      "name": "removeEdge"
+    },
+    {
+      "file": "octie\\src\\core\\graph\\index.ts",
+      "line": 289,
+      "type": "variable",
+      "name": "outgoingSet"
+    },
+    {
+      "file": "octie\\src\\core\\graph\\index.ts",
+      "line": 302,
+      "type": "variable",
+      "name": "fromNode"
+    },
+    {
+      "file": "octie\\src\\core\\graph\\index.ts",
+      "line": 303,
+      "type": "variable",
+      "name": "edgeIndex"
+    },
+    {
+      "file": "octie\\src\\core\\graph\\index.ts",
+      "line": 318,
+      "type": "function",
+      "name": "hasEdge"
+    },
+    {
+      "file": "octie\\src\\core\\graph\\index.ts",
+      "line": 319,
+      "type": "variable",
+      "name": "outgoingSet"
+    },
+    {
+      "file": "octie\\src\\core\\graph\\index.ts",
+      "line": 328,
+      "type": "function",
+      "name": "getRootTasks"
+    },
+    {
+      "file": "octie\\src\\core\\graph\\index.ts",
+      "line": 329,
+      "type": "variable",
+      "name": "roots"
+    },
+    {
+      "file": "octie\\src\\core\\graph\\index.ts",
+      "line": 343,
+      "type": "function",
+      "name": "getOrphanTasks"
+    },
+    {
+      "file": "octie\\src\\core\\graph\\index.ts",
+      "line": 344,
+      "type": "variable",
+      "name": "orphans"
+    },
+    {
+      "file": "octie\\src\\core\\graph\\index.ts",
+      "line": 346,
+      "type": "variable",
+      "name": "outgoing"
+    },
+    {
+      "file": "octie\\src\\core\\graph\\index.ts",
+      "line": 347,
+      "type": "variable",
+      "name": "incoming"
+    },
+    {
+      "file": "octie\\src\\core\\graph\\index.ts",
+      "line": 360,
+      "type": "function",
+      "name": "getLeafTasks"
+    },
+    {
+      "file": "octie\\src\\core\\graph\\index.ts",
+      "line": 361,
+      "type": "variable",
+      "name": "leaves"
+    },
+    {
+      "file": "octie\\src\\core\\graph\\index.ts",
+      "line": 374,
+      "type": "function",
+      "name": "clear"
+    },
+    {
+      "file": "octie\\src\\core\\graph\\index.ts",
+      "line": 385,
+      "type": "function",
+      "name": "toInterface"
+    },
+    {
+      "file": "octie\\src\\core\\graph\\index.ts",
+      "line": 403,
+      "type": "function",
+      "name": "fromInterface"
+    },
+    {
+      "file": "octie\\src\\core\\graph\\index.ts",
+      "line": 404,
+      "type": "variable",
+      "name": "store"
+    },
+    {
+      "file": "octie\\src\\core\\graph\\index.ts",
+      "line": 426,
+      "type": "function",
+      "name": "toJSON"
+    },
+    {
+      "file": "octie\\src\\core\\graph\\index.ts",
+      "line": 432,
+      "type": "variable",
+      "name": "nodes"
+    },
+    {
+      "file": "octie\\src\\core\\graph\\index.ts",
+      "line": 437,
+      "type": "variable",
+      "name": "outgoingEdges"
+    },
+    {
+      "file": "octie\\src\\core\\graph\\index.ts",
+      "line": 442,
+      "type": "variable",
+      "name": "incomingEdges"
+    },
+    {
+      "file": "octie\\src\\core\\graph\\index.ts",
+      "line": 460,
+      "type": "function",
+      "name": "fromJSON"
+    },
+    {
+      "file": "octie\\src\\core\\graph\\index.ts",
+      "line": 466,
+      "type": "variable",
+      "name": "store"
+    },
+    {
+      "file": "octie\\src\\core\\models\\task-node.ts",
+      "line": 31,
+      "type": "variable",
+      "name": "ACTION_VERBS"
+    },
+    {
+      "file": "octie\\src\\core\\models\\task-node.ts",
+      "line": 234,
+      "type": "variable",
+      "name": "VAGUE_PATTERNS"
+    },
+    {
+      "file": "octie\\src\\core\\models\\task-node.ts",
+      "line": 257,
+      "type": "variable",
+      "name": "SUBJECTIVE_WORDS"
+    },
+    {
+      "file": "octie\\src\\core\\models\\task-node.ts",
+      "line": 302,
+      "type": "function",
+      "name": "validateAtomicTask"
+    },
+    {
+      "file": "octie\\src\\core\\models\\task-node.ts",
+      "line": 308,
+      "type": "variable",
+      "name": "violations"
+    },
+    {
+      "file": "octie\\src\\core\\models\\task-node.ts",
+      "line": 309,
+      "type": "variable",
+      "name": "titleLower"
+    },
+    {
+      "file": "octie\\src\\core\\models\\task-node.ts",
+      "line": 312,
+      "type": "variable",
+      "name": "hasActionVerb"
+    },
+    {
+      "file": "octie\\src\\core\\models\\task-node.ts",
+      "line": 323,
+      "type": "variable",
+      "name": "isVague"
+    },
+    {
+      "file": "octie\\src\\core\\models\\task-node.ts",
+      "line": 324,
+      "type": "variable",
+      "name": "patternLower"
+    },
+    {
+      "file": "octie\\src\\core\\models\\task-node.ts",
+      "line": 369,
+      "type": "variable",
+      "name": "hasVagueCriteria"
+    },
+    {
+      "file": "octie\\src\\core\\models\\task-node.ts",
+      "line": 370,
+      "type": "variable",
+      "name": "textLower"
+    },
+    {
+      "file": "octie\\src\\core\\models\\task-node.ts",
+      "line": 381,
+      "type": "variable",
+      "name": "hasEmptyCriterion"
+    },
+    {
+      "file": "octie\\src\\core\\models\\task-node.ts",
+      "line": 390,
+      "type": "variable",
+      "name": "hasEmptyDeliverable"
+    },
+    {
+      "file": "octie\\src\\core\\models\\task-node.ts",
+      "line": 399,
+      "type": "variable",
+      "name": "hasVagueCriterion"
+    },
+    {
+      "file": "octie\\src\\core\\models\\task-node.ts",
+      "line": 400,
+      "type": "variable",
+      "name": "textLower"
+    },
+    {
+      "file": "octie\\src\\core\\models\\task-node.ts",
+      "line": 411,
+      "type": "variable",
+      "name": "hasVagueDeliverable"
+    },
+    {
+      "file": "octie\\src\\core\\models\\task-node.ts",
+      "line": 412,
+      "type": "variable",
+      "name": "textLower"
+    },
+    {
+      "file": "octie\\src\\core\\models\\task-node.ts",
+      "line": 446,
+      "type": "variable",
+      "name": "VALID_TRANSITIONS"
+    },
+    {
+      "file": "octie\\src\\core\\models\\task-node.ts",
+      "line": 464,
+      "type": "class",
+      "name": "TaskNode"
+    },
+    {
+      "file": "octie\\src\\core\\models\\task-node.ts",
+      "line": 493,
+      "type": "function",
+      "name": "created_at"
+    },
+    {
+      "file": "octie\\src\\core\\models\\task-node.ts",
+      "line": 500,
+      "type": "function",
+      "name": "updated_at"
+    },
+    {
+      "file": "octie\\src\\core\\models\\task-node.ts",
+      "line": 507,
+      "type": "function",
+      "name": "completed_at"
+    },
+    {
+      "file": "octie\\src\\core\\models\\task-node.ts",
+      "line": 518,
+      "type": "function",
+      "name": "constructor"
+    },
+    {
+      "file": "octie\\src\\core\\models\\task-node.ts",
+      "line": 626,
+      "type": "variable",
+      "name": "now"
+    },
+    {
+      "file": "octie\\src\\core\\models\\task-node.ts",
+      "line": 639,
+      "type": "function",
+      "name": "setTitle"
+    },
+    {
+      "file": "octie\\src\\core\\models\\task-node.ts",
+      "line": 654,
+      "type": "function",
+      "name": "setDescription"
+    },
+    {
+      "file": "octie\\src\\core\\models\\task-node.ts",
+      "line": 669,
+      "type": "function",
+      "name": "setStatus"
+    },
+    {
+      "file": "octie\\src\\core\\models\\task-node.ts",
+      "line": 671,
+      "type": "variable",
+      "name": "allowedTransitions"
+    },
+    {
+      "file": "octie\\src\\core\\models\\task-node.ts",
+      "line": 681,
+      "type": "variable",
+      "name": "allComplete"
+    },
+    {
+      "file": "octie\\src\\core\\models\\task-node.ts",
+      "line": 699,
+      "type": "function",
+      "name": "setPriority"
+    },
+    {
+      "file": "octie\\src\\core\\models\\task-node.ts",
+      "line": 708,
+      "type": "function",
+      "name": "addSuccessCriterion"
+    },
+    {
+      "file": "octie\\src\\core\\models\\task-node.ts",
+      "line": 724,
+      "type": "function",
+      "name": "completeCriterion"
+    },
+    {
+      "file": "octie\\src\\core\\models\\task-node.ts",
+      "line": 725,
+      "type": "variable",
+      "name": "criterion"
+    },
+    {
+      "file": "octie\\src\\core\\models\\task-node.ts",
+      "line": 739,
+      "type": "function",
+      "name": "uncompleteCriterion"
+    },
+    {
+      "file": "octie\\src\\core\\models\\task-node.ts",
+      "line": 740,
+      "type": "variable",
+      "name": "criterion"
+    },
+    {
+      "file": "octie\\src\\core\\models\\task-node.ts",
+      "line": 754,
+      "type": "function",
+      "name": "addDeliverable"
+    },
+    {
+      "file": "octie\\src\\core\\models\\task-node.ts",
+      "line": 770,
+      "type": "function",
+      "name": "completeDeliverable"
+    },
+    {
+      "file": "octie\\src\\core\\models\\task-node.ts",
+      "line": 771,
+      "type": "variable",
+      "name": "deliverable"
+    },
+    {
+      "file": "octie\\src\\core\\models\\task-node.ts",
+      "line": 784,
+      "type": "function",
+      "name": "uncompleteDeliverable"
+    },
+    {
+      "file": "octie\\src\\core\\models\\task-node.ts",
+      "line": 785,
+      "type": "variable",
+      "name": "deliverable"
+    },
+    {
+      "file": "octie\\src\\core\\models\\task-node.ts",
+      "line": 798,
+      "type": "function",
+      "name": "addBlocker"
+    },
+    {
+      "file": "octie\\src\\core\\models\\task-node.ts",
+      "line": 809,
+      "type": "function",
+      "name": "removeBlocker"
+    },
+    {
+      "file": "octie\\src\\core\\models\\task-node.ts",
+      "line": 810,
+      "type": "variable",
+      "name": "index"
+    },
+    {
+      "file": "octie\\src\\core\\models\\task-node.ts",
+      "line": 821,
+      "type": "function",
+      "name": "addDependency"
+    },
+    {
+      "file": "octie\\src\\core\\models\\task-node.ts",
+      "line": 832,
+      "type": "function",
+      "name": "addRelatedFile"
+    },
+    {
+      "file": "octie\\src\\core\\models\\task-node.ts",
+      "line": 843,
+      "type": "function",
+      "name": "appendNotes"
+    },
+    {
+      "file": "octie\\src\\core\\models\\task-node.ts",
+      "line": 857,
+      "type": "function",
+      "name": "addC7Verification"
+    },
+    {
+      "file": "octie\\src\\core\\models\\task-node.ts",
+      "line": 866,
+      "type": "function",
+      "name": "addEdge"
+    },
+    {
+      "file": "octie\\src\\core\\models\\task-node.ts",
+      "line": 877,
+      "type": "function",
+      "name": "removeEdge"
+    },
+    {
+      "file": "octie\\src\\core\\models\\task-node.ts",
+      "line": 878,
+      "type": "variable",
+      "name": "index"
+    },
+    {
+      "file": "octie\\src\\core\\models\\task-node.ts",
+      "line": 889,
+      "type": "function",
+      "name": "addSubItem"
+    },
+    {
+      "file": "octie\\src\\core\\models\\task-node.ts",
+      "line": 900,
+      "type": "function",
+      "name": "removeSubItem"
+    },
+    {
+      "file": "octie\\src\\core\\models\\task-node.ts",
+      "line": 901,
+      "type": "variable",
+      "name": "index"
+    },
+    {
+      "file": "octie\\src\\core\\models\\task-node.ts",
+      "line": 913,
+      "type": "function",
+      "name": "_isComplete"
+    },
+    {
+      "file": "octie\\src\\core\\models\\task-node.ts",
+      "line": 914,
+      "type": "variable",
+      "name": "allCriteriaComplete"
+    },
+    {
+      "file": "octie\\src\\core\\models\\task-node.ts",
+      "line": 915,
+      "type": "variable",
+      "name": "allDeliverablesComplete"
+    },
+    {
+      "file": "octie\\src\\core\\models\\task-node.ts",
+      "line": 924,
+      "type": "function",
+      "name": "_checkCompletion"
+    },
+    {
+      "file": "octie\\src\\core\\models\\task-node.ts",
+      "line": 925,
+      "type": "variable",
+      "name": "isComplete"
+    },
+    {
+      "file": "octie\\src\\core\\models\\task-node.ts",
+      "line": 941,
+      "type": "function",
+      "name": "_touch"
+    },
+    {
+      "file": "octie\\src\\core\\models\\task-node.ts",
+      "line": 949,
+      "type": "function",
+      "name": "toJSON"
+    },
+    {
+      "file": "octie\\src\\core\\models\\task-node.ts",
+      "line": 975,
+      "type": "function",
+      "name": "fromJSON"
+    },
+    {
+      "file": "octie\\src\\core\\models\\task-node.ts",
+      "line": 976,
+      "type": "variable",
+      "name": "node"
+    },
+    {
+      "file": "octie\\src\\core\\storage\\atomic-write.ts",
+      "line": 22,
+      "type": "variable",
+      "name": "DEFAULT_CONFIG"
+    },
+    {
+      "file": "octie\\src\\core\\storage\\atomic-write.ts",
+      "line": 46,
+      "type": "class",
+      "name": "AtomicFileWriter"
+    },
+    {
+      "file": "octie\\src\\core\\storage\\atomic-write.ts",
+      "line": 53,
+      "type": "function",
+      "name": "constructor"
+    },
+    {
+      "file": "octie\\src\\core\\storage\\atomic-write.ts",
+      "line": 75,
+      "type": "function",
+      "name": "write"
+    },
+    {
+      "file": "octie\\src\\core\\storage\\atomic-write.ts",
+      "line": 83,
+      "type": "variable",
+      "name": "content"
+    },
+    {
+      "file": "octie\\src\\core\\storage\\atomic-write.ts",
+      "line": 96,
+      "type": "variable",
+      "name": "tempPath"
+    },
+    {
+      "file": "octie\\src\\core\\storage\\atomic-write.ts",
+      "line": 103,
+      "type": "variable",
+      "name": "stats"
+    },
+    {
+      "file": "octie\\src\\core\\storage\\atomic-write.ts",
+      "line": 147,
+      "type": "function",
+      "name": "read"
+    },
+    {
+      "file": "octie\\src\\core\\storage\\atomic-write.ts",
+      "line": 164,
+      "type": "function",
+      "name": "readJSON"
+    },
+    {
+      "file": "octie\\src\\core\\storage\\atomic-write.ts",
+      "line": 166,
+      "type": "variable",
+      "name": "content"
+    },
+    {
+      "file": "octie\\src\\core\\storage\\atomic-write.ts",
+      "line": 184,
+      "type": "function",
+      "name": "_createBackup"
+    },
+    {
+      "file": "octie\\src\\core\\storage\\atomic-write.ts",
+      "line": 190,
+      "type": "variable",
+      "name": "backupPath"
+    },
+    {
+      "file": "octie\\src\\core\\storage\\atomic-write.ts",
+      "line": 213,
+      "type": "function",
+      "name": "_rotateBackups"
+    },
+    {
+      "file": "octie\\src\\core\\storage\\atomic-write.ts",
+      "line": 214,
+      "type": "variable",
+      "name": "dir"
+    },
+    {
+      "file": "octie\\src\\core\\storage\\atomic-write.ts",
+      "line": 215,
+      "type": "variable",
+      "name": "baseName"
+    },
+    {
+      "file": "octie\\src\\core\\storage\\atomic-write.ts",
+      "line": 219,
+      "type": "variable",
+      "name": "files"
+    },
+    {
+      "file": "octie\\src\\core\\storage\\atomic-write.ts",
+      "line": 220,
+      "type": "variable",
+      "name": "backupFiles"
+    },
+    {
+      "file": "octie\\src\\core\\storage\\atomic-write.ts",
+      "line": 226,
+      "type": "variable",
+      "name": "backupsToDelete"
+    },
+    {
+      "file": "octie\\src\\core\\storage\\atomic-write.ts",
+      "line": 242,
+      "type": "function",
+      "name": "_getBackupPath"
+    },
+    {
+      "file": "octie\\src\\core\\storage\\atomic-write.ts",
+      "line": 243,
+      "type": "variable",
+      "name": "dir"
+    },
+    {
+      "file": "octie\\src\\core\\storage\\atomic-write.ts",
+      "line": 244,
+      "type": "variable",
+      "name": "baseName"
+    },
+    {
+      "file": "octie\\src\\core\\storage\\atomic-write.ts",
+      "line": 245,
+      "type": "variable",
+      "name": "timestamp"
+    },
+    {
+      "file": "octie\\src\\core\\storage\\atomic-write.ts",
+      "line": 255,
+      "type": "function",
+      "name": "_getTempPath"
+    },
+    {
+      "file": "octie\\src\\core\\storage\\atomic-write.ts",
+      "line": 256,
+      "type": "variable",
+      "name": "baseName"
+    },
+    {
+      "file": "octie\\src\\core\\storage\\atomic-write.ts",
+      "line": 257,
+      "type": "variable",
+      "name": "timestamp"
+    },
+    {
+      "file": "octie\\src\\core\\storage\\atomic-write.ts",
+      "line": 258,
+      "type": "variable",
+      "name": "random"
+    },
+    {
+      "file": "octie\\src\\core\\storage\\atomic-write.ts",
+      "line": 268,
+      "type": "function",
+      "name": "_getDirPath"
+    },
+    {
+      "file": "octie\\src\\core\\storage\\atomic-write.ts",
+      "line": 269,
+      "type": "variable",
+      "name": "parts"
+    },
+    {
+      "file": "octie\\src\\core\\storage\\atomic-write.ts",
+      "line": 280,
+      "type": "function",
+      "name": "_getBaseName"
+    },
+    {
+      "file": "octie\\src\\core\\storage\\atomic-write.ts",
+      "line": 281,
+      "type": "variable",
+      "name": "parts"
+    },
+    {
+      "file": "octie\\src\\core\\storage\\atomic-write.ts",
+      "line": 282,
+      "type": "variable",
+      "name": "fileName"
+    },
+    {
+      "file": "octie\\src\\core\\storage\\atomic-write.ts",
+      "line": 284,
+      "type": "variable",
+      "name": "lastDot"
+    },
+    {
+      "file": "octie\\src\\core\\storage\\atomic-write.ts",
+      "line": 293,
+      "type": "function",
+      "name": "exists"
+    },
+    {
+      "file": "octie\\src\\core\\storage\\atomic-write.ts",
+      "line": 307,
+      "type": "function",
+      "name": "delete"
+    },
+    {
+      "file": "octie\\src\\core\\storage\\atomic-write.ts",
+      "line": 326,
+      "type": "function",
+      "name": "ensureDir"
+    },
+    {
+      "file": "octie\\src\\core\\storage\\atomic-write.ts",
+      "line": 341,
+      "type": "class",
+      "name": "PathUtils"
+    },
+    {
+      "file": "octie\\src\\core\\storage\\atomic-write.ts",
+      "line": 348,
+      "type": "function",
+      "name": "normalizePath"
+    },
+    {
+      "file": "octie\\src\\core\\storage\\atomic-write.ts",
+      "line": 357,
+      "type": "function",
+      "name": "join"
+    },
+    {
+      "file": "octie\\src\\core\\storage\\atomic-write.ts",
+      "line": 366,
+      "type": "function",
+      "name": "isAbsolute"
+    },
+    {
+      "file": "octie\\src\\core\\storage\\atomic-write.ts",
+      "line": 376,
+      "type": "function",
+      "name": "relative"
+    },
+    {
+      "file": "octie\\src\\core\\storage\\atomic-write.ts",
+      "line": 388,
+      "type": "function",
+      "name": "getConfigPath"
+    },
+    {
+      "file": "octie\\src\\core\\storage\\atomic-write.ts",
+      "line": 389,
+      "type": "variable",
+      "name": "platform"
+    },
+    {
+      "file": "octie\\src\\core\\storage\\atomic-write.ts",
+      "line": 390,
+      "type": "variable",
+      "name": "homedir"
+    },
+    {
+      "file": "octie\\src\\core\\storage\\atomic-write.ts",
+      "line": 408,
+      "type": "function",
+      "name": "getDataPath"
+    },
+    {
+      "file": "octie\\src\\core\\storage\\atomic-write.ts",
+      "line": 409,
+      "type": "variable",
+      "name": "platform"
+    },
+    {
+      "file": "octie\\src\\core\\storage\\atomic-write.ts",
+      "line": 410,
+      "type": "variable",
+      "name": "homedir"
+    },
+    {
+      "file": "octie\\src\\core\\storage\\atomic-write.ts",
+      "line": 429,
+      "type": "function",
+      "name": "sanitizePath"
+    },
+    {
+      "file": "octie\\src\\core\\storage\\atomic-write.ts",
+      "line": 430,
+      "type": "variable",
+      "name": "normalized"
+    },
+    {
+      "file": "octie\\src\\core\\storage\\atomic-write.ts",
+      "line": 431,
+      "type": "variable",
+      "name": "resolved"
+    },
+    {
+      "file": "octie\\src\\core\\storage\\atomic-write.ts",
+      "line": 434,
+      "type": "variable",
+      "name": "relativePath"
+    },
+    {
+      "file": "octie\\src\\core\\storage\\file-store.ts",
+      "line": 28,
+      "type": "variable",
+      "name": "DEFAULT_PROJECT_FILE"
+    },
+    {
+      "file": "octie\\src\\core\\storage\\file-store.ts",
+      "line": 33,
+      "type": "variable",
+      "name": "OCTIE_DIR_NAME"
+    },
+    {
+      "file": "octie\\src\\core\\storage\\file-store.ts",
+      "line": 56,
+      "type": "class",
+      "name": "TaskStorage"
+    },
+    {
+      "file": "octie\\src\\core\\storage\\file-store.ts",
+      "line": 68,
+      "type": "function",
+      "name": "constructor"
+    },
+    {
+      "file": "octie\\src\\core\\storage\\file-store.ts",
+      "line": 83,
+      "type": "function",
+      "name": "octieDirPath"
+    },
+    {
+      "file": "octie\\src\\core\\storage\\file-store.ts",
+      "line": 90,
+      "type": "function",
+      "name": "projectFilePath"
+    },
+    {
+      "file": "octie\\src\\core\\storage\\file-store.ts",
+      "line": 97,
+      "type": "function",
+      "name": "backupFilePath"
+    },
+    {
+      "file": "octie\\src\\core\\storage\\file-store.ts",
+      "line": 104,
+      "type": "function",
+      "name": "indexesDirPath"
+    },
+    {
+      "file": "octie\\src\\core\\storage\\file-store.ts",
+      "line": 111,
+      "type": "function",
+      "name": "cacheDirPath"
+    },
+    {
+      "file": "octie\\src\\core\\storage\\file-store.ts",
+      "line": 118,
+      "type": "function",
+      "name": "configFilePath"
+    },
+    {
+      "file": "octie\\src\\core\\storage\\file-store.ts",
+      "line": 126,
+      "type": "function",
+      "name": "init"
+    },
+    {
+      "file": "octie\\src\\core\\storage\\file-store.ts",
+      "line": 139,
+      "type": "function",
+      "name": "exists"
+    },
+    {
+      "file": "octie\\src\\core\\storage\\file-store.ts",
+      "line": 148,
+      "type": "function",
+      "name": "load"
+    },
+    {
+      "file": "octie\\src\\core\\storage\\file-store.ts",
+      "line": 159,
+      "type": "variable",
+      "name": "projectFile"
+    },
+    {
+      "file": "octie\\src\\core\\storage\\file-store.ts",
+      "line": 165,
+      "type": "variable",
+      "name": "nodes"
+    },
+    {
+      "file": "octie\\src\\core\\storage\\file-store.ts",
+      "line": 171,
+      "type": "variable",
+      "name": "outgoingEdges"
+    },
+    {
+      "file": "octie\\src\\core\\storage\\file-store.ts",
+      "line": 172,
+      "type": "variable",
+      "name": "incomingEdges"
+    },
+    {
+      "file": "octie\\src\\core\\storage\\file-store.ts",
+      "line": 192,
+      "type": "variable",
+      "name": "graph"
+    },
+    {
+      "file": "octie\\src\\core\\storage\\file-store.ts",
+      "line": 215,
+      "type": "function",
+      "name": "save"
+    },
+    {
+      "file": "octie\\src\\core\\storage\\file-store.ts",
+      "line": 219,
+      "type": "variable",
+      "name": "createBackup"
+    },
+    {
+      "file": "octie\\src\\core\\storage\\file-store.ts",
+      "line": 226,
+      "type": "variable",
+      "name": "json"
+    },
+    {
+      "file": "octie\\src\\core\\storage\\file-store.ts",
+      "line": 229,
+      "type": "variable",
+      "name": "projectFile"
+    },
+    {
+      "file": "octie\\src\\core\\storage\\file-store.ts",
+      "line": 257,
+      "type": "function",
+      "name": "_buildIndexes"
+    },
+    {
+      "file": "octie\\src\\core\\storage\\file-store.ts",
+      "line": 258,
+      "type": "variable",
+      "name": "byStatus"
+    },
+    {
+      "file": "octie\\src\\core\\storage\\file-store.ts",
+      "line": 266,
+      "type": "variable",
+      "name": "byPriority"
+    },
+    {
+      "file": "octie\\src\\core\\storage\\file-store.ts",
+      "line": 272,
+      "type": "variable",
+      "name": "searchText"
+    },
+    {
+      "file": "octie\\src\\core\\storage\\file-store.ts",
+      "line": 273,
+      "type": "variable",
+      "name": "files"
+    },
+    {
+      "file": "octie\\src\\core\\storage\\file-store.ts",
+      "line": 284,
+      "type": "variable",
+      "name": "text"
+    },
+    {
+      "file": "octie\\src\\core\\storage\\file-store.ts",
+      "line": 285,
+      "type": "variable",
+      "name": "tokens"
+    },
+    {
+      "file": "octie\\src\\core\\storage\\file-store.ts",
+      "line": 307,
+      "type": "variable",
+      "name": "rootTasks"
+    },
+    {
+      "file": "octie\\src\\core\\storage\\file-store.ts",
+      "line": 308,
+      "type": "variable",
+      "name": "orphanTasks"
+    },
+    {
+      "file": "octie\\src\\core\\storage\\file-store.ts",
+      "line": 326,
+      "type": "function",
+      "name": "_validateProjectFile"
+    },
+    {
+      "file": "octie\\src\\core\\storage\\file-store.ts",
+      "line": 355,
+      "type": "function",
+      "name": "getMetadata"
+    },
+    {
+      "file": "octie\\src\\core\\storage\\file-store.ts",
+      "line": 364,
+      "type": "variable",
+      "name": "projectFile"
+    },
+    {
+      "file": "octie\\src\\core\\storage\\file-store.ts",
+      "line": 378,
+      "type": "function",
+      "name": "delete"
+    },
+    {
+      "file": "octie\\src\\core\\storage\\file-store.ts",
+      "line": 402,
+      "type": "function",
+      "name": "createProject"
+    },
+    {
+      "file": "octie\\src\\core\\storage\\file-store.ts",
+      "line": 405,
+      "type": "variable",
+      "name": "metadata"
+    },
+    {
+      "file": "octie\\src\\core\\storage\\file-store.ts",
+      "line": 413,
+      "type": "variable",
+      "name": "projectFile"
+    },
+    {
+      "file": "octie\\src\\core\\storage\\file-store.ts",
+      "line": 448,
+      "type": "function",
+      "name": "listBackups"
+    },
+    {
+      "file": "octie\\src\\core\\storage\\file-store.ts",
+      "line": 450,
+      "type": "variable",
+      "name": "backups"
+    },
+    {
+      "file": "octie\\src\\core\\storage\\file-store.ts",
+      "line": 453,
+      "type": "variable",
+      "name": "files"
+    },
+    {
+      "file": "octie\\src\\core\\storage\\file-store.ts",
+      "line": 470,
+      "type": "function",
+      "name": "restoreFromBackup"
+    },
+    {
+      "file": "octie\\src\\core\\storage\\file-store.ts",
+      "line": 471,
+      "type": "variable",
+      "name": "backups"
+    },
+    {
+      "file": "octie\\src\\core\\storage\\file-store.ts",
+      "line": 477,
+      "type": "variable",
+      "name": "latestBackup"
+    },
+    {
+      "file": "octie\\src\\core\\storage\\file-store.ts",
+      "line": 501,
+      "type": "function",
+      "name": "findProjectPath"
+    },
+    {
+      "file": "octie\\src\\core\\storage\\file-store.ts",
+      "line": 505,
+      "type": "variable",
+      "name": "currentDir"
+    },
+    {
+      "file": "octie\\src\\core\\storage\\file-store.ts",
+      "line": 509,
+      "type": "variable",
+      "name": "octieDir"
+    },
+    {
+      "file": "octie\\src\\core\\storage\\file-store.ts",
+      "line": 510,
+      "type": "variable",
+      "name": "projectFile"
+    },
+    {
+      "file": "octie\\src\\core\\storage\\file-store.ts",
+      "line": 520,
+      "type": "variable",
+      "name": "parentDir"
+    },
+    {
+      "file": "octie\\src\\core\\storage\\indexer.ts",
+      "line": 25,
+      "type": "class",
+      "name": "IndexManager"
+    },
+    {
+      "file": "octie\\src\\core\\storage\\indexer.ts",
+      "line": 50,
+      "type": "function",
+      "name": "constructor"
+    },
+    {
+      "file": "octie\\src\\core\\storage\\indexer.ts",
+      "line": 60,
+      "type": "variable",
+      "name": "statuses"
+    },
+    {
+      "file": "octie\\src\\core\\storage\\indexer.ts",
+      "line": 66,
+      "type": "variable",
+      "name": "priorities"
+    },
+    {
+      "file": "octie\\src\\core\\storage\\indexer.ts",
+      "line": 81,
+      "type": "function",
+      "name": "updateTask"
+    },
+    {
+      "file": "octie\\src\\core\\storage\\indexer.ts",
+      "line": 99,
+      "type": "function",
+      "name": "_removeTask"
+    },
+    {
+      "file": "octie\\src\\core\\storage\\indexer.ts",
+      "line": 107,
+      "type": "variable",
+      "name": "text"
+    },
+    {
+      "file": "octie\\src\\core\\storage\\indexer.ts",
+      "line": 108,
+      "type": "variable",
+      "name": "tokens"
+    },
+    {
+      "file": "octie\\src\\core\\storage\\indexer.ts",
+      "line": 137,
+      "type": "function",
+      "name": "_addTask"
+    },
+    {
+      "file": "octie\\src\\core\\storage\\indexer.ts",
+      "line": 151,
+      "type": "variable",
+      "name": "text"
+    },
+    {
+      "file": "octie\\src\\core\\storage\\indexer.ts",
+      "line": 152,
+      "type": "variable",
+      "name": "tokens"
+    },
+    {
+      "file": "octie\\src\\core\\storage\\indexer.ts",
+      "line": 178,
+      "type": "function",
+      "name": "_updateRootOrphanStatus"
+    },
+    {
+      "file": "octie\\src\\core\\storage\\indexer.ts",
+      "line": 179,
+      "type": "variable",
+      "name": "incoming"
+    },
+    {
+      "file": "octie\\src\\core\\storage\\indexer.ts",
+      "line": 180,
+      "type": "variable",
+      "name": "outgoing"
+    },
+    {
+      "file": "octie\\src\\core\\storage\\indexer.ts",
+      "line": 204,
+      "type": "function",
+      "name": "rebuildIndexes"
+    },
+    {
+      "file": "octie\\src\\core\\storage\\indexer.ts",
+      "line": 214,
+      "type": "variable",
+      "name": "statuses"
+    },
+    {
+      "file": "octie\\src\\core\\storage\\indexer.ts",
+      "line": 219,
+      "type": "variable",
+      "name": "priorities"
+    },
+    {
+      "file": "octie\\src\\core\\storage\\indexer.ts",
+      "line": 238,
+      "type": "function",
+      "name": "getByStatus"
+    },
+    {
+      "file": "octie\\src\\core\\storage\\indexer.ts",
+      "line": 247,
+      "type": "function",
+      "name": "getByPriority"
+    },
+    {
+      "file": "octie\\src\\core\\storage\\indexer.ts",
+      "line": 256,
+      "type": "function",
+      "name": "search"
+    },
+    {
+      "file": "octie\\src\\core\\storage\\indexer.ts",
+      "line": 257,
+      "type": "variable",
+      "name": "tokens"
+    },
+    {
+      "file": "octie\\src\\core\\storage\\indexer.ts",
+      "line": 258,
+      "type": "variable",
+      "name": "results"
+    },
+    {
+      "file": "octie\\src\\core\\storage\\indexer.ts",
+      "line": 261,
+      "type": "variable",
+      "name": "matching"
+    },
+    {
+      "file": "octie\\src\\core\\storage\\indexer.ts",
+      "line": 277,
+      "type": "function",
+      "name": "getByFile"
+    },
+    {
+      "file": "octie\\src\\core\\storage\\indexer.ts",
+      "line": 285,
+      "type": "function",
+      "name": "getRootTasks"
+    },
+    {
+      "file": "octie\\src\\core\\storage\\indexer.ts",
+      "line": 293,
+      "type": "function",
+      "name": "getOrphanTasks"
+    },
+    {
+      "file": "octie\\src\\core\\storage\\indexer.ts",
+      "line": 303,
+      "type": "function",
+      "name": "getIndexes"
+    },
+    {
+      "file": "octie\\src\\core\\storage\\indexer.ts",
+      "line": 309,
+      "type": "variable",
+      "name": "result"
+    },
+    {
+      "file": "octie\\src\\core\\storage\\indexer.ts",
+      "line": 346,
+      "type": "function",
+      "name": "clear"
+    },
+    {
+      "file": "octie\\src\\core\\storage\\indexer.ts",
+      "line": 356,
+      "type": "variable",
+      "name": "statuses"
+    },
+    {
+      "file": "octie\\src\\core\\storage\\indexer.ts",
+      "line": 361,
+      "type": "variable",
+      "name": "priorities"
+    },
+    {
+      "file": "octie\\src\\core\\storage\\indexer.ts",
+      "line": 371,
+      "type": "function",
+      "name": "getStats"
+    },
+    {
+      "file": "octie\\src\\core\\storage\\indexer.ts",
+      "line": 379,
+      "type": "variable",
+      "name": "statusCounts"
+    },
+    {
+      "file": "octie\\src\\core\\storage\\indexer.ts",
+      "line": 391,
+      "type": "variable",
+      "name": "priorityCounts"
+    },
+    {
+      "file": "octie\\src\\types\\index.ts",
+      "line": 203,
+      "type": "class",
+      "name": "OctieError"
+    },
+    {
+      "file": "octie\\src\\types\\index.ts",
+      "line": 204,
+      "type": "function",
+      "name": "constructor"
+    },
+    {
+      "file": "octie\\src\\types\\index.ts",
+      "line": 213,
+      "type": "class",
+      "name": "TaskNotFoundError"
+    },
+    {
+      "file": "octie\\src\\types\\index.ts",
+      "line": 214,
+      "type": "function",
+      "name": "constructor"
+    },
+    {
+      "file": "octie\\src\\types\\index.ts",
+      "line": 223,
+      "type": "class",
+      "name": "CircularDependencyError"
+    },
+    {
+      "file": "octie\\src\\types\\index.ts",
+      "line": 224,
+      "type": "function",
+      "name": "constructor"
+    },
+    {
+      "file": "octie\\src\\types\\index.ts",
+      "line": 233,
+      "type": "class",
+      "name": "FileOperationError"
+    },
+    {
+      "file": "octie\\src\\types\\index.ts",
+      "line": 234,
+      "type": "function",
+      "name": "constructor"
+    },
+    {
+      "file": "octie\\src\\types\\index.ts",
+      "line": 243,
+      "type": "class",
+      "name": "ValidationError"
+    },
+    {
+      "file": "octie\\src\\types\\index.ts",
+      "line": 244,
+      "type": "function",
+      "name": "constructor"
+    },
+    {
+      "file": "octie\\src\\types\\index.ts",
+      "line": 253,
+      "type": "class",
+      "name": "AtomicTaskViolationError"
+    },
+    {
+      "file": "octie\\src\\types\\index.ts",
+      "line": 254,
+      "type": "function",
+      "name": "constructor"
+    },
+    {
+      "file": "octie\\tests\\unit\\core\\models\\task-node.test.ts",
+      "line": 24,
+      "type": "variable",
+      "name": "task"
+    },
+    {
+      "file": "octie\\tests\\unit\\core\\models\\task-node.test.ts",
+      "line": 62,
+      "type": "variable",
+      "name": "longTitle"
+    },
+    {
+      "file": "octie\\tests\\unit\\core\\models\\task-node.test.ts",
+      "line": 108,
+      "type": "variable",
+      "name": "longDescription"
+    },
+    {
+      "file": "octie\\tests\\unit\\core\\models\\task-node.test.ts",
+      "line": 137,
+      "type": "variable",
+      "name": "criteria"
+    },
+    {
+      "file": "octie\\tests\\unit\\core\\models\\task-node.test.ts",
+      "line": 169,
+      "type": "variable",
+      "name": "deliverables"
+    },
+    {
+      "file": "octie\\tests\\unit\\core\\models\\task-node.test.ts",
+      "line": 298,
+      "type": "variable",
+      "name": "task"
+    },
+    {
+      "file": "octie\\tests\\unit\\core\\models\\task-node.test.ts",
+      "line": 316,
+      "type": "variable",
+      "name": "task"
+    },
+    {
+      "file": "octie\\tests\\unit\\core\\models\\task-node.test.ts",
+      "line": 335,
+      "type": "variable",
+      "name": "beforeCreate"
+    },
+    {
+      "file": "octie\\tests\\unit\\core\\models\\task-node.test.ts",
+      "line": 336,
+      "type": "variable",
+      "name": "task"
+    },
+    {
+      "file": "octie\\tests\\unit\\core\\models\\task-node.test.ts",
+      "line": 346,
+      "type": "variable",
+      "name": "afterCreate"
+    },
+    {
+      "file": "octie\\tests\\unit\\core\\models\\task-node.test.ts",
+      "line": 356,
+      "type": "variable",
+      "name": "task"
+    },
+    {
+      "file": "octie\\tests\\unit\\core\\models\\task-node.test.ts",
+      "line": 371,
+      "type": "variable",
+      "name": "task"
+    },
+    {
+      "file": "octie\\tests\\unit\\core\\models\\task-node.test.ts",
+      "line": 382,
+      "type": "variable",
+      "name": "oldUpdatedAt"
+    },
+    {
+      "file": "octie\\tests\\unit\\core\\models\\task-node.test.ts",
+      "line": 391,
+      "type": "variable",
+      "name": "task"
+    },
+    {
+      "file": "octie\\tests\\unit\\core\\models\\task-node.test.ts",
+      "line": 402,
+      "type": "variable",
+      "name": "oldUpdatedAt"
+    },
+    {
+      "file": "octie\\tests\\unit\\core\\models\\task-node.test.ts",
+      "line": 410,
+      "type": "variable",
+      "name": "task"
+    },
+    {
+      "file": "octie\\tests\\unit\\core\\models\\task-node.test.ts",
+      "line": 437,
+      "type": "variable",
+      "name": "task"
+    },
+    {
+      "file": "octie\\tests\\unit\\core\\models\\task-node.test.ts",
+      "line": 461,
+      "type": "variable",
+      "name": "task"
+    },
+    {
+      "file": "octie\\tests\\unit\\core\\models\\task-node.test.ts",
+      "line": 485,
+      "type": "variable",
+      "name": "task"
+    },
+    {
+      "file": "octie\\tests\\unit\\core\\models\\task-node.test.ts",
+      "line": 515,
+      "type": "variable",
+      "name": "task"
+    },
+    {
+      "file": "octie\\tests\\unit\\core\\models\\task-node.test.ts",
+      "line": 534,
+      "type": "variable",
+      "name": "task"
+    },
+    {
+      "file": "octie\\tests\\unit\\core\\models\\task-node.test.ts",
+      "line": 551,
+      "type": "variable",
+      "name": "task"
+    },
+    {
+      "file": "octie\\tests\\unit\\core\\models\\task-node.test.ts",
+      "line": 584,
+      "type": "variable",
+      "name": "task"
+    },
+    {
+      "file": "octie\\tests\\unit\\core\\models\\task-node.test.ts",
+      "line": 595,
+      "type": "variable",
+      "name": "criterion"
+    },
+    {
+      "file": "octie\\tests\\unit\\core\\models\\task-node.test.ts",
+      "line": 603,
+      "type": "variable",
+      "name": "task"
+    },
+    {
+      "file": "octie\\tests\\unit\\core\\models\\task-node.test.ts",
+      "line": 614,
+      "type": "variable",
+      "name": "deliverable"
+    },
+    {
+      "file": "octie\\tests\\unit\\core\\models\\task-node.test.ts",
+      "line": 621,
+      "type": "variable",
+      "name": "task"
+    },
+    {
+      "file": "octie\\tests\\unit\\core\\models\\task-node.test.ts",
+      "line": 632,
+      "type": "variable",
+      "name": "initialCount"
+    },
+    {
+      "file": "octie\\tests\\unit\\core\\models\\task-node.test.ts",
+      "line": 643,
+      "type": "variable",
+      "name": "criteria"
+    },
+    {
+      "file": "octie\\tests\\unit\\core\\models\\task-node.test.ts",
+      "line": 649,
+      "type": "variable",
+      "name": "task"
+    },
+    {
+      "file": "octie\\tests\\unit\\core\\models\\task-node.test.ts",
+      "line": 668,
+      "type": "variable",
+      "name": "deliverables"
+    },
+    {
+      "file": "octie\\tests\\unit\\core\\models\\task-node.test.ts",
+      "line": 674,
+      "type": "variable",
+      "name": "task"
+    },
+    {
+      "file": "octie\\tests\\unit\\core\\models\\task-node.test.ts",
+      "line": 695,
+      "type": "variable",
+      "name": "task"
+    },
+    {
+      "file": "octie\\tests\\unit\\core\\models\\task-node.test.ts",
+      "line": 706,
+      "type": "variable",
+      "name": "targetId"
+    },
+    {
+      "file": "octie\\tests\\unit\\core\\models\\task-node.test.ts",
+      "line": 713,
+      "type": "variable",
+      "name": "task"
+    },
+    {
+      "file": "octie\\tests\\unit\\core\\models\\task-node.test.ts",
+      "line": 724,
+      "type": "variable",
+      "name": "targetId"
+    },
+    {
+      "file": "octie\\tests\\unit\\core\\models\\task-node.test.ts",
+      "line": 732,
+      "type": "variable",
+      "name": "task"
+    },
+    {
+      "file": "octie\\tests\\unit\\core\\models\\task-node.test.ts",
+      "line": 743,
+      "type": "variable",
+      "name": "targetId"
+    },
+    {
+      "file": "octie\\tests\\unit\\core\\models\\task-node.test.ts",
+      "line": 754,
+      "type": "variable",
+      "name": "task"
+    },
+    {
+      "file": "octie\\tests\\unit\\core\\models\\task-node.test.ts",
+      "line": 765,
+      "type": "variable",
+      "name": "blockerId"
+    },
+    {
+      "file": "octie\\tests\\unit\\core\\models\\task-node.test.ts",
+      "line": 772,
+      "type": "variable",
+      "name": "task"
+    },
+    {
+      "file": "octie\\tests\\unit\\core\\models\\task-node.test.ts",
+      "line": 783,
+      "type": "variable",
+      "name": "blockerId"
+    },
+    {
+      "file": "octie\\tests\\unit\\core\\models\\task-node.test.ts",
+      "line": 792,
+      "type": "variable",
+      "name": "task"
+    },
+    {
+      "file": "octie\\tests\\unit\\core\\models\\task-node.test.ts",
+      "line": 803,
+      "type": "variable",
+      "name": "depId"
+    },
+    {
+      "file": "octie\\tests\\unit\\core\\models\\task-node.test.ts",
+      "line": 812,
+      "type": "variable",
+      "name": "task"
+    },
+    {
+      "file": "octie\\tests\\unit\\core\\models\\task-node.test.ts",
+      "line": 823,
+      "type": "variable",
+      "name": "json"
+    },
+    {
+      "file": "octie\\tests\\unit\\core\\models\\task-node.test.ts",
+      "line": 838,
+      "type": "variable",
+      "name": "original"
+    },
+    {
+      "file": "octie\\tests\\unit\\core\\models\\task-node.test.ts",
+      "line": 849,
+      "type": "variable",
+      "name": "json"
+    },
+    {
+      "file": "octie\\tests\\unit\\core\\models\\task-node.test.ts",
+      "line": 850,
+      "type": "variable",
+      "name": "restored"
+    }
+  ],
+  "total_symbols": 344
+}
