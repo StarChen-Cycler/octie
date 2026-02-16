@@ -261,8 +261,10 @@ export class TaskStorage {
       later: [],
     };
 
-    const searchText: Record<string, string[]> = {};
-    const files: Record<string, string[]> = {};
+    // Use Object.create(null) to avoid prototype pollution
+    // (e.g., token "constructor" would conflict with Object.prototype.constructor)
+    const searchText: Record<string, string[]> = Object.create(null);
+    const files: Record<string, string[]> = Object.create(null);
 
     // Build indexes from all tasks
     for (const task of graph.getAllTasks()) {
