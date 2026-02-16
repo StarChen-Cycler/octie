@@ -11,6 +11,7 @@ import type { Request, Response, Router } from 'express';
 import type { TaskGraphStore } from '../../core/graph/index.js';
 import { topologicalSort, findCriticalPath, isValidDAG } from '../../core/graph/sort.js';
 import { detectCycle, hasCycle, getCycleStatistics } from '../../core/graph/cycle.js';
+import { ERROR_SUGGESTIONS } from '../../types/index.js';
 import type { ApiResponse } from '../server.js';
 
 /**
@@ -37,12 +38,20 @@ function sendSuccess<T>(res: Response, data: T, status: number = 200): void {
 /**
  * Send error API response
  */
-function sendError(res: Response, code: string, message: string, status: number = 400, details?: unknown): void {
+function sendError(
+  res: Response,
+  code: string,
+  message: string,
+  status: number = 400,
+  details?: unknown,
+  suggestion?: string
+): void {
   res.status(status).json({
     success: false,
     error: {
       code,
       message,
+      suggestion: suggestion ?? ERROR_SUGGESTIONS[code],
       details,
     },
     timestamp: new Date().toISOString(),

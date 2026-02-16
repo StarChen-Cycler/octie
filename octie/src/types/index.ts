@@ -201,13 +201,58 @@ export interface ProjectIndexes {
 }
 
 /**
+ * Error code to HTTP status code mapping
+ * Used by API error handler to return appropriate status codes
+ */
+export const ERROR_STATUS_MAP: Record<string, number> = {
+  // Client errors (4xx)
+  TASK_NOT_FOUND: 404,
+  PROJECT_NOT_FOUND: 404,
+  VALIDATION_ERROR: 400,
+  ATOMIC_TASK_VIOLATION: 400,
+  INVALID_ARGUMENT: 400,
+  INVALID_TASK_ID: 400,
+  CIRCULAR_DEPENDENCY: 400,
+  DUPLICATE_TASK: 409,
+  // Server errors (5xx)
+  FILE_OPERATION_ERROR: 500,
+  STORAGE_ERROR: 500,
+  INTERNAL_ERROR: 500,
+};
+
+/**
+ * Error code to suggestion mapping
+ * Provides actionable recovery steps for each error type
+ */
+export const ERROR_SUGGESTIONS: Record<string, string> = {
+  TASK_NOT_FOUND: 'Use `octie list` to see all available tasks and their IDs.',
+  PROJECT_NOT_FOUND: 'Run `octie init` to create a new project or use `--project <path>` to specify the project directory.',
+  VALIDATION_ERROR: 'Check the input format and ensure all required fields are provided.',
+  ATOMIC_TASK_VIOLATION: 'Split the task into smaller, focused tasks with specific deliverables.',
+  INVALID_ARGUMENT: 'Check the command syntax with `octie <command> --help`.',
+  INVALID_TASK_ID: 'Task IDs must be valid UUIDs. Use `octie list` to find the correct task ID.',
+  CIRCULAR_DEPENDENCY: 'Remove one of the edges in the cycle using `octie update <id> --unblock <blocker_id>`.',
+  DUPLICATE_TASK: 'Use `octie list --search <query>` to find existing similar tasks.',
+  FILE_OPERATION_ERROR: 'Check file permissions and ensure the .octie directory is writable.',
+  STORAGE_ERROR: 'Try restoring from backup with `octie import --file .octie/project.json.bak`.',
+  INTERNAL_ERROR: 'Run with --verbose flag for more details or check the logs.',
+};
+
+/**
  * Custom error base class
  * All Octie-specific errors extend this class
  */
 export class OctieError extends Error {
-  constructor(message: string, public code: string) {
+  /** Optional suggestion for how to resolve the error */
+  public readonly suggestion?: string;
+  /** HTTP status code for API responses */
+  public readonly statusCode: number;
+
+  constructor(message: string, public code: string, suggestion?: string) {
     super(message);
     this.name = 'OctieError';
+    this.suggestion = suggestion ?? ERROR_SUGGESTIONS[code];
+    this.statusCode = ERROR_STATUS_MAP[code] ?? 500;
   }
 }
 
@@ -216,8 +261,26 @@ export class OctieError extends Error {
  */
 export class TaskNotFoundError extends OctieError {
   constructor(taskId: string) {
-    super(`Task with ID '${taskId}' not found`, 'TASK_NOT_FOUND');
+    super(
+      `Task with ID '${taskId}' not found`,
+      'TASK_NOT_FOUND',
+      `Use \`octie list\` to see all available tasks. The ID '${taskId}' may be incorrect or the task may have been deleted.`
+    );
     this.name = 'TaskNotFoundError';
+  }
+}
+
+/**
+ * Error thrown when a project is not found
+ */
+export class ProjectNotFoundError extends OctieError {
+  constructor(path?: string) {
+    super(
+      path ? `No Octie project found at '${path}'` : 'No Octie project found',
+      'PROJECT_NOT_FOUND',
+      'Run `octie init` to create a new project in the current directory, or use `--project <path>` to specify a different project directory.'
+    );
+    this.name = 'ProjectNotFoundError';
   }
 }
 
@@ -226,7 +289,11 @@ export class TaskNotFoundError extends OctieError {
  */
 export class CircularDependencyError extends OctieError {
   constructor(public cycleNodes: string[]) {
-    super(`Circular dependency detected: ${cycleNodes.join(' -> ')}`, 'CIRCULAR_DEPENDENCY');
+    super(
+      `Circular dependency detected: ${cycleNodes.join(' -> ')}`,
+      'CIRCULAR_DEPENDENCY',
+      `Break the cycle by removing one of the dependencies. Use \`octie update ${cycleNodes[0]} --unblock ${cycleNodes[cycleNodes.length - 1]}\` or restructure your task graph.`
+    );
     this.name = 'CircularDependencyError';
   }
 }
@@ -236,7 +303,11 @@ export class CircularDependencyError extends OctieError {
  */
 export class FileOperationError extends OctieError {
   constructor(message: string, public filePath: string) {
-    super(message, 'FILE_OPERATION_ERROR');
+    super(
+      `${message}: ${filePath}`,
+      'FILE_OPERATION_ERROR',
+      `Check file permissions and ensure the path is correct. If the file is corrupted, try restoring from backup: \`octie import --file .octie/project.json.bak\``
+    );
     this.name = 'FileOperationError';
   }
 }
@@ -246,7 +317,11 @@ export class FileOperationError extends OctieError {
  */
 export class ValidationError extends OctieError {
   constructor(message: string, public field?: string) {
-    super(message, 'VALIDATION_ERROR');
+    super(
+      message,
+      'VALIDATION_ERROR',
+      field ? `Check the '${field}' field and ensure it meets the requirements.` : 'Check the input format and ensure all required fields are provided.'
+    );
     this.name = 'ValidationError';
   }
 }
@@ -256,8 +331,47 @@ export class ValidationError extends OctieError {
  */
 export class AtomicTaskViolationError extends ValidationError {
   constructor(message: string, public violations: string[]) {
-    super(message, 'ATOMIC_TASK_VIOLATION');
+    super(
+      message,
+      'ATOMIC_TASK_VIOLATION'
+    );
     this.name = 'AtomicTaskViolationError';
+    // Override suggestion with specific violations
+    (this as any).suggestion = `Task violates atomic task requirements:\n${violations.map(v => `  • ${v}`).join('\n')}\n\nSplit into smaller tasks or make the task more specific.`;
+  }
+}
+
+/**
+ * Error thrown when an invalid argument is provided
+ */
+export class InvalidArgumentError extends OctieError {
+  constructor(message: string, suggestion?: string) {
+    super(message, 'INVALID_ARGUMENT', suggestion ?? 'Check the command syntax with `octie <command> --help`.');
+    this.name = 'InvalidArgumentError';
+  }
+}
+
+/**
+ * Error thrown when a duplicate is detected
+ */
+export class DuplicateTaskError extends OctieError {
+  constructor(identifier: string) {
+    super(
+      `Task already exists: ${identifier}`,
+      'DUPLICATE_TASK',
+      'Use `octie list --search <query>` to find the existing task, or use a different identifier.'
+    );
+    this.name = 'DuplicateTaskError';
+  }
+}
+
+/**
+ * Error thrown when storage operations fail
+ */
+export class StorageError extends OctieError {
+  constructor(message: string, suggestion?: string) {
+    super(message, 'STORAGE_ERROR', suggestion ?? 'Try restoring from backup or re-initialize the project.');
+    this.name = 'StorageError';
   }
 }
 

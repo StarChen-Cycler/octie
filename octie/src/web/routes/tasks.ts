@@ -10,7 +10,7 @@
 import type { Request, Response, Router } from 'express';
 import { z } from 'zod';
 import type { TaskGraphStore } from '../../core/graph/index.js';
-import { TaskNotFoundError, CircularDependencyError, ValidationError, AtomicTaskViolationError } from '../../types/index.js';
+import { TaskNotFoundError, CircularDependencyError, ValidationError, AtomicTaskViolationError, ERROR_SUGGESTIONS } from '../../types/index.js';
 import { TaskNode } from '../../core/models/task-node.js';
 import { v4 as uuidv4 } from 'uuid';
 import type { ApiResponse } from '../server.js';
@@ -123,12 +123,20 @@ function sendSuccess<T>(res: Response, data: T, status: number = 200): void {
 /**
  * Send error API response
  */
-function sendError(res: Response, code: string, message: string, status: number = 400, details?: unknown): void {
+function sendError(
+  res: Response,
+  code: string,
+  message: string,
+  status: number = 400,
+  details?: unknown,
+  suggestion?: string
+): void {
   res.status(status).json({
     success: false,
     error: {
       code,
       message,
+      suggestion: suggestion ?? ERROR_SUGGESTIONS[code],
       details,
     },
     timestamp: new Date().toISOString(),

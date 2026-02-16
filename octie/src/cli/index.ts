@@ -18,28 +18,30 @@ import { graphCommand } from './commands/graph.js';
 import { exportCommand } from './commands/export.js';
 import { importCommand } from './commands/import.js';
 import { serveCommand } from './commands/serve.js';
+import { formatError } from './utils/helpers.js';
+import { InvalidArgumentError as OctieInvalidArgumentError } from '../types/index.js';
 
 // Version from package.json
 const VERSION = '1.0.0';
 
 /**
- * Error handler middleware
+ * Global error handler
+ * Provides consistent error formatting with suggestions and optional stack traces
  */
 function handleError(error: unknown): void {
+  const verbose = process.env.DEBUG === 'true' || process.env.VERBOSE === 'true';
+
+  // Handle Commander's InvalidArgumentError
   if (error instanceof InvalidArgumentError) {
-    console.error(chalk.red(`Error: ${error.message}`));
+    console.error(formatError(
+      new OctieInvalidArgumentError(error.message),
+      verbose
+    ));
     process.exit(1);
   }
 
-  if (error instanceof Error) {
-    console.error(chalk.red(`Error: ${error.message}`));
-    if (process.env.DEBUG || process.env.VERBOSE) {
-      console.error(error.stack);
-    }
-    process.exit(1);
-  }
-
-  console.error(chalk.red('Unknown error occurred'));
+  // Handle all errors with our formatter
+  console.error(formatError(error, verbose));
   process.exit(1);
 }
 

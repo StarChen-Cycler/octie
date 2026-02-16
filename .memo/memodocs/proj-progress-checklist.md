@@ -763,16 +763,21 @@
 **Completed**: 2026-02-16
 **Git Commit**: df4d2ed
 
-#### [ ] Error Handling Polish
+#### [x] Error Handling Polish
 **Blockers**: All Implementation Complete
-**Related Files**: Throughout codebase
-**C7 MCP Verified**: N/A
+**Related Files**: octie/src/types/index.ts, octie/src/cli/utils/helpers.ts, octie/src/cli/index.ts, octie/src/web/server.ts, octie/src/web/routes/tasks.ts, octie/src/web/routes/graph.ts
+**C7 MCP Verified**: /expressjs/express (error handling middleware patterns)
 **Deliverables**:
-- [ ] Consistent error messages
-- [ ] Actionable error suggestions
-- [ ] User-friendly error output
-- [ ] Error recovery mechanisms
-- [ ] Graceful degradation
+- [x] Consistent error messages - Added OctieError base class with code, message, suggestion
+- [x] Actionable error suggestions - ERROR_SUGGESTIONS map with recovery steps for each error code
+- [x] User-friendly error output - formatError() helper with color-coded CLI output
+- [x] Error recovery mechanisms - withRetry() for concurrent access, attemptRecovery() for corrupted files
+- [x] Graceful degradation - HTTP status code mapping (ERROR_STATUS_MAP), Zod error formatting
+- [x] New error classes: ProjectNotFoundError, InvalidArgumentError, DuplicateTaskError, StorageError
+- [x] API error responses include suggestion field
+- [x] Global error middleware with proper status code mapping
+**Completed**: 2026-02-16
+**Git Commit**: (to be committed)
 
 #### [x] npm Package Configuration
 **Blockers**: All Implementation Complete

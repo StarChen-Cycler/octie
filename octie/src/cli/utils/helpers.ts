@@ -6,6 +6,7 @@ import chalk from 'chalk';
 import path from 'node:path';
 import { findProjectPath, TaskStorage } from '../../core/storage/file-store.js';
 import type { TaskGraphStore } from '../../core/graph/index.js';
+import { OctieError, ERROR_SUGGESTIONS } from '../../types/index.js';
 
 /**
  * Get the project path from options or auto-detect
@@ -183,4 +184,145 @@ export function formatPriority(priority: string): string {
 export function truncate(text: string, maxWidth: number): string {
   if (text.length <= maxWidth) return text;
   return text.substring(0, maxWidth - 3) + '...';
+}
+
+/**
+ * Format error for CLI output
+ * Provides consistent error formatting with code, message, and suggestion
+ */
+export function formatError(error: unknown, verbose: boolean = false): string {
+  // Handle OctieError with suggestion
+  if (error instanceof OctieError) {
+    const lines: string[] = [];
+
+    // Error header with code
+    lines.push(chalk.red.bold(`Error [${error.code}]:`) + ' ' + chalk.red(error.message));
+
+    // Add suggestion if available
+    if (error.suggestion) {
+      lines.push('');
+      lines.push(chalk.yellow('Suggestion:') + ' ' + error.suggestion);
+    }
+
+    // Add stack trace in verbose mode
+    if (verbose && error.stack) {
+      lines.push('');
+      lines.push(chalk.gray('Stack trace:'));
+      lines.push(chalk.gray(error.stack.split('\n').slice(1).join('\n')));
+    }
+
+    return lines.join('\n');
+  }
+
+  // Handle standard Error
+  if (error instanceof Error) {
+    const lines: string[] = [];
+    lines.push(chalk.red.bold('Error:') + ' ' + chalk.red(error.message));
+
+    if (verbose && error.stack) {
+      lines.push('');
+      lines.push(chalk.gray('Stack trace:'));
+      lines.push(chalk.gray(error.stack.split('\n').slice(1).join('\n')));
+    }
+
+    return lines.join('\n');
+  }
+
+  // Handle unknown error types
+  return chalk.red.bold('Error:') + ' ' + chalk.red(String(error));
+}
+
+/**
+ * Get suggestion for an error code
+ * Returns a suggestion string for the given error code
+ */
+export function getErrorSuggestion(code: string): string | undefined {
+  return ERROR_SUGGESTIONS[code];
+}
+
+/**
+ * Exit with error message
+ * Formats and displays error, then exits with code 1
+ */
+export function exitWithError(error: unknown, verbose: boolean = false): never {
+  console.error(formatError(error, verbose));
+  process.exit(1);
+}
+
+/**
+ * Retry options for recovery operations
+ */
+export interface RetryOptions {
+  /** Maximum number of retry attempts */
+  maxRetries: number;
+  /** Delay between retries in milliseconds */
+  delayMs: number;
+  /** Exponential backoff multiplier */
+  backoffMultiplier?: number;
+  /** Operation name for error messages */
+  operationName?: string;
+}
+
+/**
+ * Retry a function with exponential backoff
+ * Useful for file operations that may fail due to concurrent access
+ */
+export async function withRetry<T>(
+  fn: () => Promise<T>,
+  options: RetryOptions
+): Promise<T> {
+  const { maxRetries, delayMs, backoffMultiplier = 2, operationName = 'operation' } = options;
+  let lastError: Error | undefined;
+  let currentDelay = delayMs;
+
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      return await fn();
+    } catch (error) {
+      lastError = error instanceof Error ? error : new Error(String(error));
+
+      if (attempt < maxRetries) {
+        if (process.env.VERBOSE === 'true') {
+          console.log(chalk.yellow(`Retry ${attempt}/${maxRetries} for ${operationName} after ${currentDelay}ms...`));
+        }
+        await new Promise(resolve => setTimeout(resolve, currentDelay));
+        currentDelay *= backoffMultiplier;
+      }
+    }
+  }
+
+  throw new Error(
+    `${operationName} failed after ${maxRetries} attempts. Last error: ${lastError?.message}`
+  );
+}
+
+/**
+ * Attempt to recover from a corrupted project file
+ * Tries to restore from backup and provides actionable suggestions
+ */
+export async function attemptRecovery(projectPath: string): Promise<{ success: boolean; message: string }> {
+  const storage = new TaskStorage({ projectDir: projectPath });
+
+  try {
+    // Check if backup exists
+    const backups = await storage.listBackups();
+    if (backups.length === 0) {
+      return {
+        success: false,
+        message: 'No backup files available for recovery. You may need to re-initialize the project.',
+      };
+    }
+
+    // Attempt to restore
+    await storage.restoreFromBackup();
+    return {
+      success: true,
+      message: `Successfully restored from backup: ${backups[0]}`,
+    };
+  } catch (error) {
+    return {
+      success: false,
+      message: `Recovery failed: ${error instanceof Error ? error.message : String(error)}`,
+    };
+  }
 }

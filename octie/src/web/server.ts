@@ -15,6 +15,8 @@ import { TaskStorage } from '../core/storage/file-store.js';
 import type { TaskGraphStore } from '../core/graph/index.js';
 import { registerTaskRoutes } from './routes/tasks.js';
 import { registerGraphRoutes } from './routes/graph.js';
+import { OctieError, ERROR_SUGGESTIONS } from '../types/index.js';
+import { ZodError } from 'zod';
 
 /**
  * Web server configuration options
@@ -46,6 +48,8 @@ export interface ApiResponse<T = unknown> {
     code: string;
     /** Human-readable error message */
     message: string;
+    /** Suggestion for how to resolve the error */
+    suggestion?: string;
     /** Additional error details */
     details?: unknown;
   };
@@ -242,6 +246,7 @@ export class WebServer {
         error: {
           code: 'NOT_FOUND',
           message: `Endpoint not found: ${req.method} ${req.path}`,
+          suggestion: 'Check the API documentation at /api for available endpoints.',
         },
         timestamp: new Date().toISOString(),
       } satisfies ApiResponse);
@@ -252,15 +257,55 @@ export class WebServer {
    * Configure error handling middleware
    */
   private _configureErrorHandling(): void {
-    // Global error handler
+    // Global error handler with proper status code mapping
     this._app.use((err: Error, _req: Request, res: Response, _next: unknown) => {
-      console.error(`[${new Date().toISOString()}] Error:`, err);
+      console.error(`[${new Date().toISOString()}] Error:`, err.message);
 
-      res.status(500).json({
+      // Handle Zod validation errors
+      if (err instanceof ZodError) {
+        const formattedErrors = err.errors.map(e => ({
+          field: e.path.join('.'),
+          message: e.message,
+        }));
+
+        res.status(400).json({
+          success: false,
+          error: {
+            code: 'VALIDATION_ERROR',
+            message: 'Request validation failed',
+            details: formattedErrors,
+            suggestion: 'Check the request body format and ensure all required fields are provided with valid values.',
+          },
+          timestamp: new Date().toISOString(),
+        } satisfies ApiResponse);
+        return;
+      }
+
+      // Handle OctieError with proper status code and suggestion
+      if (err instanceof OctieError) {
+        res.status(err.statusCode).json({
+          success: false,
+          error: {
+            code: err.code,
+            message: err.message,
+            suggestion: err.suggestion,
+          },
+          timestamp: new Date().toISOString(),
+        } satisfies ApiResponse);
+        return;
+      }
+
+      // Handle generic errors
+      const statusCode = 500;
+      const code = 'INTERNAL_ERROR';
+      const message = err.message || 'An unexpected error occurred';
+
+      res.status(statusCode).json({
         success: false,
         error: {
-          code: 'INTERNAL_SERVER_ERROR',
-          message: err.message || 'An unexpected error occurred',
+          code,
+          message,
+          suggestion: ERROR_SUGGESTIONS[code],
           details: process.env.NODE_ENV === 'development' ? err.stack : undefined,
         },
         timestamp: new Date().toISOString(),
