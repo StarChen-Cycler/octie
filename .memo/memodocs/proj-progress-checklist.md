@@ -946,16 +946,19 @@
 **Completed**: 2026-02-17
 **Git Commit**: (pending)
 
-#### [ ] Add Notes File Reading Capability
+#### [x] Add Notes File Reading Capability
 **Blockers**: None
-**Related Files**: octie/src/cli/commands/create.ts, octie/src/cli/commands/update.ts
+**Related Files**: octie/src/cli/commands/create.ts, octie/src/cli/commands/update.ts, octie/tests/unit/cli/commands/create.test.ts, octie/tests/unit/cli/commands/update.test.ts
 **C7 MCP Verified**: N/A
-**Description**: Add --notes-file option to read notes from file for multi-line notes support
+**Description**: Add `--notes-file` option to read notes from file for multi-line notes support
 **Deliverables**:
-- [ ] `--notes-file <path>` option on create command (replaces --notes)
-- [ ] `--notes-file <path>` option on update command (appends to existing notes)
-- [ ] File validation: check file exists and is readable before processing
-- [ ] File content trimming (strip leading/trailing whitespace)
-- [ ] Error handling for missing files with helpful message
-- [ ] Tests for notes-file with various file formats (txt, md, etc.)
-- [ ] Tests for notes-file update (append behavior vs replace on create)
+- [x] `--notes-file <path>` option on create command (reads content, replaces --notes)
+- [x] `--notes-file <path>` option on update command (appends to existing notes)
+- [x] File validation: check file exists and is readable before processing
+- [x] File content trimming (strip leading/trailing whitespace)
+- [x] Error handling for missing files with helpful message
+- [x] Tests for notes-file with various file formats (txt, md, etc.)
+- [x] Tests for notes-file update (append behavior vs replace on create)
+- [x] Fixed create command to properly merge global options with local options
+**Completed**: 2026-02-17
+**Git Commit**: (pending)

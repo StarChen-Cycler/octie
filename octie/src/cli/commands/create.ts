@@ -7,6 +7,8 @@ import { v4 as uuidv4 } from 'uuid';
 import { TaskNode } from '../../core/models/task-node.js';
 import { getProjectPath, loadGraph, saveGraph, success, error, info, parseList } from '../utils/helpers.js';
 import chalk from 'chalk';
+import { readFileSync, existsSync } from 'node:fs';
+import { resolve } from 'node:path';
 
 /**
  * Display atomic task policy help
@@ -89,9 +91,10 @@ export const createCommand = new Command('create')
   .option('-f, --related-files <paths>', 'Comma-separated file paths relevant to task')
   .option('-c, --c7-verified <library:notes>', 'C7 library verification (format: library-id or library-id:notes, can be specified multiple times)')
   .option('-n, --notes <text>', 'Additional context or comments')
+  .option('--notes-file <path>', 'Read notes from file (multi-line notes support)')
   .option('-i, --interactive', 'Interactive mode with prompts')
   .option('--project <path>', 'Path to Octie project directory')
-  .action(async (options) => {
+  .action(async (options, command) => {
     try {
       // Display atomic task policy on --help
       if (process.argv.includes('--help') || process.argv.includes('-h')) {
@@ -99,8 +102,9 @@ export const createCommand = new Command('create')
         return;
       }
 
-      // Load project
-      const projectPath = await getProjectPath(options.project);
+      // Get global options (from parent) and merge with local options
+      const globalOpts = command.parent?.opts() || {};
+      const projectPath = await getProjectPath(options.project || globalOpts.project);
       const graph = await loadGraph(projectPath);
 
       // Parse multi-value options
@@ -156,6 +160,25 @@ export const createCommand = new Command('create')
         process.exit(1);
       }
 
+      // Handle notes: support both --notes and --notes-file
+      let notes = '';
+      if (options.notesFile) {
+        // Read notes from file
+        const notesPath = resolve(options.notesFile);
+        if (!existsSync(notesPath)) {
+          error(`Notes file not found: ${notesPath}`);
+          process.exit(1);
+        }
+        try {
+          notes = readFileSync(notesPath, 'utf-8').trim();
+        } catch (err) {
+          error(`Failed to read notes file: ${err instanceof Error ? err.message : 'Unknown error'}`);
+          process.exit(1);
+        }
+      } else if (options.notes) {
+        notes = options.notes.trim();
+      }
+
       // Build task data
       const taskId = uuidv4();
       const taskData = {
@@ -177,7 +200,7 @@ export const createCommand = new Command('create')
         blockers: parseList(options.blockers || ''),
         dependencies: parseList(options.dependencies || ''),
         related_files: parseList(options.relatedFiles || ''),
-        notes: (options.notes || '').trim(),
+        notes,
         c7_verified: c7Verifications,
         sub_items: [],
         edges: [],

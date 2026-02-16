@@ -9,13 +9,14 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { rmSync } from 'node:fs';
+import { rmSync, writeFileSync, mkdirSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { v4 as uuidv4 } from 'uuid';
 import { TaskStorage } from '../../../../src/core/storage/file-store.js';
 import { TaskNode } from '../../../../src/core/models/task-node.js';
 import { TaskGraphStore } from '../../../../src/core/graph/index.js';
+import { execSync } from 'node:child_process';
 
 describe('create command', () => {
   let tempDir: string;
@@ -595,6 +596,144 @@ describe('create command', () => {
       expect(task.c7_verified).toHaveLength(1);
       expect(task.c7_verified[0].library_id).toBe('/mongodb/docs');
       expect(task.c7_verified[0].notes).toBe('Query patterns');
+    });
+  });
+
+  describe('notes file option (CLI integration)', () => {
+    let cliTempDir: string;
+    let cliStorage: TaskStorage;
+    let notesDir: string;
+    let cliPath: string;
+
+    beforeEach(async () => {
+      cliTempDir = join(tmpdir(), `octie-cli-test-${uuidv4()}`);
+      cliStorage = new TaskStorage({ projectDir: cliTempDir });
+      await cliStorage.createProject('cli-test-project');
+      notesDir = join(tmpdir(), `octie-notes-${uuidv4()}`);
+      mkdirSync(notesDir, { recursive: true });
+      cliPath = join(process.cwd(), 'dist', 'cli', 'index.js');
+    });
+
+    afterEach(() => {
+      try {
+        rmSync(cliTempDir, { recursive: true, force: true });
+        rmSync(notesDir, { recursive: true, force: true });
+      } catch {
+        // Ignore cleanup errors
+      }
+    });
+
+    it('should create task with notes from file', async () => {
+      const notesFile = join(notesDir, 'notes.txt');
+      writeFileSync(notesFile, 'Implementation notes:\n- Use bcrypt\n- Handle edge cases');
+
+      const output = execSync(
+        `node ${cliPath} --project "${cliTempDir}" create ` +
+        `--title "Implement login endpoint" ` +
+        `--description "Create POST /auth/login endpoint that validates credentials and returns JWT token for secure authentication" ` +
+        `--success-criterion "Returns 200 with valid JWT" ` +
+        `--deliverable "src/auth/login.ts" ` +
+        `--notes-file "${notesFile}"`,
+        { encoding: 'utf-8' }
+      );
+
+      expect(output).toContain('Task created');
+
+      // Reload from storage to get the created task
+      const graph = await cliStorage.load();
+      const tasks = graph.getAllTasks();
+      expect(tasks.length).toBeGreaterThan(0);
+      const task = tasks[tasks.length - 1];
+      expect(task?.notes).toContain('Implementation notes:');
+      expect(task?.notes).toContain('Use bcrypt');
+    });
+
+    it('should handle markdown notes file', async () => {
+      const notesFile = join(notesDir, 'notes.md');
+      writeFileSync(notesFile, '# API Design\n\n## Endpoints\n- POST /login\n- POST /logout\n\n```typescript\ninterface LoginRequest {\n  email: string;\n}\n```');
+
+      const output = execSync(
+        `node ${cliPath} --project "${cliTempDir}" create ` +
+        `--title "Implement logout endpoint" ` +
+        `--description "Create POST /auth/logout endpoint that invalidates JWT tokens and clears session data for secure logout functionality" ` +
+        `--success-criterion "Returns 200 on successful logout" ` +
+        `--deliverable "src/auth/logout.ts" ` +
+        `--notes-file "${notesFile}"`,
+        { encoding: 'utf-8' }
+      );
+
+      expect(output).toContain('Task created');
+
+      // Reload from storage
+      const graph = await cliStorage.load();
+      const tasks = graph.getAllTasks();
+      expect(tasks.length).toBeGreaterThan(0);
+      const task = tasks[tasks.length - 1];
+      expect(task?.notes).toContain('# API Design');
+      expect(task?.notes).toContain('POST /login');
+      expect(task?.notes).toContain('interface LoginRequest');
+    });
+
+    it('should reject non-existent notes file', () => {
+      const missingFile = join(notesDir, 'missing.txt');
+
+      expect(() => {
+        execSync(
+          `node ${cliPath} --project "${cliTempDir}" create ` +
+          `--title "Implement feature" ` +
+          `--description "Create a new feature endpoint with validation and error handling for production use cases" ` +
+          `--success-criterion "Feature works correctly" ` +
+          `--deliverable "src/feature.ts" ` +
+          `--notes-file "${missingFile}"`,
+          { encoding: 'utf-8', stdio: 'pipe' }
+        );
+      }).toThrow();
+    });
+
+    it('should prefer --notes-file over --notes when both provided', async () => {
+      const notesFile = join(notesDir, 'file-notes.txt');
+      writeFileSync(notesFile, 'Notes from file');
+
+      execSync(
+        `node ${cliPath} --project "${cliTempDir}" create ` +
+        `--title "Implement settings endpoint" ` +
+        `--description "Create GET /settings endpoint that returns user preferences and application configuration for client consumption" ` +
+        `--success-criterion "Returns user settings" ` +
+        `--deliverable "src/settings.ts" ` +
+        `--notes "Inline notes" ` +
+        `--notes-file "${notesFile}"`,
+        { encoding: 'utf-8' }
+      );
+
+      // Reload from storage
+      const graph = await cliStorage.load();
+      const tasks = graph.getAllTasks();
+      expect(tasks.length).toBeGreaterThan(0);
+      const task = tasks[tasks.length - 1];
+      // When both are provided, notes-file takes precedence (replaces inline notes)
+      expect(task?.notes).toBe('Notes from file');
+    });
+
+    it('should trim whitespace from file content', async () => {
+      const notesFile = join(notesDir, 'padded.txt');
+      writeFileSync(notesFile, '\n   \n  Trimmed content  \n   \n');
+
+      execSync(
+        `node ${cliPath} --project "${cliTempDir}" create ` +
+        `--title "Implement profile endpoint" ` +
+        `--description "Create GET /profile endpoint that returns user profile information including name email and avatar for display" ` +
+        `--success-criterion "Returns profile data" ` +
+        `--deliverable "src/profile.ts" ` +
+        `--notes-file "${notesFile}"`,
+        { encoding: 'utf-8' }
+      );
+
+      // Reload from storage
+      const graph = await cliStorage.load();
+      const tasks = graph.getAllTasks();
+      expect(tasks.length).toBeGreaterThan(0);
+      const task = tasks[tasks.length - 1];
+      expect(task?.notes).toBe('Trimmed content');
     });
   });
 });

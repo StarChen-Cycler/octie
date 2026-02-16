@@ -10,7 +10,7 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { rmSync } from 'node:fs';
+import { rmSync, writeFileSync, mkdirSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { v4 as uuidv4 } from 'uuid';
@@ -520,6 +520,96 @@ describe('update command', () => {
       );
 
       expect(output).toContain('Task updated');
+    });
+  });
+
+  describe('notes file option', () => {
+    let notesDir: string;
+
+    beforeEach(() => {
+      notesDir = join(tmpdir(), `octie-notes-${uuidv4()}`);
+      mkdirSync(notesDir, { recursive: true });
+    });
+
+    afterEach(() => {
+      try {
+        rmSync(notesDir, { recursive: true, force: true });
+      } catch {
+        // Ignore cleanup errors
+      }
+    });
+
+    it('should append notes from file to existing task notes', async () => {
+      const notesFile = join(notesDir, 'test-notes.txt');
+      writeFileSync(notesFile, 'This is additional context from file.\nWith multiple lines.');
+
+      const output = execSync(
+        `node ${cliPath} --project "${tempDir}" update ${testTaskId} --notes-file "${notesFile}"`,
+        { encoding: 'utf-8' }
+      );
+
+      expect(output).toContain('Task updated');
+
+      const graph = await storage.load();
+      const task = graph.getNode(testTaskId);
+      expect(task?.notes).toContain('This is additional context from file.');
+      expect(task?.notes).toContain('With multiple lines.');
+    });
+
+    it('should handle markdown files', async () => {
+      const notesFile = join(notesDir, 'notes.md');
+      writeFileSync(notesFile, '# Implementation Notes\n\n- Item 1\n- Item 2\n\n```typescript\nconst x = 1;\n```');
+
+      execSync(
+        `node ${cliPath} --project "${tempDir}" update ${testTaskId} --notes-file "${notesFile}"`,
+        { encoding: 'utf-8' }
+      );
+
+      const graph = await storage.load();
+      const task = graph.getNode(testTaskId);
+      expect(task?.notes).toContain('# Implementation Notes');
+      expect(task?.notes).toContain('const x = 1;');
+    });
+
+    it('should reject non-existent notes file', () => {
+      const missingFile = join(notesDir, 'missing.txt');
+
+      expect(() => {
+        execSync(
+          `node ${cliPath} --project "${tempDir}" update ${testTaskId} --notes-file "${missingFile}"`,
+          { encoding: 'utf-8', stdio: 'pipe' }
+        );
+      }).toThrow();
+    });
+
+    it('should trim whitespace from file content', async () => {
+      const notesFile = join(notesDir, 'padded.txt');
+      writeFileSync(notesFile, '   \n  Trimmed content  \n   ');
+
+      execSync(
+        `node ${cliPath} --project "${tempDir}" update ${testTaskId} --notes-file "${notesFile}"`,
+        { encoding: 'utf-8' }
+      );
+
+      const graph = await storage.load();
+      const task = graph.getNode(testTaskId);
+      // The content should be trimmed but not completely empty
+      expect(task?.notes).toContain('Trimmed content');
+    });
+
+    it('should work with both --notes and --notes-file together', async () => {
+      const notesFile = join(notesDir, 'combined.txt');
+      writeFileSync(notesFile, 'File content here');
+
+      execSync(
+        `node ${cliPath} --project "${tempDir}" update ${testTaskId} --notes "Inline note" --notes-file "${notesFile}"`,
+        { encoding: 'utf-8' }
+      );
+
+      const graph = await storage.load();
+      const task = graph.getNode(testTaskId);
+      expect(task?.notes).toContain('Inline note');
+      expect(task?.notes).toContain('File content here');
     });
   });
 

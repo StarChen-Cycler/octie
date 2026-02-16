@@ -6,6 +6,8 @@ import { Command } from 'commander';
 import { getProjectPath, loadGraph, saveGraph, success, error } from '../utils/helpers.js';
 import chalk from 'chalk';
 import { randomUUID } from 'node:crypto';
+import { readFileSync, existsSync } from 'node:fs';
+import { resolve } from 'node:path';
 
 /**
  * Create the update command
@@ -30,6 +32,7 @@ export const updateCommand = new Command('update')
   .option('--verify-c7 <library:notes>', 'Add C7 library verification (format: library-id or library-id:notes)')
   .option('--remove-c7-verified <library>', 'Remove a C7 verification by library ID')
   .option('--notes <text>', 'Append to notes')
+  .option('--notes-file <path>', 'Read notes from file and append (multi-line notes support)')
   .action(async (id, options, command) => {
     try {
       // Get global options
@@ -168,6 +171,23 @@ export const updateCommand = new Command('update')
       if (options.notes) {
         task.appendNotes(options.notes);
         updated = true;
+      }
+
+      // Append notes from file
+      if (options.notesFile) {
+        const notesPath = resolve(options.notesFile);
+        if (!existsSync(notesPath)) {
+          error(`Notes file not found: ${notesPath}`);
+          process.exit(1);
+        }
+        try {
+          const fileContent = readFileSync(notesPath, 'utf-8').trim();
+          task.appendNotes(fileContent);
+          updated = true;
+        } catch (err) {
+          error(`Failed to read notes file: ${err instanceof Error ? err.message : 'Unknown error'}`);
+          process.exit(1);
+        }
       }
 
       if (!updated) {
