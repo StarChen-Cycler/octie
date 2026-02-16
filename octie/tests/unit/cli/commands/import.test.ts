@@ -294,4 +294,325 @@ describe('import command', () => {
       expect(output).toContain('--merge');
     });
   });
+
+  describe('Markdown import', () => {
+    let mdImportFile: string;
+
+    beforeEach(() => {
+      // Create markdown test file
+      const importDir = join(importFile, '..');
+      mdImportFile = join(importDir, 'tasks.md');
+    });
+
+    it('should import tasks from markdown file', async () => {
+      const mdContent = `# Test Project
+
+## [ ] Create test task for markdown import
+**ID**: \`task-md-001\` | **Status**: not_started | **Priority**: top
+
+### Description
+Create a comprehensive test task by importing from markdown file format to verify the parsing capabilities of the import command.
+
+### Success Criteria
+- [x] Parse task header correctly
+- [ ] Parse success criteria checkboxes
+- [ ] Parse deliverables with file paths
+
+### Deliverables
+- [ ] import.ts → \`src/cli/commands/import.ts\`
+- [x] Tests written
+
+### Notes
+This is a test task for markdown import.
+`;
+
+      writeFileSync(mdImportFile, mdContent);
+
+      const output = execSync(
+        `node ${cliPath} --project "${tempDir}" import "${mdImportFile}"`,
+        { encoding: 'utf-8' }
+      );
+
+      expect(output).toContain('Parsed');
+      expect(output).toContain('markdown');
+      expect(output).toContain('Imported');
+
+      const graph = await storage.load();
+      expect(graph.size).toBe(1);
+
+      const task = graph.getAllTasks()[0];
+      expect(task.title).toBe('Create test task for markdown import');
+      expect(task.status).toBe('not_started');
+      expect(task.priority).toBe('top');
+      expect(task.success_criteria.length).toBe(3);
+      expect(task.deliverables.length).toBe(2);
+    });
+
+    it('should parse checkbox states correctly', async () => {
+      const mdContent = `## [x] Completed Task
+**ID**: \`task-completed\`
+
+### Description
+This task has some items completed to test checkbox parsing functionality.
+
+### Success Criteria
+- [x] First criterion complete
+- [ ] Second criterion incomplete
+
+### Deliverables
+- [x] Complete deliverable
+`;
+
+      writeFileSync(mdImportFile, mdContent);
+
+      execSync(
+        `node ${cliPath} --project "${tempDir}" import "${mdImportFile}"`,
+        { encoding: 'utf-8' }
+      );
+
+      const graph = await storage.load();
+      const task = graph.getAllTasks()[0];
+
+      // First criterion should be completed
+      expect(task.success_criteria[0].completed).toBe(true);
+      // Second criterion should not be completed
+      expect(task.success_criteria[1].completed).toBe(false);
+    });
+
+    it('should handle [X] uppercase checkbox variant', async () => {
+      const mdContent = `## [X] Uppercase Checkbox Task
+
+### Description
+Task with uppercase X checkbox variant to test parsing flexibility and ensure both uppercase and lowercase checkboxes are handled correctly during the import process.
+
+### Success Criteria
+- [X] Uppercase checkbox should work
+
+### Deliverables
+- [ ] Regular deliverable
+`;
+
+      writeFileSync(mdImportFile, mdContent);
+
+      execSync(
+        `node ${cliPath} --project "${tempDir}" import "${mdImportFile}"`,
+        { encoding: 'utf-8' }
+      );
+
+      const graph = await storage.load();
+      const task = graph.getAllTasks()[0];
+
+      expect(task.success_criteria[0].completed).toBe(true);
+    });
+
+    it('should parse blockers with #task-id format', async () => {
+      const mdContent = `## [ ] Task With Blocker
+**ID**: \`task-blocked\`
+
+### Description
+Task that is blocked by another task to test the blocker parsing functionality with the hash format.
+
+### Success Criteria
+- [ ] Criterion
+
+### Deliverables
+- [ ] Deliverable
+
+### Blockers
+- #task-blocker-001
+- #task-blocker-002
+`;
+
+      writeFileSync(mdImportFile, mdContent);
+
+      execSync(
+        `node ${cliPath} --project "${tempDir}" import "${mdImportFile}"`,
+        { encoding: 'utf-8' }
+      );
+
+      const graph = await storage.load();
+      const task = graph.getAllTasks()[0];
+
+      expect(task.blockers).toContain('task-blocker-001');
+      expect(task.blockers).toContain('task-blocker-002');
+    });
+
+    it('should parse deliverables with file paths', async () => {
+      const mdContent = `## [ ] Task With Files
+**ID**: \`task-files\`
+
+### Description
+Task with deliverables that have associated file paths to test file path parsing in markdown format.
+
+### Success Criteria
+- [ ] Criterion
+
+### Deliverables
+- [x] Source file → \`src/feature.ts\`
+- [ ] Test file → \`tests/feature.test.ts\`
+`;
+
+      writeFileSync(mdImportFile, mdContent);
+
+      execSync(
+        `node ${cliPath} --project "${tempDir}" import "${mdImportFile}"`,
+        { encoding: 'utf-8' }
+      );
+
+      const graph = await storage.load();
+      const task = graph.getAllTasks()[0];
+
+      expect(task.deliverables[0].file_path).toBe('src/feature.ts');
+      expect(task.deliverables[0].completed).toBe(true);
+      expect(task.deliverables[1].file_path).toBe('tests/feature.test.ts');
+      expect(task.deliverables[1].completed).toBe(false);
+    });
+
+    it('should parse multiple tasks from one file', async () => {
+      const mdContent = `# Multi-Task Export
+
+## [ ] First Task
+**ID**: \`task-001\`
+
+### Description
+First task description for multi-task markdown import testing with sufficient length to pass validation.
+
+### Success Criteria
+- [ ] Criterion 1
+
+### Deliverables
+- [ ] src/feature1.ts
+
+---
+
+## [x] Second Task
+**ID**: \`task-002\`
+
+### Description
+Second task that is already completed and has sufficient description length for validation.
+
+### Success Criteria
+- [x] Criterion 2
+
+### Deliverables
+- [x] src/feature2.ts
+`;
+
+      writeFileSync(mdImportFile, mdContent);
+
+      execSync(
+        `node ${cliPath} --project "${tempDir}" import "${mdImportFile}"`,
+        { encoding: 'utf-8' }
+      );
+
+      const graph = await storage.load();
+      expect(graph.size).toBe(2);
+
+      const task1 = graph.getNode('task-001');
+      expect(task1).toBeDefined();
+      expect(task1?.status).toBe('not_started');
+
+      const task2 = graph.getNode('task-002');
+      expect(task2).toBeDefined();
+      expect(task2?.status).toBe('completed');
+    });
+
+    it('should merge markdown tasks with existing tasks', async () => {
+      // Create existing task
+      const graph = await storage.load();
+      const existingTask = new TaskNode({
+        title: 'Implement first task feature',
+        description: 'Existing task that will be matched by title during merge testing and should receive updated completion states from the markdown import.',
+        success_criteria: [{ id: uuidv4(), text: 'Criterion 1', completed: false }],
+        deliverables: [{ id: uuidv4(), text: 'src/feature.ts', completed: false }],
+        blockers: [],
+        dependencies: [],
+      });
+      graph.addNode(existingTask);
+      await storage.save(graph);
+
+      // Import with completion states changed
+      const mdContent = `## [x] Implement first task feature
+
+### Description
+Existing task that will be matched by title during merge testing and should receive updated completion states from the markdown import.
+
+### Success Criteria
+- [x] Criterion 1
+
+### Deliverables
+- [x] src/feature.ts
+`;
+
+      writeFileSync(mdImportFile, mdContent);
+
+      execSync(
+        `node ${cliPath} --project "${tempDir}" import "${mdImportFile}" --merge`,
+        { encoding: 'utf-8' }
+      );
+
+      const updatedGraph = await storage.load();
+      const mergedTask = updatedGraph.getNode(existingTask.id);
+      expect(mergedTask).toBeDefined();
+      // Check that criterion was marked complete by merge
+      expect(mergedTask?.success_criteria[0].completed).toBe(true);
+    });
+
+    it('should auto-detect markdown format from .md extension', () => {
+      const mdContent = `## [ ] Auto-detected Task
+
+### Description
+Task with markdown extension for auto-detection testing to verify format detection works correctly when file extension is .md.
+
+### Success Criteria
+- [ ] Criterion
+
+### Deliverables
+- [ ] Deliverable
+`;
+
+      writeFileSync(mdImportFile, mdContent);
+
+      const output = execSync(
+        `node ${cliPath} --project "${tempDir}" import "${mdImportFile}"`,
+        { encoding: 'utf-8' }
+      );
+
+      expect(output).toContain('Parsed');
+    });
+
+    it('should accept explicit --format md', () => {
+      const mdContent = `## [ ] Explicit Format Task
+
+### Description
+Task with explicit format specification to test that the --format md flag works correctly for markdown file import processing.
+
+### Success Criteria
+- [ ] Criterion
+
+### Deliverables
+- [ ] Deliverable
+`;
+
+      writeFileSync(mdImportFile, mdContent);
+
+      const output = execSync(
+        `node ${cliPath} --project "${tempDir}" import "${mdImportFile}" --format md`,
+        { encoding: 'utf-8' }
+      );
+
+      expect(output).toContain('Parsed');
+    });
+
+    it('should reject empty markdown file', () => {
+      writeFileSync(mdImportFile, '# No Tasks Here\n\nJust some text without tasks.');
+
+      expect(() => {
+        execSync(
+          `node ${cliPath} --project "${tempDir}" import "${mdImportFile}"`,
+          { encoding: 'utf-8', stdio: 'pipe' }
+        );
+      }).toThrow();
+    });
+  });
 });
