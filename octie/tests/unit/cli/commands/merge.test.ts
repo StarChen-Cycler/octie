@@ -220,7 +220,7 @@ describe('merge command', () => {
         encoding: 'utf-8',
       });
 
-      expect(output).toContain('Merge tasks');
+      expect(output).toContain('Merge two tasks');
     });
   });
 });

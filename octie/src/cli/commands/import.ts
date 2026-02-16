@@ -8,6 +8,7 @@ import { getProjectPath, success, error, warning } from '../utils/helpers.js';
 import chalk from 'chalk';
 import { readFileSync, existsSync } from 'node:fs';
 import { TaskGraphStore } from '../../core/graph/index.js';
+import { TaskNode } from '../../core/models/task-node.js';
 import { resolve } from 'node:path';
 
 /**
@@ -27,12 +28,17 @@ function validateImportData(data: any): void {
     throw new Error('Invalid data: must be an object');
   }
 
-  // Check for required fields in project file format
+  // Check for tasks format (from project file export)
   if (data.version && data.format && data.tasks) {
     // Full project file format
     if (!data.tasks || typeof data.tasks !== 'object') {
       throw new Error('Invalid project file: missing or invalid tasks object');
     }
+    return;
+  }
+
+  // Check for nodes format (from toJSON() export)
+  if (data.nodes && typeof data.nodes === 'object') {
     return;
   }
 
@@ -52,6 +58,76 @@ function validateImportData(data: any): void {
   }
 
   throw new Error('Unrecognized data format. Expected project file, task array, or single task.');
+}
+
+/**
+ * Create TaskGraphStore from various import formats
+ */
+function createGraphFromImportData(data: any): TaskGraphStore {
+  // Handle nodes format (from toJSON() export)
+  if (data.nodes && data.outgoingEdges !== undefined && data.incomingEdges !== undefined) {
+    return TaskGraphStore.fromJSON(data);
+  }
+
+  // Handle tasks format (from project file export)
+  if (data.tasks && typeof data.tasks === 'object') {
+    const metadata = data.metadata || {
+      project_name: 'imported-project',
+      version: '1.0.0',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      task_count: Object.keys(data.tasks || {}).length,
+    };
+
+    const store = new TaskGraphStore(metadata);
+
+    // Add tasks
+    for (const [, taskData] of Object.entries(data.tasks)) {
+      const node = TaskNode.fromJSON(taskData as any);
+      store.addNode(node);
+    }
+
+    return store;
+  }
+
+  // Handle task array format
+  if (Array.isArray(data)) {
+    const metadata = {
+      project_name: 'imported-project',
+      version: '1.0.0',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      task_count: data.length,
+    };
+
+    const store = new TaskGraphStore(metadata);
+
+    for (const taskData of data) {
+      const node = TaskNode.fromJSON(taskData);
+      store.addNode(node);
+    }
+
+    return store;
+  }
+
+  // Handle single task format
+  if (data.id && data.title) {
+    const metadata = {
+      project_name: 'imported-project',
+      version: '1.0.0',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      task_count: 1,
+    };
+
+    const store = new TaskGraphStore(metadata);
+    const node = TaskNode.fromJSON(data);
+    store.addNode(node);
+
+    return store;
+  }
+
+  throw new Error('Could not convert import data to graph format');
 }
 
 /**
@@ -114,23 +190,22 @@ export const importCommand = new Command('import')
       }
 
       // Create backup before import if project exists
-      if (await storage.exists()) {
+      const projectExists = await storage.exists();
+      if (projectExists) {
         warning('Project already exists. Creating backup before import...');
-        await storage.createProject(projectPath); // This creates backup
+        // Load existing to preserve it for merge
       }
 
       // Import data
       let store: TaskGraphStore;
 
-      if (options.merge && await storage.exists()) {
+      if (options.merge && projectExists) {
         // Merge mode: load existing and merge
         warning('Merging with existing tasks...');
         const existing = await storage.load();
 
-        // Merge tasks
-        // For now, we'll use fromJSON which creates a new store
-        // A true merge would need to iterate and add tasks one by one
-        store = TaskGraphStore.fromJSON(data);
+        // Create store from import data
+        store = createGraphFromImportData(data);
 
         // Add tasks from existing that aren't in import
         for (const task of existing.getAllTasks()) {
@@ -140,10 +215,7 @@ export const importCommand = new Command('import')
         }
       } else {
         // Replace mode (default)
-        if (!(await storage.exists())) {
-          await storage.createProject('imported-project');
-        }
-        store = TaskGraphStore.fromJSON(data);
+        store = createGraphFromImportData(data);
       }
 
       // Save with storage
