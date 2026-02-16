@@ -17,6 +17,7 @@ import { graphCommand } from './commands/graph.js';
 import { exportCommand } from './commands/export.js';
 import { importCommand } from './commands/import.js';
 import { serveCommand } from './commands/serve.js';
+import { findCommand } from './commands/find.js';
 import { formatError } from './utils/helpers.js';
 
 // Version from package.json
@@ -90,6 +91,7 @@ function main(): void {
   program.addCommand(exportCommand);
   program.addCommand(importCommand);
   program.addCommand(serveCommand);
+  program.addCommand(findCommand);
 
   // Parse arguments
   program.parse(process.argv);
