@@ -61,7 +61,7 @@ function createProgram(): Command {
   // Global options
   program
     .option('-p, --project <path>', 'Path to Octie project directory')
-    .option('-f, --format <format>', 'Output format: json, md, table', 'table')
+    .option('--format <format>', 'Output format: json, md, table', 'table')
     .option('--verbose', 'Enable verbose output')
     .option('--quiet', 'Suppress non-error output')
     .configureHelp({

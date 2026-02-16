@@ -8,8 +8,6 @@ import type { TaskGraphStore } from '../../core/graph/index.js';
 import { TaskNode } from '../../core/models/task-node.js';
 import { getProjectPath, loadGraph, formatStatus, formatPriority } from '../utils/helpers.js';
 import chalk from 'chalk';
-// @ts-ignore - archy doesn't have types
-import archy from 'archy';
 
 /**
  * Format task as table row
@@ -46,49 +44,40 @@ function formatTaskAsMarkdown(task: TaskNode): string {
 }
 
 /**
- * Build tree structure for display
+ * Build and render tree structure for display
  */
-function buildTree(graph: TaskGraphStore, rootTasks: string[]): any {
-  const nodes: Record<string, any> = {};
-
-  for (const taskId of graph.getAllTaskIds()) {
-    const task = graph.getNode(taskId);
-    if (task) {
-      nodes[taskId] = {
-        label: `${task.title} ${chalk.gray(`(${task.status})`)}`,
-        nodes: [],
-      };
-    }
-  }
-
-  const roots: any[] = [];
+function buildAndRenderTree(graph: TaskGraphStore, rootTasks: string[]): string {
+  const lines: string[] = [];
   const visited = new Set<string>();
 
-  function visit(taskId: string): any {
+  function renderNode(taskId: string, prefix: string, isLast: boolean): void {
     if (visited.has(taskId)) {
-      return nodes[taskId];
+      return;
     }
     visited.add(taskId);
 
-    const node = { ...nodes[taskId] };
+    const task = graph.getNode(taskId);
+    if (!task) return;
 
-    // Get outgoing edges (dependents)
+    const connector = isLast ? '└── ' : '├── ';
+    lines.push(prefix + connector + `${task.title} ${chalk.gray(`(${task.status})`)}`);
+
     const dependents = graph.getOutgoingEdges(taskId);
-    for (const dependentId of dependents) {
-      const child = visit(dependentId);
-      if (child) {
-        node.nodes.push(child);
-      }
-    }
+    const dependentCount = dependents.length;
 
-    return node;
+    dependents.forEach((depId, index) => {
+      const isLastChild = index === dependentCount - 1;
+      const newPrefix = prefix + (isLast ? '    ' : '│   ');
+      renderNode(depId, newPrefix, isLastChild);
+    });
   }
 
-  for (const rootId of rootTasks) {
-    roots.push(visit(rootId));
-  }
+  rootTasks.forEach((rootId, index) => {
+    const isLastRoot = index === rootTasks.length - 1;
+    renderNode(rootId, '', isLastRoot);
+  });
 
-  return roots;
+  return lines.join('\n');
 }
 
 /**
@@ -98,14 +87,16 @@ export const listCommand = new Command('list')
   .description('List tasks with filtering options')
   .option('-s, --status <status>', 'Filter by status')
   .option('-p, --priority <priority>', 'Filter by priority')
-  .option('-f, --format <format>', 'Output format: table, json, md', 'table')
   .option('--graph', 'Show graph structure')
   .option('--tree', 'Show tree view')
-  .option('--project <path>', 'Path to Octie project directory')
-  .action(async (options) => {
+  .action(async (options, command) => {
     try {
+      // Get global options
+      const globalOpts = command.parent?.opts() || {};
+      const format = globalOpts.format || 'table';
+
       // Load project
-      const projectPath = await getProjectPath(options.project);
+      const projectPath = await getProjectPath(globalOpts.project);
       const graph = await loadGraph(projectPath);
 
       // Apply filters
@@ -150,16 +141,16 @@ export const listCommand = new Command('list')
       // Tree view
       if (options.tree) {
         const rootTasks = graph.getRootTasks();
-        const tree = buildTree(graph, rootTasks);
+        const treeOutput = buildAndRenderTree(graph, rootTasks);
 
         console.log(chalk.bold('Task Tree:'));
         console.log('');
-        console.log(archy(tree));
+        console.log(treeOutput);
         process.exit(0);
       }
 
       // Format output
-      switch (options.format) {
+      switch (format) {
         case 'json':
           console.log(JSON.stringify(tasks, null, 2));
           break;

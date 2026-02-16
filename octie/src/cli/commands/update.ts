@@ -23,10 +23,11 @@ export const updateCommand = new Command('update')
   .option('--unblock <id>', 'Remove a blocker')
   .option('--add-dependency <id>', 'Add a dependency')
   .option('--notes <text>', 'Append to notes')
-  .option('--project <path>', 'Path to Octie project directory')
-  .action(async (id, options) => {
+  .action(async (id, options, command) => {
     try {
-      const projectPath = await getProjectPath(options.project);
+      // Get global options
+      const globalOpts = command.parent?.opts() || {};
+      const projectPath = await getProjectPath(globalOpts.project);
       const graph = await loadGraph(projectPath);
 
       const task = graph.getNode(id);

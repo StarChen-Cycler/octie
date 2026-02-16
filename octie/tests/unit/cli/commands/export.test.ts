@@ -77,7 +77,7 @@ describe('export command', () => {
       const outputPath = join(exportDir, 'export.json');
 
       const output = execSync(
-        `node ${cliPath} export --type json --output "${outputPath}" --project "${tempDir}"`,
+        `node ${cliPath} --project "${tempDir}" export --type json --output "${outputPath}"`,
         { encoding: 'utf-8' }
       );
 
@@ -94,7 +94,7 @@ describe('export command', () => {
       const outputPath = join(exportDir, 'export.json');
 
       execSync(
-        `node ${cliPath} export --type json --output "${outputPath}" --project "${tempDir}"`,
+        `node ${cliPath} --project "${tempDir}" export --type json --output "${outputPath}"`,
         { encoding: 'utf-8' }
       );
 
@@ -114,7 +114,7 @@ describe('export command', () => {
       const outputPath = join(exportDir, 'export.md');
 
       const output = execSync(
-        `node ${cliPath} export --type md --output "${outputPath}" --project "${tempDir}"`,
+        `node ${cliPath} --project "${tempDir}" export --type md --output "${outputPath}"`,
         { encoding: 'utf-8' }
       );
 
@@ -132,7 +132,7 @@ describe('export command', () => {
       const outputPath = join(exportDir, 'export.md');
 
       execSync(
-        `node ${cliPath} export --type md --output "${outputPath}" --project "${tempDir}"`,
+        `node ${cliPath} --project "${tempDir}" export --type md --output "${outputPath}"`,
         { encoding: 'utf-8' }
       );
 
@@ -145,7 +145,7 @@ describe('export command', () => {
   describe('output options', () => {
     it('should use default output path when not specified', () => {
       const output = execSync(
-        `node ${cliPath} export --type json --project "${tempDir}"`,
+        `node ${cliPath} --project "${tempDir}" export --type json`,
         { encoding: 'utf-8' }
       );
 
@@ -157,7 +157,7 @@ describe('export command', () => {
       const deepPath = join(exportDir, 'deep', 'path', 'export.json');
 
       execSync(
-        `node ${cliPath} export --type json --output "${deepPath}" --project "${tempDir}"`,
+        `node ${cliPath} --project "${tempDir}" export --type json --output "${deepPath}"`,
         { encoding: 'utf-8' }
       );
 
@@ -171,7 +171,7 @@ describe('export command', () => {
 
       expect(() => {
         execSync(
-          `node ${cliPath} export --type json --output "${invalidPath}" --project "${tempDir}"`,
+          `node ${cliPath} --project "${tempDir}" export --type json --output "${invalidPath}"`,
           { encoding: 'utf-8', stdio: 'pipe' }
         );
       }).toThrow();
@@ -180,7 +180,7 @@ describe('export command', () => {
     it('should reject invalid export type', () => {
       expect(() => {
         execSync(
-          `node ${cliPath} export --type invalid --project "${tempDir}"`,
+          `node ${cliPath} --project "${tempDir}" export --type invalid`,
           { encoding: 'utf-8', stdio: 'pipe' }
         );
       }).toThrow();

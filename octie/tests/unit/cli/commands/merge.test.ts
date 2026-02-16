@@ -45,7 +45,7 @@ describe('merge command', () => {
     const sourceTask = new TaskNode({
       id: sourceTaskId,
       title: 'Implement login',
-      description: 'Create login endpoint with JWT authentication',
+      description: 'Create login endpoint with JWT authentication for secure user login',
       status: 'in_progress',
       priority: 'top',
       success_criteria: [
@@ -100,9 +100,9 @@ describe('merge command', () => {
   });
 
   describe('task merging', () => {
-    it('should merge two tasks successfully', () => {
+    it('should merge two tasks successfully', async () => {
       const output = execSync(
-        `node ${cliPath} merge ${sourceTaskId} ${targetTaskId} --project "${tempDir}"`,
+        `node ${cliPath} --project "${tempDir}" merge ${sourceTaskId} ${targetTaskId}`,
         { encoding: 'utf-8', input: 'y\n' } // Confirm the merge
       );
 
@@ -119,7 +119,7 @@ describe('merge command', () => {
 
     it('should combine success criteria from both tasks', async () => {
       execSync(
-        `node ${cliPath} merge ${sourceTaskId} ${targetTaskId} --project "${tempDir}"`,
+        `node ${cliPath} --project "${tempDir}" merge ${sourceTaskId} ${targetTaskId}`,
         { encoding: 'utf-8', input: 'y\n' }
       );
 
@@ -131,7 +131,7 @@ describe('merge command', () => {
 
     it('should combine deliverables from both tasks', async () => {
       execSync(
-        `node ${cliPath} merge ${sourceTaskId} ${targetTaskId} --project "${tempDir}"`,
+        `node ${cliPath} --project "${tempDir}" merge ${sourceTaskId} ${targetTaskId}`,
         { encoding: 'utf-8', input: 'y\n' }
       );
 
@@ -143,7 +143,7 @@ describe('merge command', () => {
 
     it('should merge related files without duplicates', async () => {
       execSync(
-        `node ${cliPath} merge ${sourceTaskId} ${targetTaskId} --project "${tempDir}"`,
+        `node ${cliPath} --project "${tempDir}" merge ${sourceTaskId} ${targetTaskId}`,
         { encoding: 'utf-8', input: 'y\n' }
       );
 
@@ -157,7 +157,7 @@ describe('merge command', () => {
 
     it('should append notes from source task', async () => {
       execSync(
-        `node ${cliPath} merge ${sourceTaskId} ${targetTaskId} --project "${tempDir}"`,
+        `node ${cliPath} --project "${tempDir}" merge ${sourceTaskId} ${targetTaskId}`,
         { encoding: 'utf-8', input: 'y\n' }
       );
 
@@ -172,7 +172,7 @@ describe('merge command', () => {
   describe('preview', () => {
     it('should show merge preview before confirming', () => {
       const output = execSync(
-        `node ${cliPath} merge ${sourceTaskId} ${targetTaskId} --project "${tempDir}"`,
+        `node ${cliPath} --project "${tempDir}" merge ${sourceTaskId} ${targetTaskId}`,
         { encoding: 'utf-8', input: 'n\n' } // Answer 'no' to cancel
       );
 
@@ -185,7 +185,7 @@ describe('merge command', () => {
     it('should reject merging same task', () => {
       expect(() => {
         execSync(
-          `node ${cliPath} merge ${targetTaskId} ${targetTaskId} --project "${tempDir}"`,
+          `node ${cliPath} --project "${tempDir}" merge ${targetTaskId} ${targetTaskId}`,
           { encoding: 'utf-8', stdio: 'pipe' }
         );
       }).toThrow();
@@ -196,7 +196,7 @@ describe('merge command', () => {
 
       expect(() => {
         execSync(
-          `node ${cliPath} merge ${fakeId} ${targetTaskId} --project "${tempDir}"`,
+          `node ${cliPath} --project "${tempDir}" merge ${fakeId} ${targetTaskId}`,
           { encoding: 'utf-8', stdio: 'pipe' }
         );
       }).toThrow();
@@ -207,7 +207,7 @@ describe('merge command', () => {
 
       expect(() => {
         execSync(
-          `node ${cliPath} merge ${sourceTaskId} ${fakeId} --project "${tempDir}"`,
+          `node ${cliPath} --project "${tempDir}" merge ${sourceTaskId} ${fakeId}`,
           { encoding: 'utf-8', stdio: 'pipe' }
         );
       }).toThrow();

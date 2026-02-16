@@ -13,11 +13,12 @@ import chalk from 'chalk';
  */
 export const initCommand = new Command('init')
   .description('Initialize a new Octie project')
-  .option('-p, --project <path>', 'Path to project directory', process.cwd())
   .option('-n, --name <name>', 'Project name', 'my-project')
-  .action(async (options) => {
+  .action(async (options, command) => {
     try {
-      const projectPath = path.resolve(options.project);
+      // Get project path from parent's options (global --project option)
+      const projectOption = command.parent?.opts().project;
+      const projectPath = path.resolve(projectOption || process.cwd());
       const projectName = options.name;
 
       info(`Initializing Octie project at ${projectPath}`);

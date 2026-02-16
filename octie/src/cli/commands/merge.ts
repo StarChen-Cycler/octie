@@ -15,10 +15,11 @@ export const mergeCommand = new Command('merge')
   .argument('<sourceId>', 'Source task ID (will be deleted)')
   .argument('<targetId>', 'Target task ID (will receive merged content)')
   .option('--force', 'Skip confirmation prompt')
-  .option('--project <path>', 'Path to Octie project directory')
-  .action(async (sourceId, targetId, options) => {
+  .action(async (sourceId, targetId, options, command) => {
     try {
-      const projectPath = await getProjectPath(options.project);
+      // Get global options
+      const globalOpts = command.parent?.opts() || {};
+      const projectPath = await getProjectPath(globalOpts.project);
       const graph = await loadGraph(projectPath);
 
       const sourceTask = graph.getNode(sourceId);

@@ -14,10 +14,11 @@ import { getConnectedComponents } from '../../core/graph/traversal.js';
  */
 export const graphCommand = new Command('graph')
   .description('Graph analysis and validation operations')
-  .option('--project <path>', 'Path to Octie project directory')
-  .action(async (options) => {
+  .action(async (_options, command) => {
     try {
-      const projectPath = await getProjectPath(options.project);
+      // Get global options - traverse up to main program
+      const globalOpts = command.parent?.opts() || {};
+      const projectPath = await getProjectPath(globalOpts.project);
       const graph = await loadGraph(projectPath);
 
       console.log('');
@@ -71,10 +72,11 @@ export const graphCommand = new Command('graph')
 graphCommand
   .command('validate')
   .description('Validate graph structure')
-  .option('--project <path>', 'Path to Octie project directory')
-  .action(async (options) => {
+  .action(async (_options, command) => {
     try {
-      const projectPath = await getProjectPath(options.project);
+      // Get global options - traverse up to main program (parent.parent)
+      const globalOpts = command.parent?.parent?.opts() || {};
+      const projectPath = await getProjectPath(globalOpts.project);
       const graph = await loadGraph(projectPath);
 
       const cycleResult = detectCycle(graph);
@@ -99,10 +101,11 @@ graphCommand
 graphCommand
   .command('cycles')
   .description('Detect and display cycles in the graph')
-  .option('--project <path>', 'Path to Octie project directory')
-  .action(async (options) => {
+  .action(async (_options, command) => {
     try {
-      const projectPath = await getProjectPath(options.project);
+      // Get global options - traverse up to main program (parent.parent)
+      const globalOpts = command.parent?.parent?.opts() || {};
+      const projectPath = await getProjectPath(globalOpts.project);
       const graph = await loadGraph(projectPath);
 
       const result = detectCycle(graph);

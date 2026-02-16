@@ -62,10 +62,11 @@ export const importCommand = new Command('import')
   .argument('<file>', 'File path to import')
   .option('--format <format>', 'Import format: json (auto-detect if not specified)')
   .option('--merge', 'Merge with existing tasks instead of replacing')
-  .option('--project <path>', 'Path to Octie project directory')
-  .action(async (file, options) => {
+  .action(async (file, options, command) => {
     try {
-      const projectPath = await getProjectPath(options.project);
+      // Get global options
+      const globalOpts = command.parent?.opts() || {};
+      const projectPath = await getProjectPath(globalOpts.project);
       const storage = new TaskStorage({ projectDir: projectPath });
 
       // Resolve file path

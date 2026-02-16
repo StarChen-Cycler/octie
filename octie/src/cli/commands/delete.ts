@@ -16,10 +16,11 @@ export const deleteCommand = new Command('delete')
   .option('--reconnect', 'Reconnect edges after deletion (A→B→C → A→C)')
   .option('--cascade', 'Delete all dependent tasks')
   .option('--force', 'Skip confirmation prompt')
-  .option('--project <path>', 'Path to Octie project directory')
-  .action(async (id, options) => {
+  .action(async (id, options, command) => {
     try {
-      const projectPath = await getProjectPath(options.project);
+      // Get global options
+      const globalOpts = command.parent?.opts() || {};
+      const projectPath = await getProjectPath(globalOpts.project);
       const graph = await loadGraph(projectPath);
 
       const task = graph.getNode(id);

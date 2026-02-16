@@ -17,10 +17,11 @@ export const exportCommand = new Command('export')
   .description('Export project data to file')
   .option('-t, --type <format>', 'Export format: json, md (default: "json")')
   .option('-o, --output <path>', 'Output file path')
-  .option('--project <path>', 'Path to Octie project directory')
-  .action(async (options) => {
+  .action(async (options, command) => {
     try {
-      const projectPath = await getProjectPath(options.project);
+      // Get global options
+      const globalOpts = command.parent?.opts() || {};
+      const projectPath = await getProjectPath(globalOpts.project);
       const graph = await loadGraph(projectPath);
 
       let output: string;

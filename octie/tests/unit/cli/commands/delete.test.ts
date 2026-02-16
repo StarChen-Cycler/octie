@@ -95,9 +95,8 @@ describe('delete command', () => {
     graph.addNode(task2);
     graph.addNode(task3);
 
-    // Add edges
-    graph.addEdge(taskId1, taskId2);
-    graph.addEdge(taskId2, taskId3);
+    // Note: Edges are already set via TaskNode.edges property
+    // graph.addEdge() would create duplicates
 
     await storage.save(graph);
   });
@@ -112,9 +111,9 @@ describe('delete command', () => {
   });
 
   describe('task deletion', () => {
-    it('should delete task by ID', () => {
+    it('should delete task by ID', async () => {
       const output = execSync(
-        `node ${cliPath} delete ${taskId3} --force --project "${tempDir}"`,
+        `node ${cliPath} --project "${tempDir}" delete ${taskId3} --force`,
         { encoding: 'utf-8' }
       );
 
@@ -130,7 +129,7 @@ describe('delete command', () => {
       const backupPath = storage.backupFilePath;
 
       execSync(
-        `node ${cliPath} delete ${taskId3} --force --project "${tempDir}"`,
+        `node ${cliPath} --project "${tempDir}" delete ${taskId3} --force`,
         { encoding: 'utf-8' }
       );
 
@@ -147,7 +146,7 @@ describe('delete command', () => {
       // After: task1 -> task3 (reconnected)
 
       execSync(
-        `node ${cliPath} delete ${taskId2} --reconnect --force --project "${tempDir}"`,
+        `node ${cliPath} --project "${tempDir}" delete ${taskId2} --reconnect --force`,
         { encoding: 'utf-8' }
       );
 
@@ -163,7 +162,7 @@ describe('delete command', () => {
 
     it('should not reconnect edges when flag is not used', async () => {
       execSync(
-        `node ${cliPath} delete ${taskId2} --force --project "${tempDir}"`,
+        `node ${cliPath} --project "${tempDir}" delete ${taskId2} --force`,
         { encoding: 'utf-8' }
       );
 
@@ -184,7 +183,7 @@ describe('delete command', () => {
       // Should delete task1, task2, and task3 (all downstream)
 
       execSync(
-        `node ${cliPath} delete ${taskId1} --cascade --force --project "${tempDir}"`,
+        `node ${cliPath} --project "${tempDir}" delete ${taskId1} --cascade --force`,
         { encoding: 'utf-8' }
       );
 
@@ -198,7 +197,7 @@ describe('delete command', () => {
   describe('impact display', () => {
     it('should show impact before deletion', () => {
       const output = execSync(
-        `node ${cliPath} delete ${taskId2} --project "${tempDir}"`,
+        `node ${cliPath} --project "${tempDir}" delete ${taskId2}`,
         { encoding: 'utf-8', input: 'n\n' } // Answer 'no' to prompt
       );
 
@@ -208,7 +207,7 @@ describe('delete command', () => {
 
     it('should show dependents', () => {
       const output = execSync(
-        `node ${cliPath} delete ${taskId2} --project "${tempDir}"`,
+        `node ${cliPath} --project "${tempDir}" delete ${taskId2}`,
         { encoding: 'utf-8', input: 'n\n' }
       );
 
@@ -223,7 +222,7 @@ describe('delete command', () => {
 
       expect(() => {
         execSync(
-          `node ${cliPath} delete ${fakeId} --force --project "${tempDir}"`,
+          `node ${cliPath} --project "${tempDir}" delete ${fakeId} --force`,
           { encoding: 'utf-8', stdio: 'pipe' }
         );
       }).toThrow();

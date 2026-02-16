@@ -15,12 +15,14 @@ import chalk from 'chalk';
 export const getCommand = new Command('get')
   .description('Get task details')
   .argument('<id>', 'Task ID')
-  .option('-f, --format <format>', 'Output format: json, md, table', 'table')
-  .option('--project <path>', 'Path to Octie project directory')
-  .action(async (id, options) => {
+  .action(async (id, _options, command) => {
     try {
+      // Get global options
+      const globalOpts = command.parent?.opts() || {};
+      const format = globalOpts.format || 'table';
+
       // Load project
-      const projectPath = await getProjectPath(options.project);
+      const projectPath = await getProjectPath(globalOpts.project);
       const graph = await loadGraph(projectPath);
 
       // Find task
@@ -32,7 +34,7 @@ export const getCommand = new Command('get')
       }
 
       // Format output
-      switch (options.format) {
+      switch (format) {
         case 'json':
           console.log(formatTaskJSON(task));
           break;

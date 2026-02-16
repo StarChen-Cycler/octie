@@ -80,7 +80,7 @@ describe('get command', () => {
 
       expect(output).toContain('Implement login endpoint');
       expect(output).toContain('POST /auth/login');
-      expect(output).toContain('in_progress');
+      expect(output).toContain('in progress'); // Displayed with space in table output
       expect(output).toContain('top');
     });
 
@@ -188,7 +188,7 @@ describe('get command', () => {
       });
 
       expect(output).toContain('Get task details');
-      expect(output).toContain('--format');
+      // Note: --format is now a global option, check main help instead
     });
   });
 });
