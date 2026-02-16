@@ -74,6 +74,7 @@ export const createCommand = new Command('create')
       '--success-criterion <text>',
       'Quantitative success criterion (can be specified multiple times)'
     )
+      .argParser((value: string, previous: string[]) => [...(previous || []), value])
       .env('OCTIE_SUCCESS_CRITERION')
       .makeOptionMandatory(true)
   )
@@ -82,6 +83,7 @@ export const createCommand = new Command('create')
       '--deliverable <text>',
       'Specific output expected (can be specified multiple times)'
     )
+      .argParser((value: string, previous: string[]) => [...(previous || []), value])
       .env('OCTIE_DELIVERABLE')
       .makeOptionMandatory(true)
   )
@@ -89,7 +91,10 @@ export const createCommand = new Command('create')
   .option('-b, --blockers <ids>', 'Comma-separated task IDs that block this task')
   .option('-d, --dependencies <ids>', 'Comma-separated task IDs this depends on')
   .option('-f, --related-files <paths>', 'Comma-separated file paths relevant to task')
-  .option('-c, --c7-verified <library:notes>', 'C7 library verification (format: library-id or library-id:notes, can be specified multiple times)')
+  .addOption(
+    new Option('-c, --c7-verified <library:notes>', 'C7 library verification (format: library-id or library-id:notes, can be specified multiple times)')
+      .argParser((value: string, previous: string[]) => [...(previous || []), value])
+  )
   .option('-n, --notes <text>', 'Additional context or comments')
   .option('--notes-file <path>', 'Read notes from file (multi-line notes support)')
   .option('-i, --interactive', 'Interactive mode with prompts')
@@ -107,23 +112,12 @@ export const createCommand = new Command('create')
       const projectPath = await getProjectPath(options.project || globalOpts.project);
       const graph = await loadGraph(projectPath);
 
-      // Parse multi-value options
-      const successCriteria = options.successCriterion
-        ? Array.isArray(options.successCriterion)
-          ? options.successCriterion
-          : [options.successCriterion]
-        : [];
-
-      const deliverables = options.deliverable
-        ? Array.isArray(options.deliverable)
-          ? options.deliverable
-          : [options.deliverable]
-        : [];
+      // Parse multi-value options (argParser returns arrays)
+      const successCriteria = options.successCriterion || [];
+      const deliverables = options.deliverable || [];
 
       // Parse C7 verifications (format: library-id or library-id:notes)
-      const c7Verifications = options.c7Verified
-        ? (Array.isArray(options.c7Verified) ? options.c7Verified : [options.c7Verified])
-            .map((entry: string) => {
+      const c7Verifications = (options.c7Verified || []).map((entry: string) => {
               // Handle Windows Git Bash path conversion: "/path" becomes "C:/Program Files/Git/path"
               // Detect and strip the Git Bash prefix
               let cleanEntry = entry;
@@ -149,8 +143,7 @@ export const createCommand = new Command('create')
                 verified_at: new Date().toISOString(),
                 notes: cleanEntry.substring(colonIndex + 1).trim(),
               };
-            })
-        : [];
+            });
 
       // Validate required fields
       if (!options.title || options.title.trim().length === 0) {

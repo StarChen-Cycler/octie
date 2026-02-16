@@ -690,7 +690,7 @@ describe('create command', () => {
       }).toThrow();
     });
 
-    it('should prefer --notes-file over --notes when both provided', async () => {
+    it('should append --notes to --notes-file when both provided', async () => {
       const notesFile = join(notesDir, 'file-notes.txt');
       writeFileSync(notesFile, 'Notes from file');
 
@@ -710,8 +710,8 @@ describe('create command', () => {
       const tasks = graph.getAllTasks();
       expect(tasks.length).toBeGreaterThan(0);
       const task = tasks[tasks.length - 1];
-      // When both are provided, notes-file takes precedence (replaces inline notes)
-      expect(task?.notes).toBe('Notes from file');
+      // When both are provided, inline notes are appended to file notes
+      expect(task?.notes).toBe('Notes from file Inline notes');
     });
 
     it('should trim whitespace from file content', async () => {

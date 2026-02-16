@@ -229,6 +229,11 @@ function parseMarkdownTasks(content: string): ParsedMarkdownTask[] {
             }
             const lt = itemLine.trim();
             if (lt.startsWith('### ') || lt === '---') break;
+            // Skip timestamp lines like "  - Completed: 2026-02-16T18:11:52.088Z"
+            if (lt.match(/^\s*-\s*Completed:\s*\d{4}-\d{2}-\d{2}T/)) {
+              k++;
+              continue;
+            }
             if (lt.startsWith('- ')) {
               const { checked, content } = parseCheckbox(lt.substring(2));
               if (content) {
@@ -261,6 +266,11 @@ function parseMarkdownTasks(content: string): ParsedMarkdownTask[] {
             }
             const lt = itemLine.trim();
             if (lt.startsWith('### ') || lt === '---') break;
+            // Skip timestamp lines like "  - Completed: 2026-02-16T18:11:52.088Z"
+            if (lt.match(/^\s*-\s*Completed:\s*\d{4}-\d{2}-\d{2}T/)) {
+              k++;
+              continue;
+            }
             if (lt.startsWith('- ')) {
               const itemText = lt.substring(2).trim();
               const { checked, content } = parseCheckbox(itemText);

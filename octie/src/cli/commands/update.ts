@@ -176,7 +176,16 @@ export const updateCommand = new Command('update')
 
       // Remove C7 verification
       if (options.removeC7Verified) {
-        task.removeC7Verification(options.removeC7Verified);
+        // Handle Windows Git Bash path conversion: "/path" becomes "C:/Program Files/Git/path"
+        let libraryId = options.removeC7Verified as string;
+        const gitBashPrefix = /^[A-Za-z]:\/(\/)?Program Files\/Git\//;
+        if (gitBashPrefix.test(libraryId)) {
+          const match = libraryId.match(/Program Files\/Git\/(.*)$/);
+          if (match) {
+            libraryId = '/' + match[1];
+          }
+        }
+        task.removeC7Verification(libraryId);
         updated = true;
       }
 
