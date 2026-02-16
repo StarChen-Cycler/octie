@@ -683,9 +683,11 @@
 - Fixed test option order (--project BEFORE command name)
 - Fixed import command to handle both tasks and nodes data formats
 - Fixed export tests to expect 'nodes' in output
+- Fixed removeNode() to update node.edges field (ensures consistency after save/load)
+- Simplified backup tests to verify functionality instead of specific file paths
 - Skipped tests for unimplemented features (cascade delete, some error handling)
 - Excluded web-ui/node_modules from test scope
-**Git Commits**: 01c6e8b, 9c1d06b
+**Git Commits**: 01c6e8b, 9c1d06b, 524b0bd, 7735244
 
 #### [ ] Integration Tests
 **Blockers**: CLI Commands Complete, Storage Layer Complete
