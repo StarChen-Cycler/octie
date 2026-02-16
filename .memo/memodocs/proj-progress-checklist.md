@@ -575,32 +575,56 @@
 
 ### Fifth Priority (Testing & Quality)
 
-#### [ ] Unit Tests - Data Models
+#### [x] Unit Tests - Data Models
 **Blockers**: Core Type Definitions, TaskNode Model
-**Related Files**: octie/tests/unit/models/task-node.test.ts
+**Related Files**: octie/tests/unit/core/models/task-node.test.ts
 **C7 MCP Verified**: /vitest
 **Deliverables**:
-- [ ] TaskNode constructor tests
-- [ ] Field validation tests
-- [ ] Status transition tests
-- [ ] Timestamp management tests
-- [ ] Success criteria tests
-- [ ] Deliverable tests
-- [ ] Edge case tests (empty fields, max lengths)
+- [x] TaskNode constructor tests (43 tests - all passing)
+- [x] Field validation tests
+- [x] Status transition tests
+- [x] Timestamp management tests
+- [x] Success criteria tests
+- [x] Deliverable tests
+- [x] Edge case tests (empty fields, max lengths)
+**Completed**: 2026-02-16
+**Git Commit**: (already existed)
 
-#### [ ] Unit Tests - Graph Structure
+#### [x] Unit Tests - Graph Structure
 **Blockers**: TaskGraph Data Structure
 **Related Files**: octie/tests/unit/core/graph/index.test.ts
 **C7 MCP Verified**: /vitest
 **Deliverables**:
-- [ ] Add node tests
-- [ ] Remove node tests
-- [ ] Add edge tests
-- [ ] Remove edge tests
-- [ ] Get node tests (O(1) verification)
-- [ ] Get outgoing edges tests
-- [ ] Get incoming edges tests
-- [ ] Duplicate edge prevention tests
+- [x] Add node tests
+- [x] Remove node tests
+- [x] Add edge tests
+- [x] Remove edge tests
+- [x] Get node tests (O(1) verification)
+- [x] Get outgoing edges tests
+- [x] Get incoming edges tests
+- [x] Duplicate edge prevention tests
+- [x] Metadata management tests
+- [x] Root/orphan/leaf task detection tests
+- [x] Serialization/deserialization tests
+- [x] Performance verification (O(1) lookup with 1000 nodes)
+**Completed**: 2026-02-16
+**Git Commit**: 7d5e75b
+
+#### [x] Unit Tests - Storage Layer
+**Blockers**: TaskGraph Data Structure, Storage Layer - File Operations
+**Related Files**: octie/tests/unit/core/storage/file-store.test.ts
+**C7 MCP Verified**: /vitest
+**Deliverables**:
+- [x] Constructor tests (default and custom values)
+- [x] Path getter tests (octieDirPath, projectFilePath, etc.)
+- [x] Init tests (directory structure creation)
+- [x] Exists tests (project detection)
+- [x] CreateProject tests (project initialization)
+- [x] Load/save tests (empty graph, with tasks, with edges)
+- [x] Timestamp preservation tests
+- [x] Delete tests (project cleanup)
+**Completed**: 2026-02-16
+**Git Commit**: dfea03a
 
 #### [ ] Unit Tests - Graph Algorithms
 **Blockers**: Graph Algorithms Complete
