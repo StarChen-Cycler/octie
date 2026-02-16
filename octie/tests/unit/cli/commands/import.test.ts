@@ -1,0 +1,286 @@
+/**
+ * Import Command Unit Tests
+ *
+ * Tests for import command including:
+ * - JSON import
+ * - Format auto-detection
+ * - Merge strategy
+ * - Validation
+ */
+
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { rmSync, existsSync, writeFileSync, readFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { v4 as uuidv4 } from 'uuid';
+import { TaskStorage } from '../../../../src/core/storage/file-store.js';
+import { TaskNode } from '../../../../src/core/models/task-node.js';
+import { execSync } from 'node:child_process';
+
+describe('import command', () => {
+  let tempDir: string;
+  let cliPath: string;
+  let storage: TaskStorage;
+  let importFile: string;
+
+  beforeEach(async () => {
+    // Create unique temp directories
+    tempDir = join(tmpdir(), `octie-test-${uuidv4()}`);
+    const importDir = join(tmpdir(), `octie-import-${uuidv4()}`);
+    storage = new TaskStorage({ projectDir: tempDir });
+    await storage.createProject('test-project');
+
+    // CLI entry point
+    cliPath = join(process.cwd(), 'dist', 'cli', 'index.js');
+
+    // Create test import file
+    importFile = join(importDir, 'import.json');
+    const importData = {
+      tasks: {
+        [uuidv4()]: {
+          id: uuidv4(),
+          title: 'Create imported test task from JSON',
+          description: 'Create a test task by importing from JSON file to test the import functionality',
+          status: 'not_started',
+          priority: 'second',
+          success_criteria: [
+            { id: uuidv4(), text: 'Import command loads task successfully', completed: false },
+          ],
+          deliverables: [
+            { id: uuidv4(), text: 'imported.ts', completed: false },
+          ],
+          blockers: [],
+          dependencies: [],
+          related_files: [],
+          notes: 'Imported task notes',
+          c7_verified: [],
+          sub_items: [],
+          edges: [],
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+          completed_at: null,
+        },
+      },
+      edges: [],
+      metadata: {
+        project_name: 'imported-project',
+        version: '1.0.0',
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        task_count: 1,
+      },
+      indexes: {
+        byStatus: {
+          not_started: [Object.keys(importData.tasks)[0]],
+          pending: [],
+          in_progress: [],
+          completed: [],
+          blocked: [],
+        },
+        byPriority: {
+          top: [],
+          second: [Object.keys(importData.tasks)[0]],
+          later: [],
+        },
+        rootTasks: [Object.keys(importData.tasks)[0]],
+        orphans: [],
+      },
+    };
+
+    writeFileSync(importFile, JSON.stringify(importData, null, 2));
+  });
+
+  afterEach(async () => {
+    // Clean up temp directories
+    try {
+      const importDir = join(importFile, '..');
+      rmSync(tempDir, { recursive: true, force: true });
+      rmSync(importDir, { recursive: true, force: true });
+    } catch {
+      // Ignore cleanup errors
+    }
+  });
+
+  describe('JSON import', () => {
+    it('should import tasks from JSON file', () => {
+      const output = execSync(
+        `node ${cliPath} import --file "${importFile}" --project "${tempDir}"`,
+        { encoding: 'utf-8' }
+      );
+
+      expect(output).toContain('Imported');
+
+      const graph = await storage.load();
+      expect(graph.size).toBe(1);
+
+      const tasks = graph.getAllTasks();
+      const task = Array.from(tasks.values())[0];
+      expect(task.title).toBe('Imported task');
+    });
+
+    it('should create backup before import', async () => {
+      const backupPath = storage.backupFilePath;
+
+      execSync(
+        `node ${cliPath} import --file "${importFile}" --project "${tempDir}"`,
+        { encoding: 'utf-8' }
+      );
+
+      expect(existsSync(backupPath)).toBe(true);
+    });
+  });
+
+  describe('format detection', () => {
+    it('should auto-detect JSON format from .json extension', () => {
+      const output = execSync(
+        `node ${cliPath} import --file "${importFile}" --project "${tempDir}"`,
+        { encoding: 'utf-8' }
+      );
+
+      expect(output).toContain('Imported');
+    });
+
+    it('should accept explicit format specification', () => {
+      const output = execSync(
+        `node ${cliPath} import --file "${importFile}" --format json --project "${tempDir}"`,
+        { encoding: 'utf-8' }
+      );
+
+      expect(output).toContain('Imported');
+    });
+  });
+
+  describe('merge strategy', () => {
+    it('should replace existing tasks by default', async () => {
+      // Create an existing task
+      const graph = await storage.load();
+      const existingTask = new TaskNode({
+        id: uuidv4(),
+        title: 'Create existing test task for replacement',
+        description: 'Create an existing test task that should be replaced during import testing',
+        status: 'completed',
+        priority: 'top',
+        success_criteria: [{ id: uuidv4(), text: 'Task is created and saved', completed: true }],
+        deliverables: [{ id: uuidv4(), text: 'existing.ts', completed: true }],
+        blockers: [],
+        dependencies: [],
+        related_files: [],
+        notes: '',
+        c7_verified: [],
+        sub_items: [],
+        edges: [],
+      });
+
+      graph.addNode(existingTask);
+      await storage.save(graph);
+
+      // Import should replace with new data
+      execSync(
+        `node ${cliPath} import --file "${importFile}" --project "${tempDir}"`,
+        { encoding: 'utf-8' }
+      );
+
+      const updatedGraph = await storage.load();
+      expect(updatedGraph.size).toBe(1); // Only imported task
+      expect(updatedGraph.getNode(existingTask.id)).toBeUndefined();
+    });
+
+    it('should merge with existing tasks when --merge flag is used', async () => {
+      // Create an existing task with different ID
+      const graph = await storage.load();
+      const existingTask = new TaskNode({
+        id: uuidv4(),
+        title: 'Create existing test task for merge testing',
+        description: 'Create an existing test task that should remain after merge import testing',
+        status: 'completed',
+        priority: 'top',
+        success_criteria: [{ id: uuidv4(), text: 'Task is created and saved', completed: true }],
+        deliverables: [{ id: uuidv4(), text: 'existing.ts', completed: true }],
+        blockers: [],
+        dependencies: [],
+        related_files: [],
+        notes: '',
+        c7_verified: [],
+        sub_items: [],
+        edges: [],
+      });
+
+      graph.addNode(existingTask);
+      await storage.save(graph);
+
+      // Import with merge should keep existing task
+      execSync(
+        `node ${cliPath} import --file "${importFile}" --merge --project "${tempDir}"`,
+        { encoding: 'utf-8' }
+      );
+
+      const updatedGraph = await storage.load();
+      expect(updatedGraph.size).toBe(2); // Both tasks
+      expect(updatedGraph.getNode(existingTask.id)).toBeDefined();
+    });
+  });
+
+  describe('validation', () => {
+    it('should reject invalid JSON structure', () => {
+      const invalidFile = join(tempDir, 'invalid.json');
+      writeFileSync(invalidFile, '{ invalid json }');
+
+      expect(() => {
+        execSync(
+          `node ${cliPath} import --file "${invalidFile}" --project "${tempDir}"`,
+          { encoding: 'utf-8', stdio: 'pipe' }
+        );
+      }).toThrow();
+    });
+
+    it('should reject missing file', () => {
+      const missingFile = join(tempDir, 'missing.json');
+
+      expect(() => {
+        execSync(
+          `node ${cliPath} import --file "${missingFile}" --project "${tempDir}"`,
+          { encoding: 'utf-8', stdio: 'pipe' }
+        );
+      }).toThrow();
+    });
+
+    it('should validate task data structure', () => {
+      const invalidDataFile = join(tempDir, 'invalid-data.json');
+      writeFileSync(invalidDataFile, JSON.stringify({ tasks: 'invalid' }));
+
+      expect(() => {
+        execSync(
+          `node ${cliPath} import --file "${invalidDataFile}" --project "${tempDir}"`,
+          { encoding: 'utf-8', stdio: 'pipe' }
+        );
+      }).toThrow();
+    });
+  });
+
+  describe('error handling', () => {
+    it('should show helpful error for invalid data', () => {
+      const invalidFile = join(tempDir, 'invalid.json');
+      writeFileSync(invalidFile, JSON.stringify({ invalid: 'data' }));
+
+      expect(() => {
+        execSync(
+          `node ${cliPath} import --file "${invalidFile}" --project "${tempDir}"`,
+          { encoding: 'utf-8', stdio: 'pipe' }
+        );
+      }).toThrow();
+    });
+  });
+
+  describe('help', () => {
+    it('should show help with --help flag', () => {
+      const output = execSync(`node ${cliPath} import --help`, {
+        encoding: 'utf-8',
+      });
+
+      expect(output).toContain('Import tasks');
+      expect(output).toContain('--file');
+      expect(output).toContain('--format');
+      expect(output).toContain('--merge');
+    });
+  });
+});

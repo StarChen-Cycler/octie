@@ -512,6 +512,7 @@ export class TaskNode implements TaskNodeType {
    * Create a new TaskNode
    *
    * @param data - Task data (title, description, success_criteria, deliverables are REQUIRED)
+   * @param _skipAtomicValidation - Private: skip atomic validation (used only by fromJSON for deserialization)
    * @throws {ValidationError} If required fields are missing or invalid
    * @throws {AtomicTaskViolationError} If task violates atomic requirements
    */
@@ -533,6 +534,7 @@ export class TaskNode implements TaskNodeType {
     created_at?: string;
     updated_at?: string;
     completed_at?: string | null;
+    _skipAtomicValidation?: boolean; // Private: only for fromJSON deserialization
   }) {
     // Validate required fields
     if (!data.title || data.title.trim().length === 0) {
@@ -598,13 +600,15 @@ export class TaskNode implements TaskNodeType {
       );
     }
 
-    // Validate atomic task requirements
-    validateAtomicTask({
-      title: data.title,
-      description: data.description,
-      success_criteria: data.success_criteria,
-      deliverables: data.deliverables,
-    });
+    // Validate atomic task requirements (skip for deserialization)
+    if (!data._skipAtomicValidation) {
+      validateAtomicTask({
+        title: data.title,
+        description: data.description,
+        success_criteria: data.success_criteria,
+        deliverables: data.deliverables,
+      });
+    }
 
     // Set basic properties
     this.id = data.id || uuidv4();
@@ -971,6 +975,7 @@ export class TaskNode implements TaskNodeType {
   /**
    * Create a TaskNode from plain object
    * Useful for JSON deserialization
+   * Skips atomic validation since task was already validated when created
    */
   static fromJSON(data: TaskNodeType): TaskNode {
     const node = new TaskNode({
@@ -988,6 +993,7 @@ export class TaskNode implements TaskNodeType {
       notes: data.notes,
       c7_verified: data.c7_verified,
       edges: data.edges,
+      _skipAtomicValidation: true, // Skip validation for deserialized tasks
     });
 
     // Preserve timestamps from loaded data

@@ -7,7 +7,8 @@ import { getProjectPath, loadGraph, success, error } from '../utils/helpers.js';
 import { formatProjectMarkdown } from '../output/markdown.js';
 import { formatProjectJSON } from '../output/json.js';
 import chalk from 'chalk';
-import { writeFileSync } from 'node:fs';
+import { writeFileSync, mkdirSync } from 'node:fs';
+import { dirname } from 'node:path';
 
 /**
  * Create the export command
@@ -39,6 +40,14 @@ export const exportCommand = new Command('export')
 
       // Write to file
       const outputPath = options.output || defaultFileName;
+
+      // Create parent directory if it doesn't exist
+      try {
+        mkdirSync(dirname(outputPath), { recursive: true });
+      } catch {
+        // Ignore error if directory already exists
+      }
+
       writeFileSync(outputPath, output, 'utf-8');
 
       success(`Exported to ${chalk.cyan(outputPath)}`);
