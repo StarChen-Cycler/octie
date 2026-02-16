@@ -805,6 +805,206 @@ describe('TaskNode', () => {
 
       expect(task.dependencies).toContain(depId);
     });
+
+    it('should remove dependency', () => {
+      const task = new TaskNode({
+        title: 'Implement login endpoint',
+        description: 'Create POST /auth/login endpoint that validates credentials and returns JWT token. The endpoint should use bcrypt for password hashing and return a 200 status with valid JWT on correct credentials.',
+        success_criteria: [
+          { id: uuidv4(), text: 'Endpoint returns 200', completed: false },
+        ],
+        deliverables: [
+          { id: uuidv4(), text: 'src/api/auth/login.ts', completed: false },
+        ],
+      });
+
+      const depId = uuidv4();
+      task.addDependency(depId);
+      expect(task.dependencies).toContain(depId);
+
+      task.removeDependency(depId);
+      expect(task.dependencies).not.toContain(depId);
+    });
+  });
+
+  describe('remove operations', () => {
+    it('should remove success criterion', () => {
+      const criterionId1 = uuidv4();
+      const criterionId2 = uuidv4();
+      const task = new TaskNode({
+        title: 'Implement login endpoint',
+        description: 'Create POST /auth/login endpoint that validates credentials and returns JWT token. The endpoint should use bcrypt for password hashing and return a 200 status with valid JWT on correct credentials.',
+        success_criteria: [
+          { id: criterionId1, text: 'Endpoint returns 200', completed: false },
+          { id: criterionId2, text: 'Unit tests pass', completed: false },
+        ],
+        deliverables: [
+          { id: uuidv4(), text: 'src/api/auth/login.ts', completed: false },
+        ],
+      });
+
+      expect(task.success_criteria).toHaveLength(2);
+
+      task.removeSuccessCriterion(criterionId1);
+
+      expect(task.success_criteria).toHaveLength(1);
+      expect(task.success_criteria.find(c => c.id === criterionId1)).toBeUndefined();
+    });
+
+    it('should throw when removing last success criterion', () => {
+      const criterionId = uuidv4();
+      const task = new TaskNode({
+        title: 'Implement login endpoint',
+        description: 'Create POST /auth/login endpoint that validates credentials and returns JWT token. The endpoint should use bcrypt for password hashing and return a 200 status with valid JWT on correct credentials.',
+        success_criteria: [
+          { id: criterionId, text: 'Endpoint returns 200', completed: false },
+        ],
+        deliverables: [
+          { id: uuidv4(), text: 'src/api/auth/login.ts', completed: false },
+        ],
+      });
+
+      expect(() => task.removeSuccessCriterion(criterionId)).toThrow(ValidationError);
+    });
+
+    it('should throw when removing non-existent criterion', () => {
+      const task = new TaskNode({
+        title: 'Implement login endpoint',
+        description: 'Create POST /auth/login endpoint that validates credentials and returns JWT token. The endpoint should use bcrypt for password hashing and return a 200 status with valid JWT on correct credentials.',
+        success_criteria: [
+          { id: uuidv4(), text: 'Endpoint returns 200', completed: false },
+        ],
+        deliverables: [
+          { id: uuidv4(), text: 'src/api/auth/login.ts', completed: false },
+        ],
+      });
+
+      expect(() => task.removeSuccessCriterion(uuidv4())).toThrow(ValidationError);
+    });
+
+    it('should remove deliverable', () => {
+      const deliverableId1 = uuidv4();
+      const deliverableId2 = uuidv4();
+      const task = new TaskNode({
+        title: 'Implement login endpoint',
+        description: 'Create POST /auth/login endpoint that validates credentials and returns JWT token. The endpoint should use bcrypt for password hashing and return a 200 status with valid JWT on correct credentials.',
+        success_criteria: [
+          { id: uuidv4(), text: 'Endpoint returns 200', completed: false },
+        ],
+        deliverables: [
+          { id: deliverableId1, text: 'src/api/auth/login.ts', completed: false },
+          { id: deliverableId2, text: 'tests/api/auth/login.test.ts', completed: false },
+        ],
+      });
+
+      expect(task.deliverables).toHaveLength(2);
+
+      task.removeDeliverable(deliverableId1);
+
+      expect(task.deliverables).toHaveLength(1);
+      expect(task.deliverables.find(d => d.id === deliverableId1)).toBeUndefined();
+    });
+
+    it('should throw when removing last deliverable', () => {
+      const deliverableId = uuidv4();
+      const task = new TaskNode({
+        title: 'Implement login endpoint',
+        description: 'Create POST /auth/login endpoint that validates credentials and returns JWT token. The endpoint should use bcrypt for password hashing and return a 200 status with valid JWT on correct credentials.',
+        success_criteria: [
+          { id: uuidv4(), text: 'Endpoint returns 200', completed: false },
+        ],
+        deliverables: [
+          { id: deliverableId, text: 'src/api/auth/login.ts', completed: false },
+        ],
+      });
+
+      expect(() => task.removeDeliverable(deliverableId)).toThrow(ValidationError);
+    });
+
+    it('should throw when removing non-existent deliverable', () => {
+      const task = new TaskNode({
+        title: 'Implement login endpoint',
+        description: 'Create POST /auth/login endpoint that validates credentials and returns JWT token. The endpoint should use bcrypt for password hashing and return a 200 status with valid JWT on correct credentials.',
+        success_criteria: [
+          { id: uuidv4(), text: 'Endpoint returns 200', completed: false },
+        ],
+        deliverables: [
+          { id: uuidv4(), text: 'src/api/auth/login.ts', completed: false },
+        ],
+      });
+
+      expect(() => task.removeDeliverable(uuidv4())).toThrow(ValidationError);
+    });
+
+    it('should add and remove related file', () => {
+      const task = new TaskNode({
+        title: 'Implement login endpoint',
+        description: 'Create POST /auth/login endpoint that validates credentials and returns JWT token. The endpoint should use bcrypt for password hashing and return a 200 status with valid JWT on correct credentials.',
+        success_criteria: [
+          { id: uuidv4(), text: 'Endpoint returns 200', completed: false },
+        ],
+        deliverables: [
+          { id: uuidv4(), text: 'src/api/auth/login.ts', completed: false },
+        ],
+      });
+
+      task.addRelatedFile('src/auth/login.ts');
+      expect(task.related_files).toContain('src/auth/login.ts');
+
+      task.removeRelatedFile('src/auth/login.ts');
+      expect(task.related_files).not.toContain('src/auth/login.ts');
+    });
+
+    it('should add and remove C7 verification', () => {
+      const task = new TaskNode({
+        title: 'Implement login endpoint',
+        description: 'Create POST /auth/login endpoint that validates credentials and returns JWT token. The endpoint should use bcrypt for password hashing and return a 200 status with valid JWT on correct credentials.',
+        success_criteria: [
+          { id: uuidv4(), text: 'Endpoint returns 200', completed: false },
+        ],
+        deliverables: [
+          { id: uuidv4(), text: 'src/api/auth/login.ts', completed: false },
+        ],
+      });
+
+      const verification = {
+        library_id: '/expressjs/express',
+        verified_at: new Date().toISOString(),
+        notes: 'Routing patterns'
+      };
+
+      task.addC7Verification(verification);
+      expect(task.c7_verified).toHaveLength(1);
+      expect(task.c7_verified[0].library_id).toBe('/expressjs/express');
+
+      task.removeC7Verification('/expressjs/express');
+      expect(task.c7_verified).toHaveLength(0);
+    });
+
+    it('should update updated_at timestamp on remove operations', async () => {
+      const criterionId1 = uuidv4();
+      const criterionId2 = uuidv4();
+      const task = new TaskNode({
+        title: 'Implement login endpoint',
+        description: 'Create POST /auth/login endpoint that validates credentials and returns JWT token. The endpoint should use bcrypt for password hashing and return a 200 status with valid JWT on correct credentials.',
+        success_criteria: [
+          { id: criterionId1, text: 'Endpoint returns 200', completed: false },
+          { id: criterionId2, text: 'Unit tests pass', completed: false },
+        ],
+        deliverables: [
+          { id: uuidv4(), text: 'src/api/auth/login.ts', completed: false },
+        ],
+      });
+
+      const originalUpdatedAt = task.updated_at;
+
+      // Wait a bit to ensure timestamp difference
+      await new Promise(resolve => setTimeout(resolve, 10));
+
+      task.removeSuccessCriterion(criterionId1);
+
+      expect(task.updated_at).not.toBe(originalUpdatedAt);
+    });
   });
 
   describe('serialization', () => {

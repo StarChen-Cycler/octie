@@ -830,6 +830,84 @@ export class TaskNode implements TaskNodeType {
   }
 
   /**
+   * Remove a dependency task ID
+   * @param dependencyId - Task ID to remove from dependencies
+   */
+  removeDependency(dependencyId: string): void {
+    const index = this.dependencies.indexOf(dependencyId);
+    if (index > -1) {
+      this.dependencies.splice(index, 1);
+      this._touch();
+    }
+  }
+
+  /**
+   * Remove a success criterion
+   * @param criterionId - ID of the criterion to remove
+   * @throws {ValidationError} If criterion not found or removal would leave no criteria
+   */
+  removeSuccessCriterion(criterionId: string): void {
+    const index = this.success_criteria.findIndex(c => c.id === criterionId);
+    if (index === -1) {
+      throw new ValidationError(`Success criterion with ID '${criterionId}' not found.`, 'success_criteria');
+    }
+    if (this.success_criteria.length <= 1) {
+      throw new ValidationError(
+        'Cannot remove the last success criterion. At least one is required.',
+        'success_criteria'
+      );
+    }
+    this.success_criteria.splice(index, 1);
+    this._touch();
+    this._checkCompletion();
+  }
+
+  /**
+   * Remove a deliverable
+   * @param deliverableId - ID of the deliverable to remove
+   * @throws {ValidationError} If deliverable not found or removal would leave no deliverables
+   */
+  removeDeliverable(deliverableId: string): void {
+    const index = this.deliverables.findIndex(d => d.id === deliverableId);
+    if (index === -1) {
+      throw new ValidationError(`Deliverable with ID '${deliverableId}' not found.`, 'deliverables');
+    }
+    if (this.deliverables.length <= 1) {
+      throw new ValidationError(
+        'Cannot remove the last deliverable. At least one is required.',
+        'deliverables'
+      );
+    }
+    this.deliverables.splice(index, 1);
+    this._touch();
+    this._checkCompletion();
+  }
+
+  /**
+   * Remove a related file path
+   * @param filePath - File path to remove
+   */
+  removeRelatedFile(filePath: string): void {
+    const index = this.related_files.indexOf(filePath);
+    if (index > -1) {
+      this.related_files.splice(index, 1);
+      this._touch();
+    }
+  }
+
+  /**
+   * Remove a C7 verification entry
+   * @param libraryId - Library ID to remove from C7 verifications
+   */
+  removeC7Verification(libraryId: string): void {
+    const index = this.c7_verified.findIndex(v => v.library_id === libraryId);
+    if (index > -1) {
+      this.c7_verified.splice(index, 1);
+      this._touch();
+    }
+  }
+
+  /**
    * Add a related file path
    * @param filePath - File path relative to project root
    */

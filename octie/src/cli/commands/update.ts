@@ -17,11 +17,18 @@ export const updateCommand = new Command('update')
   .option('--priority <priority>', 'Task priority')
   .option('--add-deliverable <text>', 'Add a deliverable')
   .option('--complete-deliverable <id>', 'Mark deliverable as complete')
+  .option('--remove-deliverable <id>', 'Remove a deliverable by ID')
   .option('--add-success-criterion <text>', 'Add a success criterion')
   .option('--complete-criterion <id>', 'Mark success criterion as complete')
+  .option('--remove-criterion <id>', 'Remove a success criterion by ID')
   .option('--block <id>', 'Add a blocker')
   .option('--unblock <id>', 'Remove a blocker')
   .option('--add-dependency <id>', 'Add a dependency')
+  .option('--remove-dependency <id>', 'Remove a dependency')
+  .option('--add-related-file <path>', 'Add a related file path')
+  .option('--remove-related-file <path>', 'Remove a related file path')
+  .option('--verify-c7 <library:notes>', 'Add C7 library verification (format: library-id or library-id:notes)')
+  .option('--remove-c7-verified <library>', 'Remove a C7 verification by library ID')
   .option('--notes <text>', 'Append to notes')
   .action(async (id, options, command) => {
     try {
@@ -66,6 +73,12 @@ export const updateCommand = new Command('update')
         updated = true;
       }
 
+      // Remove deliverable
+      if (options.removeDeliverable) {
+        task.removeDeliverable(options.removeDeliverable);
+        updated = true;
+      }
+
       // Add success criterion
       if (options.addSuccessCriterion) {
         task.addSuccessCriterion({
@@ -79,6 +92,12 @@ export const updateCommand = new Command('update')
       // Complete criterion
       if (options.completeCriterion) {
         task.completeCriterion(options.completeCriterion);
+        updated = true;
+      }
+
+      // Remove criterion
+      if (options.removeCriterion) {
+        task.removeSuccessCriterion(options.removeCriterion);
         updated = true;
       }
 
@@ -99,6 +118,49 @@ export const updateCommand = new Command('update')
       // Add dependency
       if (options.addDependency) {
         task.addDependency(options.addDependency);
+        updated = true;
+      }
+
+      // Remove dependency
+      if (options.removeDependency) {
+        task.removeDependency(options.removeDependency);
+        updated = true;
+      }
+
+      // Add related file
+      if (options.addRelatedFile) {
+        task.addRelatedFile(options.addRelatedFile);
+        updated = true;
+      }
+
+      // Remove related file
+      if (options.removeRelatedFile) {
+        task.removeRelatedFile(options.removeRelatedFile);
+        updated = true;
+      }
+
+      // Add C7 verification
+      if (options.verifyC7) {
+        const entry = options.verifyC7 as string;
+        const colonIndex = entry.indexOf(':');
+        if (colonIndex === -1) {
+          task.addC7Verification({
+            library_id: entry.trim(),
+            verified_at: new Date().toISOString(),
+          });
+        } else {
+          task.addC7Verification({
+            library_id: entry.substring(0, colonIndex).trim(),
+            verified_at: new Date().toISOString(),
+            notes: entry.substring(colonIndex + 1).trim(),
+          });
+        }
+        updated = true;
+      }
+
+      // Remove C7 verification
+      if (options.removeC7Verified) {
+        task.removeC7Verification(options.removeC7Verified);
         updated = true;
       }
 

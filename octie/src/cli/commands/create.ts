@@ -87,6 +87,7 @@ export const createCommand = new Command('create')
   .option('-b, --blockers <ids>', 'Comma-separated task IDs that block this task')
   .option('-d, --dependencies <ids>', 'Comma-separated task IDs this depends on')
   .option('-f, --related-files <paths>', 'Comma-separated file paths relevant to task')
+  .option('-c, --c7-verified <library:notes>', 'C7 library verification (format: library-id or library-id:notes, can be specified multiple times)')
   .option('-n, --notes <text>', 'Additional context or comments')
   .option('-i, --interactive', 'Interactive mode with prompts')
   .option('--project <path>', 'Path to Octie project directory')
@@ -113,6 +114,25 @@ export const createCommand = new Command('create')
         ? Array.isArray(options.deliverable)
           ? options.deliverable
           : [options.deliverable]
+        : [];
+
+      // Parse C7 verifications (format: library-id or library-id:notes)
+      const c7Verifications = options.c7Verified
+        ? (Array.isArray(options.c7Verified) ? options.c7Verified : [options.c7Verified])
+            .map((entry: string) => {
+              const colonIndex = entry.indexOf(':');
+              if (colonIndex === -1) {
+                return {
+                  library_id: entry.trim(),
+                  verified_at: new Date().toISOString(),
+                };
+              }
+              return {
+                library_id: entry.substring(0, colonIndex).trim(),
+                verified_at: new Date().toISOString(),
+                notes: entry.substring(colonIndex + 1).trim(),
+              };
+            })
         : [];
 
       // Validate required fields
@@ -158,7 +178,7 @@ export const createCommand = new Command('create')
         dependencies: parseList(options.dependencies || ''),
         related_files: parseList(options.relatedFiles || ''),
         notes: (options.notes || '').trim(),
-        c7_verified: [],
+        c7_verified: c7Verifications,
         sub_items: [],
         edges: [],
       };

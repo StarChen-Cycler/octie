@@ -534,4 +534,67 @@ describe('create command', () => {
       expect(task.blockers.length).toBe(2);
     });
   });
+
+  describe('C7 verification', () => {
+    it('should create task with C7 verification', () => {
+      const taskId = uuidv4();
+      const taskData = {
+        id: taskId,
+        title: 'Implement login endpoint',
+        description: 'Create POST /auth/login endpoint that validates credentials and returns JWT token',
+        status: 'not_started' as const,
+        priority: 'second' as const,
+        success_criteria: [
+          { id: uuidv4(), text: 'Endpoint returns 200 with valid JWT', completed: false },
+        ],
+        deliverables: [
+          { id: uuidv4(), text: 'src/api/auth/login.ts', completed: false },
+        ],
+        blockers: [],
+        dependencies: [],
+        related_files: [],
+        notes: '',
+        c7_verified: [
+          { library_id: '/expressjs/express', verified_at: new Date().toISOString() },
+        ],
+        sub_items: [],
+        edges: [],
+      };
+
+      const task = new TaskNode(taskData);
+      expect(task.c7_verified).toHaveLength(1);
+      expect(task.c7_verified[0].library_id).toBe('/expressjs/express');
+    });
+
+    it('should create task with C7 verification including notes', () => {
+      const taskId = uuidv4();
+      const taskData = {
+        id: taskId,
+        title: 'Implement login endpoint',
+        description: 'Create POST /auth/login endpoint that validates credentials and returns JWT token',
+        status: 'not_started' as const,
+        priority: 'second' as const,
+        success_criteria: [
+          { id: uuidv4(), text: 'Endpoint returns 200 with valid JWT', completed: false },
+        ],
+        deliverables: [
+          { id: uuidv4(), text: 'src/api/auth/login.ts', completed: false },
+        ],
+        blockers: [],
+        dependencies: [],
+        related_files: [],
+        notes: '',
+        c7_verified: [
+          { library_id: '/mongodb/docs', verified_at: new Date().toISOString(), notes: 'Query patterns' },
+        ],
+        sub_items: [],
+        edges: [],
+      };
+
+      const task = new TaskNode(taskData);
+      expect(task.c7_verified).toHaveLength(1);
+      expect(task.c7_verified[0].library_id).toBe('/mongodb/docs');
+      expect(task.c7_verified[0].notes).toBe('Query patterns');
+    });
+  });
 });

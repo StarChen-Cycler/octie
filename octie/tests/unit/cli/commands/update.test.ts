@@ -287,6 +287,209 @@ describe('update command', () => {
     });
   });
 
+  describe('remove operations', () => {
+    it('should remove a success criterion', async () => {
+      // First add a second criterion so we can remove one
+      execSync(
+        `node ${cliPath} --project "${tempDir}" update ${testTaskId} --add-success-criterion "Unit tests pass"`,
+        { encoding: 'utf-8' }
+      );
+
+      const output = execSync(
+        `node ${cliPath} --project "${tempDir}" update ${testTaskId} --remove-criterion "${criterionId}"`,
+        { encoding: 'utf-8' }
+      );
+
+      expect(output).toContain('Task updated');
+
+      const graph = await storage.load();
+      const task = graph.getNode(testTaskId);
+      expect(task?.success_criteria.length).toBe(1);
+      expect(task?.success_criteria.find(c => c.id === criterionId)).toBeUndefined();
+    });
+
+    it('should reject removing last success criterion', async () => {
+      expect(() => {
+        execSync(
+          `node ${cliPath} --project "${tempDir}" update ${testTaskId} --remove-criterion "${criterionId}"`,
+          { encoding: 'utf-8', stdio: 'pipe' }
+        );
+      }).toThrow();
+    });
+
+    it('should remove a deliverable', async () => {
+      // First add a second deliverable so we can remove one
+      execSync(
+        `node ${cliPath} --project "${tempDir}" update ${testTaskId} --add-deliverable "tests/api/auth/login.test.ts"`,
+        { encoding: 'utf-8' }
+      );
+
+      const output = execSync(
+        `node ${cliPath} --project "${tempDir}" update ${testTaskId} --remove-deliverable "${deliverableId}"`,
+        { encoding: 'utf-8' }
+      );
+
+      expect(output).toContain('Task updated');
+
+      const graph = await storage.load();
+      const task = graph.getNode(testTaskId);
+      expect(task?.deliverables.length).toBe(1);
+      expect(task?.deliverables.find(d => d.id === deliverableId)).toBeUndefined();
+    });
+
+    it('should reject removing last deliverable', async () => {
+      expect(() => {
+        execSync(
+          `node ${cliPath} --project "${tempDir}" update ${testTaskId} --remove-deliverable "${deliverableId}"`,
+          { encoding: 'utf-8', stdio: 'pipe' }
+        );
+      }).toThrow();
+    });
+
+    it('should add and remove a dependency', async () => {
+      // Create another task to use as dependency
+      const graph = await storage.load();
+      const depTaskId = uuidv4();
+
+      const depTask = new TaskNode({
+        id: depTaskId,
+        title: 'Implement dependency task',
+        description: 'Valid description that is long enough to meet minimum requirements for the test case',
+        status: 'not_started',
+        priority: 'top',
+        success_criteria: [{ id: uuidv4(), text: 'Complete', completed: false }],
+        deliverables: [{ id: uuidv4(), text: 'output.ts', completed: false }],
+        blockers: [],
+        dependencies: [],
+        related_files: [],
+        notes: '',
+        c7_verified: [],
+        sub_items: [],
+        edges: [],
+      });
+
+      graph.addNode(depTask);
+      await storage.save(graph);
+
+      // Add dependency
+      execSync(
+        `node ${cliPath} --project "${tempDir}" update ${testTaskId} --add-dependency "${depTaskId}"`,
+        { encoding: 'utf-8' }
+      );
+
+      let updatedGraph = await storage.load();
+      let task = updatedGraph.getNode(testTaskId);
+      expect(task?.dependencies).toContain(depTaskId);
+
+      // Remove dependency
+      const output = execSync(
+        `node ${cliPath} --project "${tempDir}" update ${testTaskId} --remove-dependency "${depTaskId}"`,
+        { encoding: 'utf-8' }
+      );
+
+      expect(output).toContain('Task updated');
+
+      updatedGraph = await storage.load();
+      task = updatedGraph.getNode(testTaskId);
+      expect(task?.dependencies).not.toContain(depTaskId);
+    });
+
+    it('should add and remove a related file', async () => {
+      // Add related file
+      execSync(
+        `node ${cliPath} --project "${tempDir}" update ${testTaskId} --add-related-file "src/auth/login.ts"`,
+        { encoding: 'utf-8' }
+      );
+
+      let graph = await storage.load();
+      let task = graph.getNode(testTaskId);
+      expect(task?.related_files).toContain('src/auth/login.ts');
+
+      // Remove related file
+      const output = execSync(
+        `node ${cliPath} --project "${tempDir}" update ${testTaskId} --remove-related-file "src/auth/login.ts"`,
+        { encoding: 'utf-8' }
+      );
+
+      expect(output).toContain('Task updated');
+
+      graph = await storage.load();
+      task = graph.getNode(testTaskId);
+      expect(task?.related_files).not.toContain('src/auth/login.ts');
+    });
+
+    it('should reject removing non-existent criterion', async () => {
+      const fakeId = uuidv4();
+      expect(() => {
+        execSync(
+          `node ${cliPath} --project "${tempDir}" update ${testTaskId} --remove-criterion "${fakeId}"`,
+          { encoding: 'utf-8', stdio: 'pipe' }
+        );
+      }).toThrow();
+    });
+
+    it('should reject removing non-existent deliverable', async () => {
+      const fakeId = uuidv4();
+      expect(() => {
+        execSync(
+          `node ${cliPath} --project "${tempDir}" update ${testTaskId} --remove-deliverable "${fakeId}"`,
+          { encoding: 'utf-8', stdio: 'pipe' }
+        );
+      }).toThrow();
+    });
+  });
+
+  describe('C7 verification operations', () => {
+    it('should add C7 verification with library ID only', async () => {
+      const output = execSync(
+        `node ${cliPath} --project "${tempDir}" update ${testTaskId} --verify-c7 "/expressjs/express"`,
+        { encoding: 'utf-8' }
+      );
+
+      expect(output).toContain('Task updated');
+
+      const graph = await storage.load();
+      const task = graph.getNode(testTaskId);
+      expect(task?.c7_verified).toHaveLength(1);
+      expect(task?.c7_verified[0].library_id).toBe('/expressjs/express');
+    });
+
+    it('should add C7 verification with library ID and notes', async () => {
+      const output = execSync(
+        `node ${cliPath} --project "${tempDir}" update ${testTaskId} --verify-c7 "/mongodb/docs:Query patterns"`,
+        { encoding: 'utf-8' }
+      );
+
+      expect(output).toContain('Task updated');
+
+      const graph = await storage.load();
+      const task = graph.getNode(testTaskId);
+      expect(task?.c7_verified).toHaveLength(1);
+      expect(task?.c7_verified[0].library_id).toBe('/mongodb/docs');
+      expect(task?.c7_verified[0].notes).toBe('Query patterns');
+    });
+
+    it('should remove C7 verification', async () => {
+      // First add a verification
+      execSync(
+        `node ${cliPath} --project "${tempDir}" update ${testTaskId} --verify-c7 "/expressjs/express"`,
+        { encoding: 'utf-8' }
+      );
+
+      // Then remove it
+      const output = execSync(
+        `node ${cliPath} --project "${tempDir}" update ${testTaskId} --remove-c7-verified "/expressjs/express"`,
+        { encoding: 'utf-8' }
+      );
+
+      expect(output).toContain('Task updated');
+
+      const graph = await storage.load();
+      const task = graph.getNode(testTaskId);
+      expect(task?.c7_verified).toHaveLength(0);
+    });
+  });
+
   describe('error handling', () => {
     it('should reject invalid task ID', () => {
       const fakeId = uuidv4();
