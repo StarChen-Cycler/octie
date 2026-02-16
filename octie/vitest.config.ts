@@ -25,7 +25,13 @@ export default defineConfig({
     hookTimeout: 10000,
     teardownTimeout: 10000,
     reporters: ['default', 'html'],
-    watch: false
+    watch: false,
+    // Benchmark configuration
+    benchmark: {
+      include: ['tests/benchmark/**/*.bench.ts'],
+      exclude: ['node_modules', 'dist', 'web-ui/node_modules'],
+      reporters: ['default'],
+    }
   },
   resolve: {
     alias: {
