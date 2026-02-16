@@ -729,16 +729,20 @@
 **Completed**: 2026-02-16
 **Git Commit**: 3f57d2c
 
-#### [ ] Web API Tests
+#### [x] Web API Tests
 **Blockers**: Web API Complete
 **Related Files**: octie/tests/integration/web-api.test.ts
-**C7 MCP Verified**: /vitest
+**C7 MCP Verified**: /vitest, /ladjs/supertest (Express.js API testing)
 **Deliverables**:
-- [ ] Task CRUD endpoint tests
-- [ ] Graph endpoint tests
-- [ ] Validation error tests
-- [ ] Authentication tests (if implemented)
-- [ ] CORS tests
+- [x] Task CRUD endpoint tests (GET /api/tasks, GET /api/tasks/:id, POST /api/tasks, PUT /api/tasks/:id, DELETE /api/tasks/:id, POST /api/tasks/:id/merge)
+- [x] Graph endpoint tests (GET /api/graph, GET /api/graph/topology, POST /api/graph/validate, GET /api/graph/cycles, GET /api/graph/critical-path, GET /api/stats)
+- [x] Health/info endpoint tests (GET /health, GET /api, GET /api/project)
+- [x] Validation error tests (missing fields, invalid IDs, atomic task validation)
+- [x] CORS tests (Access-Control-Allow-Origin header verification)
+- [x] Error handling tests (404 not found, validation errors, server errors)
+- [x] 48 comprehensive tests using supertest for HTTP assertions
+**Completed**: 2026-02-16
+**Git Commit**: a31b429
 
 ---
 
