@@ -21,6 +21,12 @@ interface TaskState {
   graphData: GraphData | null;
   projectStats: ProjectStats | null;
 
+  // Real-time updates
+  pollingEnabled: boolean;
+  pollingInterval: number;
+  startPolling: () => void;
+  stopPolling: () => void;
+
   // Actions
   setQueryOptions: (options: TaskQueryOptions) => void;
   setSelectedTask: (taskId: string | null) => void;
@@ -40,8 +46,12 @@ interface TaskState {
 }
 
 const API_BASE = '/api';
+const DEFAULT_POLLING_INTERVAL = 30000; // 30 seconds
 
-export const useTaskStore = create<TaskState>()((set, get) => ({
+export const useTaskStore = create<TaskState>()((set, get) => {
+  let pollingTimer: ReturnType<typeof setInterval> | null = null;
+
+  return {
   // Initial state
   tasks: [],
   selectedTaskId: null,
@@ -50,6 +60,31 @@ export const useTaskStore = create<TaskState>()((set, get) => ({
   queryOptions: {},
   graphData: null,
   projectStats: null,
+  pollingEnabled: false,
+  pollingInterval: DEFAULT_POLLING_INTERVAL,
+
+  // Real-time polling
+  startPolling: () => {
+    const { pollingEnabled, pollingInterval } = get();
+    if (pollingEnabled || pollingTimer) return;
+
+    set({ pollingEnabled: true });
+
+    pollingTimer = setInterval(() => {
+      const { fetchTasks, fetchGraph, fetchStats } = get();
+      fetchTasks();
+      fetchGraph();
+      fetchStats();
+    }, pollingInterval);
+  },
+
+  stopPolling: () => {
+    if (pollingTimer) {
+      clearInterval(pollingTimer);
+      pollingTimer = null;
+    }
+    set({ pollingEnabled: false });
+  },
 
   // Actions
   setQueryOptions: (options) => {
@@ -242,4 +277,5 @@ export const useTaskStore = create<TaskState>()((set, get) => ({
 
     return result.data!;
   },
-}));
+  };
+});
