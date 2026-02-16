@@ -391,3 +391,61 @@ export interface GraphStatistics {
   /** Longest path length (critical path) */
   criticalPathLength: number;
 }
+
+/**
+ * Web server configuration options
+ */
+export interface ServerOptions {
+  /** Port to run server on (default: 3000) */
+  port?: number;
+  /** Host to bind to (default: 'localhost') */
+  host?: string;
+  /** Open browser automatically (default: false) */
+  open?: boolean;
+  /** Enable CORS (default: true) */
+  cors?: boolean;
+  /** Enable request logging (default: true) */
+  logging?: boolean;
+}
+
+/**
+ * API response wrapper
+ * Standard response format for all API endpoints
+ */
+export interface ApiResponse<T = unknown> {
+  /** Indicates success of the request */
+  success: boolean;
+  /** Response data on success */
+  data?: T;
+  /** Error details on failure */
+  error?: {
+    /** Error code for programmatic handling */
+    code: string;
+    /** Human-readable error message */
+    message: string;
+    /** Additional error details */
+    details?: unknown;
+  };
+  /** ISO 8601 timestamp of response */
+  timestamp: string;
+}
+
+/**
+ * API error response
+ * Returned when an API request fails
+ */
+export interface ApiErrorResponse {
+  /** Indicates failure */
+  success: false;
+  /** Error details */
+  error: {
+    /** Error code for programmatic handling */
+    code: string;
+    /** Human-readable error message */
+    message: string;
+    /** Additional error details */
+    details?: unknown;
+  };
+  /** ISO 8601 timestamp of response */
+  timestamp: string;
+}

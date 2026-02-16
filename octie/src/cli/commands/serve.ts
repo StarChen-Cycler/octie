@@ -4,6 +4,8 @@
 
 import { Command } from 'commander';
 import { getProjectPath, info, error } from '../utils/helpers.js';
+import { createServer } from '../../web/server.js';
+import type { ServerOptions } from '../../web/server.js';
 
 /**
  * Create the serve command
@@ -13,21 +15,37 @@ export const serveCommand = new Command('serve')
   .option('-p, --port <number>', 'Port to run server on', '3000')
   .option('-h, --host <host>', 'Host to bind to', 'localhost')
   .option('--open', 'Open browser automatically')
+  .option('--no-cors', 'Disable CORS')
+  .option('--no-logging', 'Disable request logging')
   .option('--project <path>', 'Path to Octie project directory')
   .action(async (options) => {
     try {
       const projectPath = await getProjectPath(options.project);
 
-      // TODO: Implement actual web server
-      // For now, just show message
-
       info(`Starting web server for project at ${projectPath}`);
-      info(`Server will run at http://${options.host}:${options.port}`);
 
-      error('Web server not yet implemented');
-      info('This feature will be available in a future release');
+      const serverOptions: ServerOptions = {
+        port: parseInt(options.port, 10),
+        host: options.host,
+        open: options.open,
+        cors: options.cors !== false,
+        logging: options.logging !== false,
+      };
 
-      process.exit(0);
+      const server = await createServer(projectPath, serverOptions);
+
+      // Keep process alive
+      process.on('SIGTERM', async () => {
+        info('Shutting down server...');
+        await server.stop();
+        process.exit(0);
+      });
+
+      process.on('SIGINT', async () => {
+        info('\nShutting down server...');
+        await server.stop();
+        process.exit(0);
+      });
     } catch (err) {
       if (err instanceof Error) {
         error(err.message);

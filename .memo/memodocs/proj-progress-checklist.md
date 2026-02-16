@@ -443,7 +443,7 @@
 **Related Files**: octie/src/cli/commands/export.ts, octie/src/cli/commands/import.ts
 **C7 MCP Verified**: N/A
 **Deliverables**:
-- [x] `octie export` command with --format (json|md) and --output options
+- [x] `octie export` command with --type (json|md) and --output options
 - [x] Uses formatProjectMarkdown and formatProjectJSON formatters
 - [x] Export full project (supports single task via get command)
 - [x] `octie import` command with --file argument (required)
@@ -452,8 +452,9 @@
 - [x] --merge option for merge strategy (vs replace default)
 - [x] Backup before import (automatic via TaskStorage.createProject)
 - [x] Error handling for missing files, invalid JSON, invalid data structures
+- [x] Fixed: Changed export --format to --type to avoid global option conflict
 **Completed**: 2026-02-16
-**Git Commit**: e66975b
+**Git Commit**: e66975b, fa8bd43
 
 ---
 
