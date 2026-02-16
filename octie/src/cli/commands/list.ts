@@ -8,6 +8,7 @@ import type { TaskGraphStore } from '../../core/graph/index.js';
 import { TaskNode } from '../../core/models/task-node.js';
 import { getProjectPath, loadGraph, formatStatus, formatPriority } from '../utils/helpers.js';
 import chalk from 'chalk';
+import { formatTaskMarkdown } from '../output/markdown.js';
 
 /**
  * Format task as table row
@@ -26,21 +27,6 @@ function formatTaskAsRow(task: TaskNode, showId: boolean = true): string[] {
   );
 
   return row;
-}
-
-/**
- * Format task as markdown (brief for list view)
- */
-function formatTaskAsMarkdown(task: TaskNode): string {
-  const checkbox = task.status === 'completed' ? '[x]' : '[ ]';
-  const status = formatStatus(task.status);
-  const priority = formatPriority(task.priority);
-
-  return `## ${checkbox} ${task.title}\n` +
-         `**ID**: \`${task.id}\`\n` +
-         `**Status**: ${status}\n` +
-         `**Priority**: ${priority}\n` +
-         `**Description**: ${task.description.substring(0, 100)}...\n`;
 }
 
 /**
@@ -158,7 +144,10 @@ export const listCommand = new Command('list')
         case 'md':
           console.log(`# Tasks (${tasks.length})\n`);
           for (const task of tasks) {
-            console.log(formatTaskAsMarkdown(task));
+            console.log(formatTaskMarkdown(task));
+            console.log('');
+            console.log('---');
+            console.log('');
           }
           break;
 
