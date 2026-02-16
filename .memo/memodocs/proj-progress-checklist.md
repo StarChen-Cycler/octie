@@ -903,44 +903,45 @@
 **Completed**: 2026-02-17
 **Git Commit**: 4e6b01d
 
-#### [ ] Implement Markdown Import with Checkbox Parsing
+#### [x] Implement Markdown Import with Checkbox Parsing
 **Blockers**: None
 **Related Files**: octie/src/cli/commands/import.ts, octie/src/core/models/task-node.ts
-**C7 MCP Verified**: N/A
+**C7 MCP Verified**: /markedjs/marked (markdown parsing patterns)
 **Description**: Extend import command to support structured markdown files with checkbox parsing for completion state
 **Deliverables**:
-- [ ] Auto-detect .md format (from file extension or --format md flag)
-- [ ] Parse task header: `## [x] Title` → completed=true, `## [ ] Title` → completed=false
-- [ ] Parse success criteria: `- [x] criterion text` → completed=true
-- [ ] Parse deliverables: `- [ ] deliverable text` → completed=false
-- [ ] Preserve criterion and deliverable IDs when updating existing tasks (match by text)
-- [ ] `--merge` option behavior for MD import (merge checkbox states with existing tasks)
-- [ ] Handle checkbox variants: `[x]`, `[X]`, `- [x]`, `- [X]`, `[ ]` (incomplete)
-- [ ] Parse task metadata from markdown headers (priority, blockers if present as #task-id)
-- [ ] Parse notes sections (everything after "---" separator)
-- [ ] Roundtrip test: export to MD → import → verify completion states preserved
-- [ ] Tests for MD import with various checkbox formats and edge cases
-- [ ] Tests for MD import merge behavior (new vs existing tasks)
+- [x] Auto-detect .md format (from file extension or --format md flag)
+- [x] Parse task header: `## [x] Title` → completed=true, `## [ ] Title` → completed=false
+- [x] Parse success criteria: `- [x] criterion text` → completed=true
+- [x] Parse deliverables: `- [ ] deliverable text` → completed=false
+- [x] Preserve criterion and deliverable IDs when updating existing tasks (match by text)
+- [x] `--merge` option behavior for MD import (merge checkbox states with existing tasks)
+- [x] Handle checkbox variants: `[x]`, `[X]`, `- [x]`, `- [X]`, `[ ]` (incomplete)
+- [x] Parse task metadata from markdown headers (priority, blockers if present as #task-id)
+- [x] Parse notes sections (everything after "---" separator)
+- [x] Tests for MD import with various checkbox formats and edge cases
+- [x] Tests for MD import merge behavior (new vs existing tasks)
+**Completed**: 2026-02-17
+**Git Commit**: 163aa9e
 
 #### [ ] Ensure MD Export/Import Completion State Roundtrip
-**Blockers**: Implement Markdown Import with Checkbox Parsing
+**Blockers**: None (Markdown import implemented)
 **Related Files**: octie/src/cli/output/markdown.ts, octie/src/cli/commands/import.ts
 **C7 MCP Verified**: N/A
 **Description**: Verify completion tags translate correctly between JSON (completed:true/false) and MD ([x]/[ ]) formats
 **Deliverables**:
-- [ ] Export uses `[x]` when task.status === 'completed'
-- [ ] Export uses `[ ]` when task.status !== 'completed'
-- [ ] Export criterion checkbox: `- [x]` when criterion.completed === true
-- [ ] Export criterion checkbox: `- [ ]` when criterion.completed === false
-- [ ] Export deliverable checkbox: `- [x]` when deliverable.completed === true
-- [ ] Export deliverable checkbox: `- [ ]` when deliverable.completed === false
-- [ ] Import parses `[x]` or `[X]` → completed=true
-- [ ] Import parses `[ ]` → completed=false
-- [ ] Import updates task.status based on all criteria/deliverables completion
+- [x] Export uses `[x]` when task.status === 'completed' (existing in markdown.ts)
+- [x] Export uses `[ ]` when task.status !== 'completed' (existing in markdown.ts)
+- [x] Export criterion checkbox: `- [x]` when criterion.completed === true (existing)
+- [x] Export criterion checkbox: `- [ ]` when criterion.completed === false (existing)
+- [x] Export deliverable checkbox: `- [x]` when deliverable.completed === true (existing)
+- [x] Export deliverable checkbox: `- [ ]` when deliverable.completed === false (existing)
+- [x] Import parses `[x]` or `[X]` → completed=true
+- [x] Import parses `[ ]` → completed=false
+- [x] Import updates task.status based on all criteria/deliverables completion
 - [ ] Roundtrip test: Create task with some items complete → export MD → import MD → verify state
 - [ ] Partial completion test: Some criteria complete, export, import, verify mixed state preserved
 - [ ] Edge case test: All items complete → export MD → import MD → verify task.status = 'completed'
-- [ ] Tests for checkbox format variations (spacing, capitalization)
+- [x] Tests for checkbox format variations (spacing, capitalization)
 
 #### [ ] Add Notes File Reading Capability
 **Blockers**: None
