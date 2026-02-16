@@ -39,31 +39,33 @@
     "node": ">=20.0.0"
   },
   "dependencies": {
-    "commander": "^12.0.0",
+    "archy": "^1.0.0",
     "chalk": "^5.3.0",
-    "inquirer": "^9.2.0",
-    "express": "^4.18.0",
-    "ws": "^8.16.0",
-    "uuid": "^9.0.0",
-    "date-fns": "^3.0.0",
-    "zod": "^3.22.0",
-    "ora": "^8.0.0",
     "cli-table3": "^0.6.3",
-    "archy": "^1.0.0"
+    "commander": "^12.0.0",
+    "date-fns": "^3.0.0",
+    "express": "^4.18.0",
+    "inquirer": "^9.2.0",
+    "ora": "^8.0.0",
+    "uuid": "^9.0.0",
+    "ws": "^8.16.0",
+    "zod": "^3.22.0"
   },
   "devDependencies": {
-    "@types/node": "^20.10.0",
-    "@types/inquirer": "^9.0.0",
     "@types/express": "^4.17.0",
+    "@types/inquirer": "^9.0.0",
+    "@types/node": "^20.10.0",
+    "@types/supertest": "^6.0.3",
     "@types/uuid": "^9.0.0",
     "@types/ws": "^8.5.0",
-    "typescript": "^5.3.0",
-    "vitest": "^1.2.0",
+    "@typescript-eslint/eslint-plugin": "^6.0.0",
+    "@typescript-eslint/parser": "^6.0.0",
     "@vitest/coverage-v8": "^1.2.0",
     "@vitest/ui": "^1.2.0",
     "eslint": "^8.56.0",
-    "@typescript-eslint/parser": "^6.0.0",
-    "@typescript-eslint/eslint-plugin": "^6.0.0",
-    "prettier": "^3.2.0"
+    "prettier": "^3.2.0",
+    "supertest": "^7.2.2",
+    "typescript": "^5.3.0",
+    "vitest": "^1.2.0"
   }
 }
