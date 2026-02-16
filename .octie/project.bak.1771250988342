@@ -1,0 +1,943 @@
+{
+  "$schema": "https://octie.dev/schemas/project-v1.json",
+  "version": "1.0.0",
+  "format": "octie-project",
+  "metadata": {
+    "project_name": "my-project",
+    "version": "1.0.0",
+    "created_at": "2026-02-16T11:15:03.498Z",
+    "updated_at": "2026-02-16T14:08:36.769Z"
+  },
+  "tasks": {
+    "d27038e5-c788-4897-8e0a-fffbdbf035b8": {
+      "id": "d27038e5-c788-4897-8e0a-fffbdbf035b8",
+      "title": "Set up TypeScript Configuration and Build",
+      "description": "Set up TypeScript, build configuration, and development tooling for the Octie project. This includes configuring the TypeScript compiler, setting up Vitest for testing, ESLint for linting, and Prettier for formatting.",
+      "status": "in_progress",
+      "priority": "top",
+      "success_criteria": [
+        {
+          "id": "c3582ba6-5ccc-497d-8023-622ca5235c6d",
+          "text": "All build scripts work correctly (build, dev, test, lint, format)",
+          "completed": false
+        }
+      ],
+      "deliverables": [
+        {
+          "id": "0e6ad8ac-d606-4bf1-84e5-cb635a2575f7",
+          "text": "octie/.eslintrc.cjs and octie/.prettierrc configuration files",
+          "completed": false
+        }
+      ],
+      "blockers": [],
+      "dependencies": [],
+      "sub_items": [],
+      "related_files": [],
+      "notes": "",
+      "c7_verified": [],
+      "created_at": "2026-02-16T11:38:35.200Z",
+      "updated_at": "2026-02-16T11:53:19.323Z",
+      "completed_at": null,
+      "edges": []
+    },
+    "54156c07-f677-47b2-ac15-b6a8cb52cdd1": {
+      "id": "54156c07-f677-47b2-ac15-b6a8cb52cdd1",
+      "title": "Define Core Type Definitions",
+      "description": "Define all TypeScript interfaces and types for the entire system including TaskNode, TaskStatus, TaskPriority, GraphEdge, TaskGraph, and custom error classes. These types form the foundation of the type-safe codebase.",
+      "status": "not_started",
+      "priority": "top",
+      "success_criteria": [
+        {
+          "id": "4edea607-e698-44fa-8ae2-f4eee1ede381",
+          "text": "Custom error classes implemented (OctieError, TaskNotFoundError, CircularDependencyError, FileOperationError, ValidationError, AtomicTaskViolationError)",
+          "completed": false
+        }
+      ],
+      "deliverables": [
+        {
+          "id": "4c946947-3b3f-4abb-839c-f5121f248cdf",
+          "text": "octie/src/types/index.ts with all type definitions",
+          "completed": false
+        }
+      ],
+      "blockers": [],
+      "dependencies": [],
+      "sub_items": [],
+      "related_files": [],
+      "notes": "",
+      "c7_verified": [],
+      "created_at": "2026-02-16T11:38:56.812Z",
+      "updated_at": "2026-02-16T11:38:56.812Z",
+      "completed_at": null,
+      "edges": []
+    },
+    "5e2308e4-860d-4fe2-8838-9fc0e8c41a8a": {
+      "id": "5e2308e4-860d-4fe2-8838-9fc0e8c41a8a",
+      "title": "Build TaskNode Model Class",
+      "description": "Create the TaskNode class with constructor, field validation, atomic task validation, auto-timestamp management, success criteria tracking, and deliverable tracking. The model enforces required field validation and atomic task requirements at creation time.",
+      "status": "not_started",
+      "priority": "second",
+      "success_criteria": [
+        {
+          "id": "aa6be115-903a-4211-bc58-fd828f9058f1",
+          "text": "Auto-timestamp management for created_at, updated_at, and completed_at",
+          "completed": false
+        }
+      ],
+      "deliverables": [
+        {
+          "id": "885971f9-72ed-49ea-9992-63ba7cd90135",
+          "text": "validateAtomicTask function with helpful error messages",
+          "completed": false
+        }
+      ],
+      "blockers": [],
+      "dependencies": [],
+      "sub_items": [],
+      "related_files": [],
+      "notes": "",
+      "c7_verified": [],
+      "created_at": "2026-02-16T11:47:38.281Z",
+      "updated_at": "2026-02-16T11:47:38.281Z",
+      "completed_at": null,
+      "edges": []
+    },
+    "ba48ace5-e695-4b71-a6fe-db0cc39fc100": {
+      "id": "ba48ace5-e695-4b71-a6fe-db0cc39fc100",
+      "title": "Implement TaskGraph Data Structure",
+      "description": "Create the TaskGraphStore class with Map-based node storage for O(1) lookup, adjacency lists for edge management, and methods for node and edge manipulation including getNode, addNode, removeNode, addEdge, and removeEdge operations.",
+      "status": "not_started",
+      "priority": "second",
+      "success_criteria": [
+        {
+          "id": "dbf9e11b-7b43-4eb6-9606-96fa0897a780",
+          "text": "All CRUD operations for nodes and edges implemented and tested",
+          "completed": false
+        }
+      ],
+      "deliverables": [
+        {
+          "id": "1c53323a-2748-4c1b-a805-2aa860070545",
+          "text": "octie/src/core/graph/index.ts with TaskGraphStore class",
+          "completed": false
+        }
+      ],
+      "blockers": [],
+      "dependencies": [],
+      "sub_items": [],
+      "related_files": [],
+      "notes": "",
+      "c7_verified": [],
+      "created_at": "2026-02-16T11:48:11.203Z",
+      "updated_at": "2026-02-16T11:48:11.203Z",
+      "completed_at": null,
+      "edges": []
+    },
+    "39bc4d25-da9d-4b7c-b509-a345c70738e0": {
+      "id": "39bc4d25-da9d-4b7c-b509-a345c70738e0",
+      "title": "Build Storage Layer for File Operations",
+      "description": "Create the AtomicFileWriter class with temp file plus rename strategy for safe writes, TaskStorage class for project.json operations with load and save methods, backup rotation system, and cross-platform path utilities including getProjectPath, getConfigPath, and normalizePath functions.",
+      "status": "not_started",
+      "priority": "second",
+      "success_criteria": [
+        {
+          "id": "7767bf30-fde8-4dbc-a84b-19f30eb66365",
+          "text": "Cross-platform path utilities for Windows, macOS, and Linux",
+          "completed": false
+        }
+      ],
+      "deliverables": [
+        {
+          "id": "5552c4d2-2842-4e64-b1f5-9aa81916de32",
+          "text": "octie/src/core/storage/file-store.ts with TaskStorage class",
+          "completed": false
+        }
+      ],
+      "blockers": [],
+      "dependencies": [],
+      "sub_items": [],
+      "related_files": [],
+      "notes": "",
+      "c7_verified": [],
+      "created_at": "2026-02-16T11:48:38.759Z",
+      "updated_at": "2026-02-16T11:48:38.759Z",
+      "completed_at": null,
+      "edges": []
+    },
+    "9638d27d-f6db-4c27-9a56-1e62b9c7cf73": {
+      "id": "9638d27d-f6db-4c27-9a56-1e62b9c7cf73",
+      "title": "Develop CLI Commands Init and Create",
+      "description": "Create the octie init command for project initialization with .octie directory structure and project.json creation, and the octie create command for task creation with required options validation, atomic task validation, UUID generation, and graph persistence.",
+      "status": "not_started",
+      "priority": "second",
+      "success_criteria": [
+        {
+          "id": "cefa93dc-fd3d-4e65-aa71-2d1e6a2a2944",
+          "text": "Commands handle errors gracefully with helpful messages",
+          "completed": false
+        }
+      ],
+      "deliverables": [
+        {
+          "id": "25cceb5d-94d6-4863-ba34-cb27a3e2a159",
+          "text": "octie/src/cli/commands/create.ts with CreateCommand class",
+          "completed": false
+        }
+      ],
+      "blockers": [],
+      "dependencies": [],
+      "sub_items": [],
+      "related_files": [],
+      "notes": "",
+      "c7_verified": [],
+      "created_at": "2026-02-16T11:49:03.795Z",
+      "updated_at": "2026-02-16T11:49:03.795Z",
+      "completed_at": null,
+      "edges": []
+    },
+    "eca85058-bff4-4cde-bd8a-0ab74d0eff76": {
+      "id": "eca85058-bff4-4cde-bd8a-0ab74d0eff76",
+      "title": "Implement Web API Server with Express",
+      "description": "Create the Express.js web server with CORS middleware, JSON body parsing, error handling middleware, graceful shutdown handling, and RESTful API endpoints for task CRUD operations, graph operations, and project statistics.",
+      "status": "not_started",
+      "priority": "later",
+      "success_criteria": [
+        {
+          "id": "b8c16daa-d7e9-4a6d-9d3d-1e80a9ea42bf",
+          "text": "Error handling and graceful shutdown working correctly",
+          "completed": false
+        }
+      ],
+      "deliverables": [
+        {
+          "id": "8bb9741d-f184-4fa0-8dea-58219d67e5ec",
+          "text": "octie/src/web/routes/graph.ts with graph endpoints",
+          "completed": false
+        }
+      ],
+      "blockers": [],
+      "dependencies": [],
+      "sub_items": [],
+      "related_files": [],
+      "notes": "",
+      "c7_verified": [],
+      "created_at": "2026-02-16T11:49:25.761Z",
+      "updated_at": "2026-02-16T11:49:25.761Z",
+      "completed_at": null,
+      "edges": []
+    },
+    "5c08818f-a820-4de4-a72f-26bdff4f0b5e": {
+      "id": "5c08818f-a820-4de4-a72f-26bdff4f0b5e",
+      "title": "Implement user registration endpoint",
+      "description": "Create POST /users endpoint for user registration with email validation and password hashing",
+      "status": "not_started",
+      "priority": "later",
+      "success_criteria": [
+        {
+          "id": "e5da8b99-c8e2-49c0-aa82-f06f70419b6a",
+          "text": "Endpoint returns 201 on successful registration",
+          "completed": false
+        }
+      ],
+      "deliverables": [
+        {
+          "id": "9d99ff9f-27b9-4f1e-98fc-48590be54039",
+          "text": "src/api/users/register.ts",
+          "completed": false
+        }
+      ],
+      "blockers": [],
+      "dependencies": [],
+      "sub_items": [],
+      "related_files": [],
+      "notes": "",
+      "c7_verified": [],
+      "created_at": "2026-02-16T12:17:16.485Z",
+      "updated_at": "2026-02-16T12:17:16.485Z",
+      "completed_at": null,
+      "edges": []
+    },
+    "962fab4e-11f3-4409-be0b-bd65088d9ffe": {
+      "id": "962fab4e-11f3-4409-be0b-bd65088d9ffe",
+      "title": "Define Core Type Definitions",
+      "description": "Create all TypeScript interfaces and types for the task management system including TaskNode, TaskStatus, TaskPriority, GraphEdge, TaskGraph, and custom error classes",
+      "status": "not_started",
+      "priority": "top",
+      "success_criteria": [
+        {
+          "id": "cc0350f6-e49f-4cb9-a146-eb48b9752d1f",
+          "text": "Custom error classes extend OctieError base",
+          "completed": false
+        }
+      ],
+      "deliverables": [
+        {
+          "id": "8a8c104a-aa0a-4844-993b-fb7867540540",
+          "text": "src/types/index.ts with all type definitions",
+          "completed": false
+        }
+      ],
+      "blockers": [],
+      "dependencies": [],
+      "sub_items": [],
+      "related_files": [],
+      "notes": "",
+      "c7_verified": [],
+      "created_at": "2026-02-16T14:08:23.014Z",
+      "updated_at": "2026-02-16T14:08:23.014Z",
+      "completed_at": null,
+      "edges": []
+    },
+    "f3275e3b-86cf-458a-bad4-dc1422b895ac": {
+      "id": "f3275e3b-86cf-458a-bad4-dc1422b895ac",
+      "title": "Create Map and Set type structures",
+      "description": "Define the Map<string, TaskNode> and Map<string, Set<string>> structures for node storage and edge tracking",
+      "status": "not_started",
+      "priority": "second",
+      "success_criteria": [
+        {
+          "id": "289fb6ff-7dfc-4de8-ad50-1e96cac421e4",
+          "text": "Map structure compiles with correct types",
+          "completed": false
+        }
+      ],
+      "deliverables": [
+        {
+          "id": "6a39e6f7-db93-422e-8ad5-955c01a3513a",
+          "text": "Type definitions for graph structures",
+          "completed": false
+        }
+      ],
+      "blockers": [],
+      "dependencies": [],
+      "sub_items": [],
+      "related_files": [],
+      "notes": "",
+      "c7_verified": [],
+      "created_at": "2026-02-16T14:08:36.769Z",
+      "updated_at": "2026-02-16T14:08:36.769Z",
+      "completed_at": null,
+      "edges": []
+    }
+  },
+  "edges": [],
+  "indexes": {
+    "byStatus": {
+      "not_started": [
+        "54156c07-f677-47b2-ac15-b6a8cb52cdd1",
+        "5e2308e4-860d-4fe2-8838-9fc0e8c41a8a",
+        "ba48ace5-e695-4b71-a6fe-db0cc39fc100",
+        "39bc4d25-da9d-4b7c-b509-a345c70738e0",
+        "9638d27d-f6db-4c27-9a56-1e62b9c7cf73",
+        "eca85058-bff4-4cde-bd8a-0ab74d0eff76",
+        "5c08818f-a820-4de4-a72f-26bdff4f0b5e",
+        "962fab4e-11f3-4409-be0b-bd65088d9ffe",
+        "f3275e3b-86cf-458a-bad4-dc1422b895ac"
+      ],
+      "pending": [],
+      "in_progress": [
+        "d27038e5-c788-4897-8e0a-fffbdbf035b8"
+      ],
+      "completed": [],
+      "blocked": []
+    },
+    "byPriority": {
+      "top": [
+        "d27038e5-c788-4897-8e0a-fffbdbf035b8",
+        "54156c07-f677-47b2-ac15-b6a8cb52cdd1",
+        "962fab4e-11f3-4409-be0b-bd65088d9ffe"
+      ],
+      "second": [
+        "5e2308e4-860d-4fe2-8838-9fc0e8c41a8a",
+        "ba48ace5-e695-4b71-a6fe-db0cc39fc100",
+        "39bc4d25-da9d-4b7c-b509-a345c70738e0",
+        "9638d27d-f6db-4c27-9a56-1e62b9c7cf73",
+        "f3275e3b-86cf-458a-bad4-dc1422b895ac"
+      ],
+      "later": [
+        "eca85058-bff4-4cde-bd8a-0ab74d0eff76",
+        "5c08818f-a820-4de4-a72f-26bdff4f0b5e"
+      ]
+    },
+    "rootTasks": [
+      "d27038e5-c788-4897-8e0a-fffbdbf035b8",
+      "54156c07-f677-47b2-ac15-b6a8cb52cdd1",
+      "5e2308e4-860d-4fe2-8838-9fc0e8c41a8a",
+      "ba48ace5-e695-4b71-a6fe-db0cc39fc100",
+      "39bc4d25-da9d-4b7c-b509-a345c70738e0",
+      "9638d27d-f6db-4c27-9a56-1e62b9c7cf73",
+      "eca85058-bff4-4cde-bd8a-0ab74d0eff76",
+      "5c08818f-a820-4de4-a72f-26bdff4f0b5e",
+      "962fab4e-11f3-4409-be0b-bd65088d9ffe",
+      "f3275e3b-86cf-458a-bad4-dc1422b895ac"
+    ],
+    "orphanTasks": [
+      "d27038e5-c788-4897-8e0a-fffbdbf035b8",
+      "54156c07-f677-47b2-ac15-b6a8cb52cdd1",
+      "5e2308e4-860d-4fe2-8838-9fc0e8c41a8a",
+      "ba48ace5-e695-4b71-a6fe-db0cc39fc100",
+      "39bc4d25-da9d-4b7c-b509-a345c70738e0",
+      "9638d27d-f6db-4c27-9a56-1e62b9c7cf73",
+      "eca85058-bff4-4cde-bd8a-0ab74d0eff76",
+      "5c08818f-a820-4de4-a72f-26bdff4f0b5e",
+      "962fab4e-11f3-4409-be0b-bd65088d9ffe",
+      "f3275e3b-86cf-458a-bad4-dc1422b895ac"
+    ],
+    "searchText": {
+      "1": [
+        "ba48ace5-e695-4b71-a6fe-db0cc39fc100"
+      ],
+      "set": [
+        "d27038e5-c788-4897-8e0a-fffbdbf035b8",
+        "f3275e3b-86cf-458a-bad4-dc1422b895ac"
+      ],
+      "up": [
+        "d27038e5-c788-4897-8e0a-fffbdbf035b8"
+      ],
+      "typescript": [
+        "d27038e5-c788-4897-8e0a-fffbdbf035b8",
+        "54156c07-f677-47b2-ac15-b6a8cb52cdd1",
+        "962fab4e-11f3-4409-be0b-bd65088d9ffe"
+      ],
+      "configuration": [
+        "d27038e5-c788-4897-8e0a-fffbdbf035b8"
+      ],
+      "and": [
+        "d27038e5-c788-4897-8e0a-fffbdbf035b8",
+        "54156c07-f677-47b2-ac15-b6a8cb52cdd1",
+        "5e2308e4-860d-4fe2-8838-9fc0e8c41a8a",
+        "ba48ace5-e695-4b71-a6fe-db0cc39fc100",
+        "39bc4d25-da9d-4b7c-b509-a345c70738e0",
+        "9638d27d-f6db-4c27-9a56-1e62b9c7cf73",
+        "eca85058-bff4-4cde-bd8a-0ab74d0eff76",
+        "5c08818f-a820-4de4-a72f-26bdff4f0b5e",
+        "962fab4e-11f3-4409-be0b-bd65088d9ffe",
+        "f3275e3b-86cf-458a-bad4-dc1422b895ac"
+      ],
+      "build": [
+        "d27038e5-c788-4897-8e0a-fffbdbf035b8",
+        "5e2308e4-860d-4fe2-8838-9fc0e8c41a8a",
+        "39bc4d25-da9d-4b7c-b509-a345c70738e0"
+      ],
+      "development": [
+        "d27038e5-c788-4897-8e0a-fffbdbf035b8"
+      ],
+      "tooling": [
+        "d27038e5-c788-4897-8e0a-fffbdbf035b8"
+      ],
+      "for": [
+        "d27038e5-c788-4897-8e0a-fffbdbf035b8",
+        "54156c07-f677-47b2-ac15-b6a8cb52cdd1",
+        "ba48ace5-e695-4b71-a6fe-db0cc39fc100",
+        "39bc4d25-da9d-4b7c-b509-a345c70738e0",
+        "9638d27d-f6db-4c27-9a56-1e62b9c7cf73",
+        "eca85058-bff4-4cde-bd8a-0ab74d0eff76",
+        "5c08818f-a820-4de4-a72f-26bdff4f0b5e",
+        "962fab4e-11f3-4409-be0b-bd65088d9ffe",
+        "f3275e3b-86cf-458a-bad4-dc1422b895ac"
+      ],
+      "the": [
+        "d27038e5-c788-4897-8e0a-fffbdbf035b8",
+        "54156c07-f677-47b2-ac15-b6a8cb52cdd1",
+        "5e2308e4-860d-4fe2-8838-9fc0e8c41a8a",
+        "ba48ace5-e695-4b71-a6fe-db0cc39fc100",
+        "39bc4d25-da9d-4b7c-b509-a345c70738e0",
+        "9638d27d-f6db-4c27-9a56-1e62b9c7cf73",
+        "eca85058-bff4-4cde-bd8a-0ab74d0eff76",
+        "962fab4e-11f3-4409-be0b-bd65088d9ffe",
+        "f3275e3b-86cf-458a-bad4-dc1422b895ac"
+      ],
+      "octie": [
+        "d27038e5-c788-4897-8e0a-fffbdbf035b8",
+        "9638d27d-f6db-4c27-9a56-1e62b9c7cf73"
+      ],
+      "project": [
+        "d27038e5-c788-4897-8e0a-fffbdbf035b8",
+        "39bc4d25-da9d-4b7c-b509-a345c70738e0",
+        "9638d27d-f6db-4c27-9a56-1e62b9c7cf73",
+        "eca85058-bff4-4cde-bd8a-0ab74d0eff76"
+      ],
+      "this": [
+        "d27038e5-c788-4897-8e0a-fffbdbf035b8"
+      ],
+      "includes": [
+        "d27038e5-c788-4897-8e0a-fffbdbf035b8"
+      ],
+      "configuring": [
+        "d27038e5-c788-4897-8e0a-fffbdbf035b8"
+      ],
+      "compiler": [
+        "d27038e5-c788-4897-8e0a-fffbdbf035b8"
+      ],
+      "setting": [
+        "d27038e5-c788-4897-8e0a-fffbdbf035b8"
+      ],
+      "vitest": [
+        "d27038e5-c788-4897-8e0a-fffbdbf035b8"
+      ],
+      "testing": [
+        "d27038e5-c788-4897-8e0a-fffbdbf035b8"
+      ],
+      "eslint": [
+        "d27038e5-c788-4897-8e0a-fffbdbf035b8"
+      ],
+      "linting": [
+        "d27038e5-c788-4897-8e0a-fffbdbf035b8"
+      ],
+      "prettier": [
+        "d27038e5-c788-4897-8e0a-fffbdbf035b8"
+      ],
+      "formatting": [
+        "d27038e5-c788-4897-8e0a-fffbdbf035b8"
+      ],
+      "define": [
+        "54156c07-f677-47b2-ac15-b6a8cb52cdd1",
+        "962fab4e-11f3-4409-be0b-bd65088d9ffe",
+        "f3275e3b-86cf-458a-bad4-dc1422b895ac"
+      ],
+      "core": [
+        "54156c07-f677-47b2-ac15-b6a8cb52cdd1",
+        "962fab4e-11f3-4409-be0b-bd65088d9ffe"
+      ],
+      "type": [
+        "54156c07-f677-47b2-ac15-b6a8cb52cdd1",
+        "962fab4e-11f3-4409-be0b-bd65088d9ffe",
+        "f3275e3b-86cf-458a-bad4-dc1422b895ac"
+      ],
+      "definitions": [
+        "54156c07-f677-47b2-ac15-b6a8cb52cdd1",
+        "962fab4e-11f3-4409-be0b-bd65088d9ffe"
+      ],
+      "all": [
+        "54156c07-f677-47b2-ac15-b6a8cb52cdd1",
+        "962fab4e-11f3-4409-be0b-bd65088d9ffe"
+      ],
+      "interfaces": [
+        "54156c07-f677-47b2-ac15-b6a8cb52cdd1",
+        "962fab4e-11f3-4409-be0b-bd65088d9ffe"
+      ],
+      "types": [
+        "54156c07-f677-47b2-ac15-b6a8cb52cdd1",
+        "962fab4e-11f3-4409-be0b-bd65088d9ffe"
+      ],
+      "entire": [
+        "54156c07-f677-47b2-ac15-b6a8cb52cdd1"
+      ],
+      "system": [
+        "54156c07-f677-47b2-ac15-b6a8cb52cdd1",
+        "39bc4d25-da9d-4b7c-b509-a345c70738e0",
+        "962fab4e-11f3-4409-be0b-bd65088d9ffe"
+      ],
+      "including": [
+        "54156c07-f677-47b2-ac15-b6a8cb52cdd1",
+        "ba48ace5-e695-4b71-a6fe-db0cc39fc100",
+        "39bc4d25-da9d-4b7c-b509-a345c70738e0",
+        "962fab4e-11f3-4409-be0b-bd65088d9ffe"
+      ],
+      "tasknode": [
+        "54156c07-f677-47b2-ac15-b6a8cb52cdd1",
+        "5e2308e4-860d-4fe2-8838-9fc0e8c41a8a",
+        "962fab4e-11f3-4409-be0b-bd65088d9ffe",
+        "f3275e3b-86cf-458a-bad4-dc1422b895ac"
+      ],
+      "taskstatus": [
+        "54156c07-f677-47b2-ac15-b6a8cb52cdd1",
+        "962fab4e-11f3-4409-be0b-bd65088d9ffe"
+      ],
+      "taskpriority": [
+        "54156c07-f677-47b2-ac15-b6a8cb52cdd1",
+        "962fab4e-11f3-4409-be0b-bd65088d9ffe"
+      ],
+      "graphedge": [
+        "54156c07-f677-47b2-ac15-b6a8cb52cdd1",
+        "962fab4e-11f3-4409-be0b-bd65088d9ffe"
+      ],
+      "taskgraph": [
+        "54156c07-f677-47b2-ac15-b6a8cb52cdd1",
+        "ba48ace5-e695-4b71-a6fe-db0cc39fc100",
+        "962fab4e-11f3-4409-be0b-bd65088d9ffe"
+      ],
+      "custom": [
+        "54156c07-f677-47b2-ac15-b6a8cb52cdd1",
+        "962fab4e-11f3-4409-be0b-bd65088d9ffe"
+      ],
+      "error": [
+        "54156c07-f677-47b2-ac15-b6a8cb52cdd1",
+        "eca85058-bff4-4cde-bd8a-0ab74d0eff76",
+        "962fab4e-11f3-4409-be0b-bd65088d9ffe"
+      ],
+      "classes": [
+        "54156c07-f677-47b2-ac15-b6a8cb52cdd1",
+        "962fab4e-11f3-4409-be0b-bd65088d9ffe"
+      ],
+      "these": [
+        "54156c07-f677-47b2-ac15-b6a8cb52cdd1"
+      ],
+      "form": [
+        "54156c07-f677-47b2-ac15-b6a8cb52cdd1"
+      ],
+      "foundation": [
+        "54156c07-f677-47b2-ac15-b6a8cb52cdd1"
+      ],
+      "of": [
+        "54156c07-f677-47b2-ac15-b6a8cb52cdd1"
+      ],
+      "safe": [
+        "54156c07-f677-47b2-ac15-b6a8cb52cdd1",
+        "39bc4d25-da9d-4b7c-b509-a345c70738e0"
+      ],
+      "codebase": [
+        "54156c07-f677-47b2-ac15-b6a8cb52cdd1"
+      ],
+      "model": [
+        "5e2308e4-860d-4fe2-8838-9fc0e8c41a8a"
+      ],
+      "class": [
+        "5e2308e4-860d-4fe2-8838-9fc0e8c41a8a",
+        "ba48ace5-e695-4b71-a6fe-db0cc39fc100",
+        "39bc4d25-da9d-4b7c-b509-a345c70738e0"
+      ],
+      "create": [
+        "5e2308e4-860d-4fe2-8838-9fc0e8c41a8a",
+        "ba48ace5-e695-4b71-a6fe-db0cc39fc100",
+        "39bc4d25-da9d-4b7c-b509-a345c70738e0",
+        "9638d27d-f6db-4c27-9a56-1e62b9c7cf73",
+        "eca85058-bff4-4cde-bd8a-0ab74d0eff76",
+        "5c08818f-a820-4de4-a72f-26bdff4f0b5e",
+        "962fab4e-11f3-4409-be0b-bd65088d9ffe",
+        "f3275e3b-86cf-458a-bad4-dc1422b895ac"
+      ],
+      "with": [
+        "5e2308e4-860d-4fe2-8838-9fc0e8c41a8a",
+        "ba48ace5-e695-4b71-a6fe-db0cc39fc100",
+        "39bc4d25-da9d-4b7c-b509-a345c70738e0",
+        "9638d27d-f6db-4c27-9a56-1e62b9c7cf73",
+        "eca85058-bff4-4cde-bd8a-0ab74d0eff76",
+        "5c08818f-a820-4de4-a72f-26bdff4f0b5e"
+      ],
+      "constructor": [
+        "5e2308e4-860d-4fe2-8838-9fc0e8c41a8a"
+      ],
+      "field": [
+        "5e2308e4-860d-4fe2-8838-9fc0e8c41a8a"
+      ],
+      "validation": [
+        "5e2308e4-860d-4fe2-8838-9fc0e8c41a8a",
+        "9638d27d-f6db-4c27-9a56-1e62b9c7cf73",
+        "5c08818f-a820-4de4-a72f-26bdff4f0b5e"
+      ],
+      "atomic": [
+        "5e2308e4-860d-4fe2-8838-9fc0e8c41a8a",
+        "9638d27d-f6db-4c27-9a56-1e62b9c7cf73"
+      ],
+      "task": [
+        "5e2308e4-860d-4fe2-8838-9fc0e8c41a8a",
+        "9638d27d-f6db-4c27-9a56-1e62b9c7cf73",
+        "eca85058-bff4-4cde-bd8a-0ab74d0eff76",
+        "962fab4e-11f3-4409-be0b-bd65088d9ffe"
+      ],
+      "auto": [
+        "5e2308e4-860d-4fe2-8838-9fc0e8c41a8a"
+      ],
+      "timestamp": [
+        "5e2308e4-860d-4fe2-8838-9fc0e8c41a8a"
+      ],
+      "management": [
+        "5e2308e4-860d-4fe2-8838-9fc0e8c41a8a",
+        "ba48ace5-e695-4b71-a6fe-db0cc39fc100",
+        "962fab4e-11f3-4409-be0b-bd65088d9ffe"
+      ],
+      "success": [
+        "5e2308e4-860d-4fe2-8838-9fc0e8c41a8a"
+      ],
+      "criteria": [
+        "5e2308e4-860d-4fe2-8838-9fc0e8c41a8a"
+      ],
+      "tracking": [
+        "5e2308e4-860d-4fe2-8838-9fc0e8c41a8a",
+        "f3275e3b-86cf-458a-bad4-dc1422b895ac"
+      ],
+      "deliverable": [
+        "5e2308e4-860d-4fe2-8838-9fc0e8c41a8a"
+      ],
+      "enforces": [
+        "5e2308e4-860d-4fe2-8838-9fc0e8c41a8a"
+      ],
+      "required": [
+        "5e2308e4-860d-4fe2-8838-9fc0e8c41a8a",
+        "9638d27d-f6db-4c27-9a56-1e62b9c7cf73"
+      ],
+      "requirements": [
+        "5e2308e4-860d-4fe2-8838-9fc0e8c41a8a"
+      ],
+      "at": [
+        "5e2308e4-860d-4fe2-8838-9fc0e8c41a8a"
+      ],
+      "creation": [
+        "5e2308e4-860d-4fe2-8838-9fc0e8c41a8a",
+        "9638d27d-f6db-4c27-9a56-1e62b9c7cf73"
+      ],
+      "time": [
+        "5e2308e4-860d-4fe2-8838-9fc0e8c41a8a"
+      ],
+      "implement": [
+        "ba48ace5-e695-4b71-a6fe-db0cc39fc100",
+        "eca85058-bff4-4cde-bd8a-0ab74d0eff76",
+        "5c08818f-a820-4de4-a72f-26bdff4f0b5e"
+      ],
+      "data": [
+        "ba48ace5-e695-4b71-a6fe-db0cc39fc100"
+      ],
+      "structure": [
+        "ba48ace5-e695-4b71-a6fe-db0cc39fc100",
+        "9638d27d-f6db-4c27-9a56-1e62b9c7cf73"
+      ],
+      "taskgraphstore": [
+        "ba48ace5-e695-4b71-a6fe-db0cc39fc100"
+      ],
+      "map": [
+        "ba48ace5-e695-4b71-a6fe-db0cc39fc100",
+        "f3275e3b-86cf-458a-bad4-dc1422b895ac"
+      ],
+      "based": [
+        "ba48ace5-e695-4b71-a6fe-db0cc39fc100"
+      ],
+      "node": [
+        "ba48ace5-e695-4b71-a6fe-db0cc39fc100",
+        "f3275e3b-86cf-458a-bad4-dc1422b895ac"
+      ],
+      "storage": [
+        "ba48ace5-e695-4b71-a6fe-db0cc39fc100",
+        "39bc4d25-da9d-4b7c-b509-a345c70738e0",
+        "f3275e3b-86cf-458a-bad4-dc1422b895ac"
+      ],
+      "o": [
+        "ba48ace5-e695-4b71-a6fe-db0cc39fc100"
+      ],
+      "lookup": [
+        "ba48ace5-e695-4b71-a6fe-db0cc39fc100"
+      ],
+      "adjacency": [
+        "ba48ace5-e695-4b71-a6fe-db0cc39fc100"
+      ],
+      "lists": [
+        "ba48ace5-e695-4b71-a6fe-db0cc39fc100"
+      ],
+      "edge": [
+        "ba48ace5-e695-4b71-a6fe-db0cc39fc100",
+        "f3275e3b-86cf-458a-bad4-dc1422b895ac"
+      ],
+      "methods": [
+        "ba48ace5-e695-4b71-a6fe-db0cc39fc100",
+        "39bc4d25-da9d-4b7c-b509-a345c70738e0"
+      ],
+      "manipulation": [
+        "ba48ace5-e695-4b71-a6fe-db0cc39fc100"
+      ],
+      "getnode": [
+        "ba48ace5-e695-4b71-a6fe-db0cc39fc100"
+      ],
+      "addnode": [
+        "ba48ace5-e695-4b71-a6fe-db0cc39fc100"
+      ],
+      "removenode": [
+        "ba48ace5-e695-4b71-a6fe-db0cc39fc100"
+      ],
+      "addedge": [
+        "ba48ace5-e695-4b71-a6fe-db0cc39fc100"
+      ],
+      "removeedge": [
+        "ba48ace5-e695-4b71-a6fe-db0cc39fc100"
+      ],
+      "operations": [
+        "ba48ace5-e695-4b71-a6fe-db0cc39fc100",
+        "39bc4d25-da9d-4b7c-b509-a345c70738e0",
+        "eca85058-bff4-4cde-bd8a-0ab74d0eff76"
+      ],
+      "layer": [
+        "39bc4d25-da9d-4b7c-b509-a345c70738e0"
+      ],
+      "file": [
+        "39bc4d25-da9d-4b7c-b509-a345c70738e0"
+      ],
+      "atomicfilewriter": [
+        "39bc4d25-da9d-4b7c-b509-a345c70738e0"
+      ],
+      "temp": [
+        "39bc4d25-da9d-4b7c-b509-a345c70738e0"
+      ],
+      "plus": [
+        "39bc4d25-da9d-4b7c-b509-a345c70738e0"
+      ],
+      "rename": [
+        "39bc4d25-da9d-4b7c-b509-a345c70738e0"
+      ],
+      "strategy": [
+        "39bc4d25-da9d-4b7c-b509-a345c70738e0"
+      ],
+      "writes": [
+        "39bc4d25-da9d-4b7c-b509-a345c70738e0"
+      ],
+      "taskstorage": [
+        "39bc4d25-da9d-4b7c-b509-a345c70738e0"
+      ],
+      "json": [
+        "39bc4d25-da9d-4b7c-b509-a345c70738e0",
+        "9638d27d-f6db-4c27-9a56-1e62b9c7cf73",
+        "eca85058-bff4-4cde-bd8a-0ab74d0eff76"
+      ],
+      "load": [
+        "39bc4d25-da9d-4b7c-b509-a345c70738e0"
+      ],
+      "save": [
+        "39bc4d25-da9d-4b7c-b509-a345c70738e0"
+      ],
+      "backup": [
+        "39bc4d25-da9d-4b7c-b509-a345c70738e0"
+      ],
+      "rotation": [
+        "39bc4d25-da9d-4b7c-b509-a345c70738e0"
+      ],
+      "cross": [
+        "39bc4d25-da9d-4b7c-b509-a345c70738e0"
+      ],
+      "platform": [
+        "39bc4d25-da9d-4b7c-b509-a345c70738e0"
+      ],
+      "path": [
+        "39bc4d25-da9d-4b7c-b509-a345c70738e0"
+      ],
+      "utilities": [
+        "39bc4d25-da9d-4b7c-b509-a345c70738e0"
+      ],
+      "getprojectpath": [
+        "39bc4d25-da9d-4b7c-b509-a345c70738e0"
+      ],
+      "getconfigpath": [
+        "39bc4d25-da9d-4b7c-b509-a345c70738e0"
+      ],
+      "normalizepath": [
+        "39bc4d25-da9d-4b7c-b509-a345c70738e0"
+      ],
+      "functions": [
+        "39bc4d25-da9d-4b7c-b509-a345c70738e0"
+      ],
+      "develop": [
+        "9638d27d-f6db-4c27-9a56-1e62b9c7cf73"
+      ],
+      "cli": [
+        "9638d27d-f6db-4c27-9a56-1e62b9c7cf73"
+      ],
+      "commands": [
+        "9638d27d-f6db-4c27-9a56-1e62b9c7cf73"
+      ],
+      "init": [
+        "9638d27d-f6db-4c27-9a56-1e62b9c7cf73"
+      ],
+      "command": [
+        "9638d27d-f6db-4c27-9a56-1e62b9c7cf73"
+      ],
+      "initialization": [
+        "9638d27d-f6db-4c27-9a56-1e62b9c7cf73"
+      ],
+      "directory": [
+        "9638d27d-f6db-4c27-9a56-1e62b9c7cf73"
+      ],
+      "options": [
+        "9638d27d-f6db-4c27-9a56-1e62b9c7cf73"
+      ],
+      "uuid": [
+        "9638d27d-f6db-4c27-9a56-1e62b9c7cf73"
+      ],
+      "generation": [
+        "9638d27d-f6db-4c27-9a56-1e62b9c7cf73"
+      ],
+      "graph": [
+        "9638d27d-f6db-4c27-9a56-1e62b9c7cf73",
+        "eca85058-bff4-4cde-bd8a-0ab74d0eff76"
+      ],
+      "persistence": [
+        "9638d27d-f6db-4c27-9a56-1e62b9c7cf73"
+      ],
+      "web": [
+        "eca85058-bff4-4cde-bd8a-0ab74d0eff76"
+      ],
+      "api": [
+        "eca85058-bff4-4cde-bd8a-0ab74d0eff76"
+      ],
+      "server": [
+        "eca85058-bff4-4cde-bd8a-0ab74d0eff76"
+      ],
+      "express": [
+        "eca85058-bff4-4cde-bd8a-0ab74d0eff76"
+      ],
+      "js": [
+        "eca85058-bff4-4cde-bd8a-0ab74d0eff76"
+      ],
+      "cors": [
+        "eca85058-bff4-4cde-bd8a-0ab74d0eff76"
+      ],
+      "middleware": [
+        "eca85058-bff4-4cde-bd8a-0ab74d0eff76"
+      ],
+      "body": [
+        "eca85058-bff4-4cde-bd8a-0ab74d0eff76"
+      ],
+      "parsing": [
+        "eca85058-bff4-4cde-bd8a-0ab74d0eff76"
+      ],
+      "handling": [
+        "eca85058-bff4-4cde-bd8a-0ab74d0eff76"
+      ],
+      "graceful": [
+        "eca85058-bff4-4cde-bd8a-0ab74d0eff76"
+      ],
+      "shutdown": [
+        "eca85058-bff4-4cde-bd8a-0ab74d0eff76"
+      ],
+      "restful": [
+        "eca85058-bff4-4cde-bd8a-0ab74d0eff76"
+      ],
+      "endpoints": [
+        "eca85058-bff4-4cde-bd8a-0ab74d0eff76"
+      ],
+      "crud": [
+        "eca85058-bff4-4cde-bd8a-0ab74d0eff76"
+      ],
+      "statistics": [
+        "eca85058-bff4-4cde-bd8a-0ab74d0eff76"
+      ],
+      "user": [
+        "5c08818f-a820-4de4-a72f-26bdff4f0b5e"
+      ],
+      "registration": [
+        "5c08818f-a820-4de4-a72f-26bdff4f0b5e"
+      ],
+      "endpoint": [
+        "5c08818f-a820-4de4-a72f-26bdff4f0b5e"
+      ],
+      "post": [
+        "5c08818f-a820-4de4-a72f-26bdff4f0b5e"
+      ],
+      "users": [
+        "5c08818f-a820-4de4-a72f-26bdff4f0b5e"
+      ],
+      "email": [
+        "5c08818f-a820-4de4-a72f-26bdff4f0b5e"
+      ],
+      "password": [
+        "5c08818f-a820-4de4-a72f-26bdff4f0b5e"
+      ],
+      "hashing": [
+        "5c08818f-a820-4de4-a72f-26bdff4f0b5e"
+      ],
+      "structures": [
+        "f3275e3b-86cf-458a-bad4-dc1422b895ac"
+      ],
+      "string": [
+        "f3275e3b-86cf-458a-bad4-dc1422b895ac"
+      ]
+    },
+    "files": {}
+  }
+}

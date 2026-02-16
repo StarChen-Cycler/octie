@@ -961,4 +961,67 @@
 - [x] Tests for notes-file update (append behavior vs replace on create)
 - [x] Fixed create command to properly merge global options with local options
 **Completed**: 2026-02-17
-**Git Commit**: (pending)
+**Git Commit**: d6a299e
+
+---
+
+### Sixth Priority (Bug Fixes)
+
+#### [ ] Fix C7 Path Parsing on Windows
+**Type**: Bug Fix
+**Blockers**: None
+**Related Files**: octie/src/cli/commands/update.ts, octie/src/cli/commands/create.ts
+**C7 MCP Verified**: N/A
+**Description**: `--verify-c7 "/mongodb/docs"` gets parsed as `library_id: "C"` on Windows due to Git Bash path conversion
+**Root Cause**: Windows Git Bash converts `/path` to `C:/Program Files/Git/path`, so `indexOf(':')` finds drive letter instead of parsing library-id:notes format
+**Deliverables**:
+- [ ] Update C7 parsing logic to handle Windows Git Bash path conversion
+- [ ] Detect if path starts with Windows drive letter (C:, D:, etc.) and skip it
+- [ ] Test on Windows with various library path formats
+- [ ] Test on Linux/macOS to ensure no regression
+- [ ] Update tests to cover Windows path edge case
+
+#### [ ] Fix Completion Timestamp Logic
+**Type**: Bug Fix
+**Blockers**: None
+**Related Files**: octie/src/core/models/task-node.ts
+**C7 MCP Verified**: N/A
+**Description**: `completed_at` timestamp is set even when only SOME (not all) success_criteria and deliverables are complete
+**Root Cause**: `_checkCompletion()` method incorrectly sets `completed_at` when ANY items are complete, instead of requiring ALL items
+**Deliverables**:
+- [ ] Fix `_checkCompletion()` to only set `completed_at` when ALL criteria and deliverables are complete
+- [ ] Ensure `completed_at` is cleared to null when any item is un-completed
+- [ ] Add unit tests for partial completion scenarios
+- [ ] Add unit tests for full completion scenarios
+- [ ] Test roundtrip: complete some items → verify completed_at=null → complete all → verify completed_at set
+
+#### [ ] Fix MD Import Checkbox Parsing for Nested Items
+**Type**: Bug Fix
+**Blockers**: None
+**Related Files**: octie/src/cli/commands/import.ts
+**C7 MCP Verified**: N/A
+**Description**: Task-level checkboxes (`## [x] Title`) are parsed but nested criteria/deliverables checkboxes (`- [x] item`) are not
+**Root Cause**: `parseMarkdownTasks()` only looks for task headers with checkboxes, doesn't parse nested list items for criteria/deliverables
+**Deliverables**:
+- [ ] Extend `parseCheckbox()` to handle list item checkboxes (`- [x] item`)
+- [ ] Parse success criteria from checkbox list items within task sections
+- [ ] Parse deliverables from checkbox list items within task sections
+- [ ] Match checkbox state to appropriate criterion/deliverable by text matching
+- [ ] Add tests for MD import with nested checkbox items
+- [ ] Test roundtrip: export MD with mixed checkbox states → import → verify states preserved
+
+#### [ ] Fix Notes Combination Logic
+**Type**: Bug Fix
+**Blockers**: None
+**Related Files**: octie/src/cli/commands/create.ts
+**C7 MCP Verified**: N/A
+**Description**: `--notes` and `--notes-file` use `else if` logic (mutually exclusive), but test expects both combined
+**Root Cause**: Lines 178-179 use `else if (options.notes)` instead of appending to notes from file
+**Deliverables**:
+- [ ] Change logic to concatenate both sources: notes = fileContent + (options.notes ? ' ' + options.notes : '')
+- [ ] Update test expectation to match concatenation behavior
+- [ ] Test with both options provided
+- [ ] Test with only --notes
+- [ ] Test with only --notes-file
+- [ ] Document behavior in help text
+

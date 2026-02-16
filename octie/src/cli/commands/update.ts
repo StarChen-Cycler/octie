@@ -145,17 +145,30 @@ export const updateCommand = new Command('update')
       // Add C7 verification
       if (options.verifyC7) {
         const entry = options.verifyC7 as string;
-        const colonIndex = entry.indexOf(':');
+        // Handle Windows Git Bash path conversion: "/path" becomes "C:/Program Files/Git/path"
+        // Detect and strip the Git Bash prefix
+        let cleanEntry = entry;
+        const gitBashPrefix = /^[A-Za-z]:\/(\/)?Program Files\/Git\//;
+        if (gitBashPrefix.test(entry)) {
+          // Extract the original Unix path after "Program Files/Git/"
+          const match = entry.match(/Program Files\/Git\/(.*)$/);
+          if (match) {
+            cleanEntry = '/' + match[1];
+          }
+        }
+
+        // Now parse the library-id:notes format
+        const colonIndex = cleanEntry.indexOf(':');
         if (colonIndex === -1) {
           task.addC7Verification({
-            library_id: entry.trim(),
+            library_id: cleanEntry.trim(),
             verified_at: new Date().toISOString(),
           });
         } else {
           task.addC7Verification({
-            library_id: entry.substring(0, colonIndex).trim(),
+            library_id: cleanEntry.substring(0, colonIndex).trim(),
             verified_at: new Date().toISOString(),
-            notes: entry.substring(colonIndex + 1).trim(),
+            notes: cleanEntry.substring(colonIndex + 1).trim(),
           });
         }
         updated = true;

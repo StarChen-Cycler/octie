@@ -124,17 +124,30 @@ export const createCommand = new Command('create')
       const c7Verifications = options.c7Verified
         ? (Array.isArray(options.c7Verified) ? options.c7Verified : [options.c7Verified])
             .map((entry: string) => {
-              const colonIndex = entry.indexOf(':');
+              // Handle Windows Git Bash path conversion: "/path" becomes "C:/Program Files/Git/path"
+              // Detect and strip the Git Bash prefix
+              let cleanEntry = entry;
+              const gitBashPrefix = /^[A-Za-z]:\/(\/)?Program Files\/Git\//;
+              if (gitBashPrefix.test(entry)) {
+                // Extract the original Unix path after "Program Files/Git/"
+                const match = entry.match(/Program Files\/Git\/(.*)$/);
+                if (match) {
+                  cleanEntry = '/' + match[1];
+                }
+              }
+
+              // Now parse the library-id:notes format
+              const colonIndex = cleanEntry.indexOf(':');
               if (colonIndex === -1) {
                 return {
-                  library_id: entry.trim(),
+                  library_id: cleanEntry.trim(),
                   verified_at: new Date().toISOString(),
                 };
               }
               return {
-                library_id: entry.substring(0, colonIndex).trim(),
+                library_id: cleanEntry.substring(0, colonIndex).trim(),
                 verified_at: new Date().toISOString(),
-                notes: entry.substring(colonIndex + 1).trim(),
+                notes: cleanEntry.substring(colonIndex + 1).trim(),
               };
             })
         : [];
@@ -175,8 +188,14 @@ export const createCommand = new Command('create')
           error(`Failed to read notes file: ${err instanceof Error ? err.message : 'Unknown error'}`);
           process.exit(1);
         }
-      } else if (options.notes) {
-        notes = options.notes.trim();
+      }
+      if (options.notes) {
+        // Append inline notes after file content (if both provided)
+        if (notes) {
+          notes += ' ' + options.notes.trim();
+        } else {
+          notes = options.notes.trim();
+        }
       }
 
       // Build task data
