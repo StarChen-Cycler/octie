@@ -11,12 +11,18 @@ import type { Request, RequestHandler, Response } from 'express';
 import express from 'express';
 import type { Server as HttpServer } from 'node:http';
 import { createServer as httpCreateServer } from 'node:http';
+import { existsSync } from 'node:fs';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { TaskStorage } from '../core/storage/file-store.js';
 import type { TaskGraphStore } from '../core/graph/index.js';
 import { registerTaskRoutes } from './routes/tasks.js';
 import { registerGraphRoutes } from './routes/graph.js';
 import { OctieError, ERROR_SUGGESTIONS } from '../types/index.js';
 import { ZodError } from 'zod';
+
+// Get the directory of this module for static file paths
+const __dirname = dirname(fileURLToPath(import.meta.url));
 
 /**
  * Web server configuration options
@@ -169,6 +175,32 @@ export class WebServer {
    * Configure API routes
    */
   private _configureRoutes(): void {
+    // Serve web UI static files from html directory
+    // Check multiple possible locations for the web UI
+    const possibleWebUiPaths = [
+      join(__dirname, '../../html'),           // dist/web/html (built)
+      join(__dirname, '../../../html'),        // from src/web location
+      join(process.cwd(), 'html'),             // project root html
+    ];
+
+    let webUiPath: string | null = null;
+    for (const path of possibleWebUiPaths) {
+      if (existsSync(path)) {
+        webUiPath = path;
+        break;
+      }
+    }
+
+    if (webUiPath) {
+      // Serve static files from web UI directory
+      this._app.use(express.static(webUiPath));
+    } else {
+      // Fallback: redirect root to API if no web UI found
+      this._app.get('/', (_req: Request, res: Response) => {
+        res.redirect('/api');
+      });
+    }
+
     // Health check endpoint
     this._app.get('/health', (_req: Request, res: Response) => {
       res.json({

@@ -95,6 +95,15 @@ describe('Web API Integration Tests', () => {
   // ==========================================
 
   describe('Health and Info Endpoints', () => {
+    it('GET / should serve web UI or redirect to API', async () => {
+      const response = await request(app)
+        .get('/')
+        .expect('Content-Type', /html|json/);
+
+      // Should either return HTML (web UI) or redirect to API
+      expect([200, 302]).toContain(response.status);
+    });
+
     it('GET /health should return healthy status', async () => {
       const response = await request(app)
         .get('/health')
