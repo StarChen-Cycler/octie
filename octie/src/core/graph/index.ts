@@ -179,6 +179,11 @@ export class TaskGraphStore {
     const incomingSources = this._incomingEdges.get(id) || new Set();
     for (const sourceId of incomingSources) {
       this._outgoingEdges.get(sourceId)?.delete(id);
+      // Also update the source node's edges field
+      const sourceNode = this._nodes.get(sourceId);
+      if (sourceNode) {
+        sourceNode.edges = sourceNode.edges.filter(eid => eid !== id);
+      }
     }
 
     // Remove all edges from this node
