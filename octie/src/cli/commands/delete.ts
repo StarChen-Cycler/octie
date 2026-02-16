@@ -12,7 +12,7 @@ import { cutNode } from '../../core/graph/operations.js';
  */
 export const deleteCommand = new Command('delete')
   .description('Delete a task from the project')
-  .argument('<id>', 'Task ID to delete')
+  .argument('<id>', 'Task ID to delete (full UUID or first 7-8 characters)')
   .option('--reconnect', 'Reconnect edges after deletion (A→B→C → A→C)')
   .option('--cascade', 'Delete all dependent tasks')
   .option('--force', 'Skip confirmation prompt')

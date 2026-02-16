@@ -14,7 +14,7 @@ import chalk from 'chalk';
  */
 export const getCommand = new Command('get')
   .description('Get task details')
-  .argument('<id>', 'Task ID')
+  .argument('<id>', 'Task ID (full UUID or first 7-8 characters)')
   .action(async (id, _options, command) => {
     try {
       // Get global options

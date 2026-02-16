@@ -14,7 +14,7 @@ import { resolve } from 'node:path';
  */
 export const updateCommand = new Command('update')
   .description('Update an existing task')
-  .argument('<id>', 'Task ID to update')
+  .argument('<id>', 'Task ID to update (full UUID or first 7-8 characters)')
   .option('--status <status>', 'Task status')
   .option('--priority <priority>', 'Task priority')
   .option('--add-deliverable <text>', 'Add a deliverable')

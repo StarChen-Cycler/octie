@@ -75,6 +75,7 @@ export const listCommand = new Command('list')
   .option('-p, --priority <priority>', 'Filter by priority')
   .option('--graph', 'Show graph structure')
   .option('--tree', 'Show tree view')
+  .addHelpText('after', '\nTip: The IDs shown in the list can be used with `get`, `update`, and `delete` commands.\n')
   .action(async (options, command) => {
     try {
       // Get global options
