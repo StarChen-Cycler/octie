@@ -923,9 +923,9 @@
 **Completed**: 2026-02-17
 **Git Commit**: 163aa9e
 
-#### [ ] Ensure MD Export/Import Completion State Roundtrip
+#### [x] Ensure MD Export/Import Completion State Roundtrip
 **Blockers**: None (Markdown import implemented)
-**Related Files**: octie/src/cli/output/markdown.ts, octie/src/cli/commands/import.ts
+**Related Files**: octie/src/cli/output/markdown.ts, octie/src/cli/commands/import.ts, octie/tests/unit/cli/commands/import.test.ts
 **C7 MCP Verified**: N/A
 **Description**: Verify completion tags translate correctly between JSON (completed:true/false) and MD ([x]/[ ]) formats
 **Deliverables**:
@@ -938,10 +938,13 @@
 - [x] Import parses `[x]` or `[X]` → completed=true
 - [x] Import parses `[ ]` → completed=false
 - [x] Import updates task.status based on all criteria/deliverables completion
-- [ ] Roundtrip test: Create task with some items complete → export MD → import MD → verify state
-- [ ] Partial completion test: Some criteria complete, export, import, verify mixed state preserved
-- [ ] Edge case test: All items complete → export MD → import MD → verify task.status = 'completed'
+- [x] Roundtrip test: Create task with some items complete → export MD → import MD → verify state
+- [x] Partial completion test: Some criteria complete, export, import, verify mixed state preserved
+- [x] Edge case test: All items complete → export MD → import MD → verify task.status = 'completed'
 - [x] Tests for checkbox format variations (spacing, capitalization)
+- [x] Fixed extractStatus() to handle "in progress" format (spaces) from formatStatus()
+**Completed**: 2026-02-17
+**Git Commit**: (pending)
 
 #### [ ] Add Notes File Reading Capability
 **Blockers**: None

@@ -72,15 +72,17 @@ function extractTaskId(lines: string[], startIndex: number): string | null {
 }
 
 /**
- * Extract status from line like "**Status**: in_progress"
+ * Extract status from line like "**Status**: in_progress" or "**Status**: in progress"
  */
 function extractStatus(lines: string[], startIndex: number): TaskStatus {
   for (let i = startIndex; i < Math.min(startIndex + 5, lines.length); i++) {
     const line = lines[i];
     if (line === undefined) continue;
-    const statusMatch = line.match(/\*\*Status\*\*:\s*(\w+)/);
+    // Match both underscore format (in_progress) and space format (in progress)
+    const statusMatch = line.match(/\*\*Status\*\*:\s*([\w\s]+?)(?:\s*\||\s*$)/);
     if (statusMatch && statusMatch[1]) {
-      const status = statusMatch[1].toLowerCase();
+      // Normalize: convert spaces to underscores, trim
+      const status = statusMatch[1].toLowerCase().trim().replace(/\s+/g, '_');
       if (['not_started', 'pending', 'in_progress', 'completed', 'blocked'].includes(status)) {
         return status as TaskStatus;
       }

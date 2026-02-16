@@ -615,4 +615,308 @@ Task with explicit format specification to test that the --format md flag works 
       }).toThrow();
     });
   });
+
+  describe('MD Export/Import Roundtrip - Completion State Preservation', () => {
+    let exportFile: string;
+
+    beforeEach(() => {
+      const importDir = join(importFile, '..');
+      exportFile = join(importDir, 'roundtrip.md');
+    });
+
+    it('should preserve partial completion states through export/import roundtrip', async () => {
+      // Create task with mixed completion states
+      const graph = await storage.load();
+      const sc1 = uuidv4();
+      const sc2 = uuidv4();
+      const del1 = uuidv4();
+      const del2 = uuidv4();
+
+      const task = new TaskNode({
+        id: 'task-roundtrip-001',
+        title: 'Implement roundtrip test feature',
+        description: 'Task with mixed completion states to test export/import roundtrip preserves checkbox states correctly for both success criteria and deliverables.',
+        status: 'in_progress',
+        priority: 'top',
+        success_criteria: [
+          { id: sc1, text: 'First criterion completed', completed: true },
+          { id: sc2, text: 'Second criterion not completed', completed: false },
+        ],
+        deliverables: [
+          { id: del1, text: 'First deliverable done', completed: true, file_path: 'src/done.ts' },
+          { id: del2, text: 'Second deliverable pending', completed: false, file_path: 'src/pending.ts' },
+        ],
+        blockers: [],
+        dependencies: [],
+        related_files: ['src/feature/'],
+        notes: 'Test notes for roundtrip',
+        c7_verified: [],
+        sub_items: [],
+        edges: [],
+      });
+
+      graph.addNode(task);
+      await storage.save(graph);
+
+      // Export to markdown
+      execSync(
+        `node ${cliPath} --project "${tempDir}" export --type md --output "${exportFile}"`,
+        { encoding: 'utf-8' }
+      );
+
+      // Verify export contains correct checkboxes
+      const exportContent = readFileSync(exportFile, 'utf-8');
+      expect(exportContent).toContain('[x] First criterion completed');
+      expect(exportContent).toContain('[ ] Second criterion not completed');
+      expect(exportContent).toContain('[x] First deliverable done');
+      expect(exportContent).toContain('[ ] Second deliverable pending');
+
+      // Create new project and import the exported markdown
+      const newTempDir = join(tmpdir(), `octie-roundtrip-${uuidv4()}`);
+      const newStorage = new TaskStorage({ projectDir: newTempDir });
+      await newStorage.createProject('roundtrip-test');
+
+      execSync(
+        `node ${cliPath} --project "${newTempDir}" import "${exportFile}"`,
+        { encoding: 'utf-8' }
+      );
+
+      // Verify imported task has same completion states
+      const importedGraph = await newStorage.load();
+      const importedTask = importedGraph.getNode('task-roundtrip-001');
+
+      expect(importedTask).toBeDefined();
+      expect(importedTask?.success_criteria[0].completed).toBe(true);
+      expect(importedTask?.success_criteria[0].text).toBe('First criterion completed');
+      expect(importedTask?.success_criteria[1].completed).toBe(false);
+      expect(importedTask?.success_criteria[1].text).toBe('Second criterion not completed');
+      expect(importedTask?.deliverables[0].completed).toBe(true);
+      expect(importedTask?.deliverables[0].file_path).toBe('src/done.ts');
+      expect(importedTask?.deliverables[1].completed).toBe(false);
+      expect(importedTask?.deliverables[1].file_path).toBe('src/pending.ts');
+
+      // Clean up
+      rmSync(newTempDir, { recursive: true, force: true });
+    });
+
+    it('should preserve fully completed task status through roundtrip', async () => {
+      // Create a task with ALL items completed
+      const graph = await storage.load();
+      const sc1 = uuidv4();
+      const del1 = uuidv4();
+
+      const task = new TaskNode({
+        id: 'task-completed-roundtrip',
+        title: 'Implement fully completed feature',
+        description: 'Task with all criteria and deliverables completed to verify the task status is preserved as completed through the export/import roundtrip.',
+        status: 'completed',
+        priority: 'top',
+        success_criteria: [
+          { id: sc1, text: 'All criteria done', completed: true },
+        ],
+        deliverables: [
+          { id: del1, text: 'All deliverables done', completed: true },
+        ],
+        blockers: [],
+        dependencies: [],
+        related_files: [],
+        notes: '',
+        c7_verified: [],
+        sub_items: [],
+        edges: [],
+      });
+
+      graph.addNode(task);
+      await storage.save(graph);
+
+      // Export to markdown
+      execSync(
+        `node ${cliPath} --project "${tempDir}" export --type md --output "${exportFile}"`,
+        { encoding: 'utf-8' }
+      );
+
+      // Verify export has [x] in header (task is completed)
+      const exportContent = readFileSync(exportFile, 'utf-8');
+      expect(exportContent).toContain('## [x] Implement fully completed feature');
+      expect(exportContent).toContain('[x] All criteria done');
+      expect(exportContent).toContain('[x] All deliverables done');
+
+      // Create new project and import
+      const newTempDir = join(tmpdir(), `octie-completed-${uuidv4()}`);
+      const newStorage = new TaskStorage({ projectDir: newTempDir });
+      await newStorage.createProject('completed-test');
+
+      execSync(
+        `node ${cliPath} --project "${newTempDir}" import "${exportFile}"`,
+        { encoding: 'utf-8' }
+      );
+
+      // Verify imported task status is completed
+      const importedGraph = await newStorage.load();
+      const importedTask = importedGraph.getNode('task-completed-roundtrip');
+
+      expect(importedTask).toBeDefined();
+      expect(importedTask?.status).toBe('completed');
+      expect(importedTask?.success_criteria[0].completed).toBe(true);
+      expect(importedTask?.deliverables[0].completed).toBe(true);
+
+      // Clean up
+      rmSync(newTempDir, { recursive: true, force: true });
+    });
+
+    it('should preserve not_started task status through roundtrip', async () => {
+      // Create a task with nothing completed
+      const graph = await storage.load();
+      const sc1 = uuidv4();
+      const del1 = uuidv4();
+
+      const task = new TaskNode({
+        id: 'task-notstarted-roundtrip',
+        title: 'Implement pending notification feature',
+        description: 'Task with no items completed to verify the not_started status is preserved through the export/import roundtrip process.',
+        status: 'not_started',
+        priority: 'later',
+        success_criteria: [
+          { id: sc1, text: 'Nothing done yet', completed: false },
+        ],
+        deliverables: [
+          { id: del1, text: 'src/notification.ts', completed: false, file_path: 'src/notification.ts' },
+        ],
+        blockers: [],
+        dependencies: [],
+        related_files: [],
+        notes: '',
+        c7_verified: [],
+        sub_items: [],
+        edges: [],
+      });
+
+      graph.addNode(task);
+      await storage.save(graph);
+
+      // Export to markdown
+      execSync(
+        `node ${cliPath} --project "${tempDir}" export --type md --output "${exportFile}"`,
+        { encoding: 'utf-8' }
+      );
+
+      // Verify export has [ ] in header (task not completed)
+      const exportContent = readFileSync(exportFile, 'utf-8');
+      expect(exportContent).toContain('## [ ] Implement pending notification feature');
+      expect(exportContent).toContain('[ ] Nothing done yet');
+      expect(exportContent).toContain('src/notification.ts');
+
+      // Create new project and import
+      const newTempDir = join(tmpdir(), `octie-notstarted-${uuidv4()}`);
+      const newStorage = new TaskStorage({ projectDir: newTempDir });
+      await newStorage.createProject('notstarted-test');
+
+      execSync(
+        `node ${cliPath} --project "${newTempDir}" import "${exportFile}"`,
+        { encoding: 'utf-8' }
+      );
+
+      // Verify imported task status is not_started
+      const importedGraph = await newStorage.load();
+      const importedTask = importedGraph.getNode('task-notstarted-roundtrip');
+
+      expect(importedTask).toBeDefined();
+      expect(importedTask?.status).toBe('not_started');
+      expect(importedTask?.success_criteria[0].completed).toBe(false);
+      expect(importedTask?.deliverables[0].completed).toBe(false);
+
+      // Clean up
+      rmSync(newTempDir, { recursive: true, force: true });
+    });
+
+    it('should handle multiple tasks with varying completion states', async () => {
+      // Create multiple tasks with different completion states
+      const graph = await storage.load();
+
+      // Task 1: Fully complete
+      const task1 = new TaskNode({
+        id: 'multi-task-001',
+        title: 'Implement completed feature A',
+        description: 'First task that is fully completed for multi-task roundtrip testing with sufficient description length.',
+        status: 'completed',
+        success_criteria: [{ id: uuidv4(), text: 'Feature A implementation complete', completed: true }],
+        deliverables: [{ id: uuidv4(), text: 'src/feature-a.ts', completed: true, file_path: 'src/feature-a.ts' }],
+        blockers: [],
+        dependencies: [],
+      });
+
+      // Task 2: Partially complete
+      const task2 = new TaskNode({
+        id: 'multi-task-002',
+        title: 'Implement in-progress feature B',
+        description: 'Second task that is partially completed for multi-task roundtrip testing with sufficient description length.',
+        status: 'in_progress',
+        success_criteria: [
+          { id: uuidv4(), text: 'Feature B core logic complete', completed: true },
+          { id: uuidv4(), text: 'Feature B edge cases pending', completed: false },
+        ],
+        deliverables: [
+          { id: uuidv4(), text: 'src/feature-b-core.ts', completed: true, file_path: 'src/feature-b-core.ts' },
+          { id: uuidv4(), text: 'src/feature-b-edges.ts', completed: false, file_path: 'src/feature-b-edges.ts' },
+        ],
+        blockers: [],
+        dependencies: [],
+      });
+
+      // Task 3: Not started
+      const task3 = new TaskNode({
+        id: 'multi-task-003',
+        title: 'Implement pending feature C',
+        description: 'Third task that is not started for multi-task roundtrip testing with sufficient description length.',
+        status: 'not_started',
+        success_criteria: [{ id: uuidv4(), text: 'Feature C not started', completed: false }],
+        deliverables: [{ id: uuidv4(), text: 'src/feature-c.ts', completed: false, file_path: 'src/feature-c.ts' }],
+        blockers: [],
+        dependencies: [],
+      });
+
+      graph.addNode(task1);
+      graph.addNode(task2);
+      graph.addNode(task3);
+      await storage.save(graph);
+
+      // Export to markdown
+      execSync(
+        `node ${cliPath} --project "${tempDir}" export --type md --output "${exportFile}"`,
+        { encoding: 'utf-8' }
+      );
+
+      // Create new project and import
+      const newTempDir = join(tmpdir(), `octie-multi-${uuidv4()}`);
+      const newStorage = new TaskStorage({ projectDir: newTempDir });
+      await newStorage.createProject('multi-test');
+
+      execSync(
+        `node ${cliPath} --project "${newTempDir}" import "${exportFile}"`,
+        { encoding: 'utf-8' }
+      );
+
+      // Verify all three tasks have correct states
+      const importedGraph = await newStorage.load();
+      expect(importedGraph.size).toBe(3);
+
+      const imported1 = importedGraph.getNode('multi-task-001');
+      expect(imported1?.status).toBe('completed');
+      expect(imported1?.success_criteria[0].completed).toBe(true);
+
+      const imported2 = importedGraph.getNode('multi-task-002');
+      expect(imported2?.status).toBe('in_progress');
+      expect(imported2?.success_criteria[0].completed).toBe(true);
+      expect(imported2?.success_criteria[1].completed).toBe(false);
+      expect(imported2?.deliverables[0].completed).toBe(true);
+      expect(imported2?.deliverables[1].completed).toBe(false);
+
+      const imported3 = importedGraph.getNode('multi-task-003');
+      expect(imported3?.status).toBe('not_started');
+      expect(imported3?.success_criteria[0].completed).toBe(false);
+
+      // Clean up
+      rmSync(newTempDir, { recursive: true, force: true });
+    });
+  });
 });
