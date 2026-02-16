@@ -8,8 +8,10 @@
     "octie": "./dist/cli/index.js"
   },
   "scripts": {
-    "build": "tsc",
+    "build": "tsc && npm run build:web",
+    "build:web": "cd web-ui && npm run build",
     "dev": "tsc --watch",
+    "dev:web": "cd web-ui && npm run dev",
     "test": "vitest",
     "test:coverage": "vitest --coverage",
     "test:ui": "vitest --ui",
@@ -20,7 +22,7 @@
     "typecheck": "tsc --noEmit",
     "clean": "rm -rf dist",
     "prebuild": "npm run clean",
-    "serve": "node dist/server.js"
+    "serve": "node dist/cli/index.js serve"
   },
   "keywords": [
     "task-management",

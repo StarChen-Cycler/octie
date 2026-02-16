@@ -496,17 +496,19 @@
 **Completed**: 2026-02-16
 **Git Commit**: (to be committed)
 
-#### [ ] Web API - Graph Endpoints
+#### [x] Web API - Graph Endpoints
 **Blockers**: Web API Server Setup
-**Related Files**: octie/src/web/routes/graph.ts
+**Related Files**: octie/src/web/routes/graph.ts, octie/src/web/server.ts
 **C7 MCP Verified**: /express
 **Deliverables**:
-- [ ] GET /api/graph - Get full graph structure
-- [ ] GET /api/graph/topology - Get topological order
-- [ ] POST /api/graph/validate - Validate graph structure
-- [ ] GET /api/graph/cycles - Detect cycles
-- [ ] GET /api/graph/critical-path - Get longest path
-- [ ] GET /api/stats - Get project statistics
+- [x] GET /api/graph - Get full graph structure (returns tasks, outgoing/incoming edges, metadata)
+- [x] GET /api/graph/topology - Get topological order (returns sorted task IDs)
+- [x] POST /api/graph/validate - Validate graph structure (returns isValid, hasCycle, cycleStats)
+- [x] GET /api/graph/cycles - Detect cycles (returns array of cycle paths)
+- [x] GET /api/graph/critical-path - Get longest path (returns path array and duration)
+- [x] GET /api/stats - Get project statistics (returns task counts, status/priority distributions, root/orphan tasks)
+**Completed**: 2026-02-16
+**Git Commit**: 0f3aac4
 
 #### [ ] Web UI - Project Setup
 **Blockers**: Web API Server Setup

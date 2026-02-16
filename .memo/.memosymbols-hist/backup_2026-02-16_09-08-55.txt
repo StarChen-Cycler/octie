@@ -1,6 +1,6 @@
 Memo-dec Symbols (ultra compact - 100 per line):
 --------------------------------------------------------------------------------
-Total symbols: 958
+Total symbols: 932
 
 octie\html\index.html
 2:tag:html 2:att:lang="en" 3:tag:head 4:tag:meta 4:att:charset="UTF-8" 5:tag:link 5:att:rel="icon" 5:att:href="./favicon.svg" 5:att:type="image/svg+xml" 6:tag:meta 6:att:name="viewport" 6:att:content="width=device-width, initial-scale=1.0" 7:tag:title 7:tag:title 8:tag:link 8:att:rel="preconnect" 8:att:href="https://fonts.googleapis.com" 9:tag:link 9:att:rel="preconnect" 9:att:href="https://fonts.gstatic.com" 9:att:crossorigin 10:tag:link 10:att:href="https://fonts.googleapis.com/css2?family=Readex+Pro:wght@300;400&display=swap" 10:att:rel="stylesheet" 11:tag:script 18:tag:script 19:tag:script 19:tag:script 20:tag:script 20:tag:script 20:att:type="module" 20:att:crossorigin 20:att:src="./assets/index-9agQl9q3.js" 21:tag:link 21:att:rel="stylesheet" 21:att:crossorigin 21:att:href="./assets/index-fUmMsp0O.css" 22:tag:head 23:tag:body 24:tag:div 24:tag:div 24:att:id="app" 25:tag:body 26:tag:html
@@ -83,14 +83,11 @@ octie\src\core\storage\indexer.ts
 octie\src\types\index.ts
 203:cla:OctieError 204:fun:constructor 213:cla:TaskNotFoundError 214:fun:constructor 223:cla:CircularDependencyError 224:fun:constructor 233:cla:FileOperationError 234:fun:constructor 243:cla:ValidationError 244:fun:constructor 253:cla:AtomicTaskViolationError 254:fun:constructor
 
-octie\src\web\routes\graph.ts
-20:fun:asyncHandler 29:fun:sendSuccess 40:fun:sendError 57:fun:registerGraphRoutes 66:var:graph 72:var:graphData 88:var:graph 93:var:result 115:var:graph 121:var:isValid 124:var:cycleStats 144:var:graph 149:var:result 172:var:graph 182:var:result 196:var:graph 202:var:totalTasks 203:var:rootTasks 204:var:orphanTasks 207:var:statusCounts 214:var:priorityCounts 220:var:currentStatus 222:var:currentPriority 227:var:statusCountsObj 230:var:priorityCountsObj 234:var:stats
-
 octie\src\web\routes\tasks.ts
 21:var:TaskCreateSchema 59:var:TaskUpdateSchema 83:var:TaskMergeSchema 90:var:TaskQuerySchema 106:fun:asyncHandler 115:fun:sendSuccess 126:fun:sendError 143:fun:registerTaskRoutes 152:var:graph 158:var:queryResult 166:var:tasks 176:var:searchLower 185:var:total 207:var:graph 218:var:task 233:var:graph 239:var:bodyResult 244:var:data 248:var:taskId 251:var:successCriteria 258:var:deliverables 279:var:taskNode 323:var:graph 334:var:bodyResult 339:var:data 342:var:task 422:var:graph 431:var:reconnect 435:var:task 438:var:incoming 439:var:outgoing 477:var:graph 488:var:bodyResult 500:var:mergedTask
 
 octie\src\web\server.ts
-61:cla:WebServer 76:fun:constructor 101:fun:_configureMiddleware 125:fun:_corsMiddleware 144:fun:_requestLogger 146:var:start 153:var:duration 154:var:statusColor 167:fun:_configureRoutes 207:var:metadata 214:var:message 254:fun:_configureErrorHandling 274:fun:_setupShutdownHandlers 275:var:shutdown 275:com:shutdown 309:fun:start 333:var:url 348:fun:stop 370:fun:app 377:fun:url 384:fun:isRunning 395:fun:createServer 399:var:server
+60:cla:WebServer 75:fun:constructor 100:fun:_configureMiddleware 124:fun:_corsMiddleware 143:fun:_requestLogger 145:var:start 152:var:duration 153:var:statusColor 166:fun:_configureRoutes 206:var:metadata 213:var:message 247:fun:_configureErrorHandling 267:fun:_setupShutdownHandlers 268:var:shutdown 268:com:shutdown 302:fun:start 326:var:url 341:fun:stop 363:fun:app 370:fun:url 377:fun:isRunning 388:fun:createServer 392:var:server
 
 octie\test\graph\cycle.test.ts
 21:var:graph 28:var:result 34:var:task 55:var:result 61:var:task 82:var:result 89:var:tasks 134:var:result 141:var:tasks 205:var:result 213:var:tasks 277:var:result 283:var:tasks 366:var:result 374:var:graph 375:var:task 400:var:graph 401:var:task 428:var:graph 430:var:tasks 494:var:cyclicNodes 504:var:graph 506:var:tasks 589:var:shortest 595:var:graph 596:var:task 617:var:shortest 624:var:graph 626:var:tasks 690:var:cyclesForA 693:var:cyclesForC 700:var:graph 701:var:task 726:var:graph 727:var:task 754:var:graph 756:var:tasks 820:var:stats
