@@ -13,6 +13,7 @@ import type { Server as HttpServer } from 'node:http';
 import { createServer as httpCreateServer } from 'node:http';
 import { TaskStorage } from '../core/storage/file-store.js';
 import type { TaskGraphStore } from '../core/graph/index.js';
+import { registerTaskRoutes } from './routes/tasks.js';
 
 /**
  * Web server configuration options
@@ -186,7 +187,7 @@ export class WebServer {
           description: 'Graph-based task management system API',
           endpoints: {
             health: 'GET /health',
-            tasks: 'GET /api/tasks, POST /api/tasks, GET /api/tasks/:id, PUT /api/tasks/:id, DELETE /api/tasks/:id',
+            tasks: 'GET /api/tasks, POST /api/tasks, GET /api/tasks/:id, PUT /api/tasks/:id, DELETE /api/tasks/:id, POST /api/tasks/:id/merge',
             graph: 'GET /api/graph, GET /api/graph/topology, POST /api/graph/validate',
             stats: 'GET /api/stats',
           },
@@ -220,6 +221,12 @@ export class WebServer {
         } satisfies ApiResponse);
       }
     });
+
+    // Register task routes
+    registerTaskRoutes(
+      this._app,
+      () => this._graph
+    );
 
     // 404 handler for unmatched routes
     this._app.use((req: Request, res: Response) => {

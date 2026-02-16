@@ -460,34 +460,41 @@
 
 ### Fourth Priority (Web Development)
 
-#### [ ] Web API Server Setup
+#### [x] Web API Server Setup
 **Blockers**: CLI Commands Complete
-**Related Files**: octie/src/web/server.ts
+**Related Files**: octie/src/web/server.ts, octie/src/cli/commands/serve.ts, octie/src/types/index.ts
 **C7 MCP Verified**: /express
 **Deliverables**:
-- [ ] Express.js server setup
-- [ ] CORS middleware
-- [ ] JSON body parser
-- [ ] Error handling middleware
-- [ ] Request logging middleware
-- [ ] Graceful shutdown handling
-- [ ] Port configuration (default 3000)
-- [ ] Host configuration (default localhost)
-- [ ] --port and --host CLI options for serve command
+- [x] Express.js server setup with WebServer class
+- [x] CORS middleware (configurable via --no-cors flag)
+- [x] JSON body parser with 10MB limit
+- [x] Error handling middleware with ApiResponse format
+- [x] Request logging middleware (logs method, path, status, duration)
+- [x] Graceful shutdown handling for SIGTERM/SIGINT with 10s timeout
+- [x] Port configuration via --port option (default: 3000)
+- [x] Host configuration via --host option (default: localhost)
+- [x] --port and --host CLI options for serve command
+- [x] API endpoints: GET /health, GET /api, GET /api/project
+**Completed**: 2026-02-16
+**Git Commit**: bdc6589
 
-#### [ ] Web API - Task Endpoints
+#### [x] Web API - Task Endpoints
 **Blockers**: Web API Server Setup
-**Related Files**: octie/src/web/routes/tasks.ts
-**C7 MCP Verified**: /express
+**Related Files**: octie/src/web/routes/tasks.ts, octie/src/web/server.ts
+**C7 MCP Verified**: /express (routing patterns, async error handling)
 **Deliverables**:
-- [ ] GET /api/tasks - List all tasks with optional filters
-- [ ] GET /api/tasks/:id - Get task by ID
-- [ ] POST /api/tasks - Create new task
-- [ ] PUT /api/tasks/:id - Update task
-- [ ] DELETE /api/tasks/:id - Delete task
-- [ ] POST /api/tasks/:id/merge - Merge tasks
-- [ ] Input validation using Zod schemas
-- [ ] Error responses with proper HTTP status codes
+- [x] GET /api/tasks - List all tasks with optional filters (status, priority, search, limit, offset)
+- [x] GET /api/tasks/:id - Get task by ID
+- [x] POST /api/tasks - Create new task with atomic task validation
+- [x] PUT /api/tasks/:id - Update task (title, description, status, priority, criteria, deliverables, blockers, dependencies)
+- [x] DELETE /api/tasks/:id - Delete task with optional edge reconnection
+- [x] POST /api/tasks/:id/merge - Merge tasks
+- [x] Input validation using Zod schemas (TaskCreateSchema, TaskUpdateSchema, TaskMergeSchema)
+- [x] Error responses with proper HTTP status codes (400 for validation, 404 for not found, 500 for server errors)
+- [x] Async error handling wrapper for all routes
+- [x] Graph integration (load/save via TaskStorage, graph operations via TaskGraphStore)
+**Completed**: 2026-02-16
+**Git Commit**: (to be committed)
 
 #### [ ] Web API - Graph Endpoints
 **Blockers**: Web API Server Setup
