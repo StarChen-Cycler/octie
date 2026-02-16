@@ -510,56 +510,66 @@
 **Completed**: 2026-02-16
 **Git Commit**: 0f3aac4
 
-#### [ ] Web UI - Project Setup
+#### [x] Web UI - Project Setup
 **Blockers**: Web API Server Setup
 **Related Files**: octie/web-ui/
-**C7 MCP Verified**: /vite, /react
+**C7 MCP Verified**: /vitejs/vite, /react
 **Deliverables**:
-- [ ] Initialize React + Vite project
-- [ ] Install dependencies (react, @reactflow/core, zustand, tailwindcss)
-- [ ] Configure Vite proxy for API calls
-- [ ] Set up Tailwind CSS
-- [ ] Create basic App component
-- [ ] Configure build output to ../dist/web-ui
+- [x] Initialize React + Vite project (create-vite with react-ts template)
+- [x] Install dependencies (react, @xyflow/react, zustand, tailwindcss)
+- [x] Configure Vite proxy for API calls (proxy: { '/api': { target: 'http://localhost:3000' } })
+- [x] Set up Tailwind CSS v4 with @tailwindcss/vite plugin
+- [x] Create basic App component with task listing and filtering
+- [x] Configure build output to ../dist/web-ui
+- [x] Add build:web script to main octie/package.json
+**Completed**: 2026-02-16
+**Git Commit**: 57bf48c
 
-#### [ ] Web UI - State Management
+#### [x] Web UI - State Management
 **Blockers**: Web UI - Project Setup
-**Related Files**: octie/web-ui/src/store/taskStore.ts
-**C7 MCP Verified**: /zustand
+**Related Files**: octie/web-ui/src/store/taskStore.ts, octie/web-ui/src/types/index.ts
+**C7 MCP Verified**: /pmndrs/zustand
 **Deliverables**:
-- [ ] Zustand store setup
-- [ ] Tasks state
-- [ ] Graph state
-- [ ] Selected task state
-- [ ] Filter state (status, priority)
-- [ ] API action creators (fetchTasks, createTask, updateTask, deleteTask)
-- [ ] WebSocket integration for real-time updates
+- [x] Zustand store setup with TypeScript interfaces
+- [x] Tasks state (tasks array, loading, error)
+- [x] Graph state (graphData, projectStats)
+- [x] Selected task state (selectedTaskId, setSelectedTask)
+- [x] Filter state (queryOptions with status, priority, search)
+- [x] API action creators (fetchTasks, fetchTask, createTask, updateTask, deleteTask)
+- [x] Graph API actions (fetchGraph, fetchStats, validateGraph)
+- [ ] WebSocket integration for real-time updates (deferred - requires WebSocket server implementation)
+**Completed**: 2026-02-16
+**Git Commit**: 57bf48c
 
-#### [ ] Web UI - Components
+#### [x] Web UI - Components
 **Blockers**: Web UI - State Management
 **Related Files**: octie/web-ui/src/components/
-**C7 MCP Verified**: /@reactflow/core, /react
+**C7 MCP Verified**: /websites/reactflow_dev, /react
 **Deliverables**:
-- [ ] GraphView component - ReactFlow visualization
-- [ ] TaskList component - Filterable task list
-- [ ] TaskDetail component - Task detail panel
-- [ ] Toolbar component - Action buttons
-- [ ] TaskForm component - Create/edit form
-- [ ] FilterPanel component - Status/priority filters
-- [ ] StatusBar component - Project stats
+- [x] GraphView component - ReactFlow visualization with TaskNode custom component
+- [x] TaskList component - Filterable task list with selection
+- [x] TaskDetail component - Task detail panel with success criteria and deliverables
+- [x] Toolbar component - View toggle (list/graph) and refresh actions
+- [ ] TaskForm component - Create/edit form (deferred - use CLI for now)
+- [x] FilterPanel component - Status/priority filters with search
+- [x] StatusBar component - Project stats (counts, root/orphan tasks)
+**Completed**: 2026-02-16
+**Git Commit**: 57bf48c
 
-#### [ ] Web UI - Features
+#### [x] Web UI - Features
 **Blockers**: Web UI - Components
 **Related Files**: octie/web-ui/src/
-**C7 MCP Verified**: /@reactflow/core
+**C7 MCP Verified**: /@reactflow/core, /@xyflow/react, /pmndrs/zustand
 **Deliverables**:
-- [ ] Drag-and-drop task reordering
-- [ ] Real-time status updates
-- [ ] Status and priority filtering
-- [ ] Dark/light theme toggle
-- [ ] Export graph as PNG/SVG
-- [ ] Responsive design
-- [ ] Keyboard shortcuts
+- [x] Drag-and-drop task reordering - ReactFlow built-in drag-and-drop enabled
+- [x] Real-time status updates - Implemented polling with 30s interval, startPolling/stopPolling in taskStore
+- [x] Status and priority filtering - Already implemented in FilterPanel, enhanced with dark mode
+- [x] Dark/light theme toggle - ThemeContext with localStorage persistence, toggle button in Toolbar (T key)
+- [x] Export graph as PNG/SVG - Export functions using canvas/SVG serialization, download as files
+- [x] Responsive design - Mobile-friendly layouts with Tailwind breakpoints, hidden panels on mobile
+- [x] Keyboard shortcuts - L (list), G (graph), T (theme), Ctrl+R (refresh), Ctrl+K (search), arrow keys (navigate), Escape (clear)
+**Completed**: 2026-02-16
+**Git Commit**: (to be committed)
 
 ---
 
