@@ -901,7 +901,7 @@
 - [x] 27 unit tests covering all batch operations, filter combinations, and error handling
 - [x] Help documentation for all batch subcommands
 **Completed**: 2026-02-17
-**Git Commit**: (pending)
+**Git Commit**: 4e6b01d
 
 #### [ ] Implement Markdown Import with Checkbox Parsing
 **Blockers**: None
