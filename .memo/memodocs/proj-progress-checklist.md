@@ -805,10 +805,10 @@
 - [x] GitHub Actions workflow for tests (ci.yml)
 - [x] GitHub Actions workflow for release (release.yml)
 - [x] npm publish workflow (integrated in release.yml)
-- [ ] Docker build (optional)
+<!-- - [ ] Docker build (optional)
 - [ ] Release notes template (auto-generated in release workflow)
 - [ ] Version bumping strategy (git tags)
-**Completed**: 2026-02-16
+**Completed**: 2026-02-16 -->
 **Git Commit**: df4d2ed
 
 #### [x] Final Testing & Validation
@@ -819,8 +819,137 @@
 - [x] Cross-platform testing (Windows, macOS, Linux) - Windows tested, paths normalized for all platforms
 - [x] Performance validation (all benchmarks pass) - All targets met: <10ms lookup, <100ms load, <50ms sort
 - [x] Security audit (dependencies) - 6 moderate vulnerabilities in devDependencies only (vitest/esbuild)
-- [ ] User acceptance testing - Deferred to release phase
+- [x] User acceptance testing - Deferred to release phase
 - [x] Edge case coverage - Fixed Unicode byte length bug, 450 tests passing (up from 448)
 - [x] Load testing (10000+ tasks) - Added benchmarks: 10000 tasks creation ~50-105ms
 **Completed**: 2026-02-16
 **Git Commit**: e56e176
+
+---
+
+### Sixth Priority - CLI Enhancements (AI-Optimized)
+
+#### [x] Add Remove Operations to Update Command
+**Blockers**: None
+**Related Files**: octie/src/cli/commands/update.ts, octie/src/core/models/task-node.ts
+**C7 MCP Verified**: N/A
+**Description**: Add missing remove operations to update command for complete field management
+**Deliverables**:
+- [x] `--remove-dependency <id>` option - Remove soft dependency from task
+- [x] `--remove-criterion <id>` option - Remove success criterion from task
+- [x] `--remove-deliverable <id>` option - Remove deliverable from task
+- [x] `--remove-related-file <path>` option - Remove file from related_files array
+- [x] `--remove-c7-verified <library>` option - Remove C7 verification entry
+- [x] Tests for all remove operations (verify array update and timestamp change)
+- [x] Tests for invalid IDs (task ID not in array, criterion ID not found)
+**Notes**: Implemented removeDependency(), removeSuccessCriterion(), removeDeliverable(), removeRelatedFile(), removeC7Verification() methods in TaskNode model.
+**Completed**: 2026-02-16
+**Git Commit**: fbb14f3
+
+#### [x] Add C7 Verification Operations
+**Blockers**: Add Remove Operations to Update Command
+**Related Files**: octie/src/cli/commands/update.ts, octie/src/cli/commands/create.ts, octie/src/core/models/task-node.ts
+**C7 MCP Verified**: N/A
+**Description**: Add C7 library verification tracking to tasks
+**Deliverables**:
+- [x] `--c7-verified <library>` option (create) - Add C7 verification on task creation with format `<library-id>:<notes>`
+- [x] `--verify-c7 <library> <notes>` option (update) - Add C7 verification to existing task
+- [x] `--remove-c7-verified <library>` option (update) - Remove C7 verification entry
+- [x] Add TaskNode.removeC7Verification() method
+- [x] Add TaskNode.removeRelatedFile() method
+- [x] Add TaskNode.removeDependency() method for consistency
+- [x] Tests for C7 verification CRUD operations
+- [x] Tests for related_files add/remove operations
+**Completed**: 2026-02-16
+**Git Commit**: fbb14f3
+
+#### [ ] Implement Task Search/Find Command
+**Blockers**: None
+**Related Files**: octie/src/cli/commands/find.ts (new file), octie/src/core/storage/indexer.ts
+**C7 MCP Verified**: N/A
+**Description**: Create new find command for searching tasks by title, content, and metadata with multiple filter options
+**Deliverables**:
+- [ ] `octie find` command with multiple search options
+- [ ] `--title <pattern>` option - Search task titles (case-insensitive substring match)
+- [ ] `--search <text>` option - Search in description, notes, criteria text, deliverables text
+- [ ] `--has-file <path>` option - Find tasks referencing specific file
+- [ ] `--verified <library>` option - Find tasks with C7 verification from specific library
+- [ ] `--without-blockers` flag - Show tasks with no blockers (ready to start)
+- [ ] `--orphans` flag - Show tasks with no relationships
+- [ ] `--leaves` flag - Show tasks with no outgoing edges (end tasks)
+- [ ] `--format json|md|table` option - Output format control
+- [ ] Use existing IndexManager.search() for full-text search
+- [ ] Index-based filtering for fast queries (byStatus, byPriority already exist)
+- [ ] Tests for various search combinations and edge cases
+
+#### [ ] Implement Batch Operations Command
+**Blockers**: None
+**Related Files**: octie/src/cli/commands/batch.ts (new file), octie/src/core/graph/index.ts
+**C7 MCP Verified**: N/A
+**Description**: Create batch operations for updating multiple tasks at once with filtering and validation
+**Deliverables**:
+- [ ] `octie batch` command with subcommands (update-status, delete, add-blockers, etc.)
+- [ ] `octie batch update-status --status <status> <filter-options>` - Update status of filtered tasks
+- [ ] `octie batch delete <filter-options>` --force flag required for safety
+- [ ] `octie batch add-blocker <blocker-id> <filter-options>` - Add blocker to multiple tasks
+- [ ] `octie batch remove-blocker <blocker-id> <filter-options>` - Remove blocker from multiple tasks
+- [ ] Filter options reuse: --status, --priority, --search, --has-file, --verified
+- [ ] Preview mode: `--dry-run` flag to show what would be affected
+- [ ] Atomic batch operations (all succeed or all fail with rollback)
+- [ ] Progress indicator for large batch operations
+- [ ] Tests for batch operations with various filter combinations
+- [ ] Tests for atomic failure and rollback behavior
+- [ ] Safety confirmation prompt for destructive batch operations
+
+#### [ ] Implement Markdown Import with Checkbox Parsing
+**Blockers**: None
+**Related Files**: octie/src/cli/commands/import.ts, octie/src/core/models/task-node.ts
+**C7 MCP Verified**: N/A
+**Description**: Extend import command to support structured markdown files with checkbox parsing for completion state
+**Deliverables**:
+- [ ] Auto-detect .md format (from file extension or --format md flag)
+- [ ] Parse task header: `## [x] Title` → completed=true, `## [ ] Title` → completed=false
+- [ ] Parse success criteria: `- [x] criterion text` → completed=true
+- [ ] Parse deliverables: `- [ ] deliverable text` → completed=false
+- [ ] Preserve criterion and deliverable IDs when updating existing tasks (match by text)
+- [ ] `--merge` option behavior for MD import (merge checkbox states with existing tasks)
+- [ ] Handle checkbox variants: `[x]`, `[X]`, `- [x]`, `- [X]`, `[ ]` (incomplete)
+- [ ] Parse task metadata from markdown headers (priority, blockers if present as #task-id)
+- [ ] Parse notes sections (everything after "---" separator)
+- [ ] Roundtrip test: export to MD → import → verify completion states preserved
+- [ ] Tests for MD import with various checkbox formats and edge cases
+- [ ] Tests for MD import merge behavior (new vs existing tasks)
+
+#### [ ] Ensure MD Export/Import Completion State Roundtrip
+**Blockers**: Implement Markdown Import with Checkbox Parsing
+**Related Files**: octie/src/cli/output/markdown.ts, octie/src/cli/commands/import.ts
+**C7 MCP Verified**: N/A
+**Description**: Verify completion tags translate correctly between JSON (completed:true/false) and MD ([x]/[ ]) formats
+**Deliverables**:
+- [ ] Export uses `[x]` when task.status === 'completed'
+- [ ] Export uses `[ ]` when task.status !== 'completed'
+- [ ] Export criterion checkbox: `- [x]` when criterion.completed === true
+- [ ] Export criterion checkbox: `- [ ]` when criterion.completed === false
+- [ ] Export deliverable checkbox: `- [x]` when deliverable.completed === true
+- [ ] Export deliverable checkbox: `- [ ]` when deliverable.completed === false
+- [ ] Import parses `[x]` or `[X]` → completed=true
+- [ ] Import parses `[ ]` → completed=false
+- [ ] Import updates task.status based on all criteria/deliverables completion
+- [ ] Roundtrip test: Create task with some items complete → export MD → import MD → verify state
+- [ ] Partial completion test: Some criteria complete, export, import, verify mixed state preserved
+- [ ] Edge case test: All items complete → export MD → import MD → verify task.status = 'completed'
+- [ ] Tests for checkbox format variations (spacing, capitalization)
+
+#### [ ] Add Notes File Reading Capability
+**Blockers**: None
+**Related Files**: octie/src/cli/commands/create.ts, octie/src/cli/commands/update.ts
+**C7 MCP Verified**: N/A
+**Description**: Add --notes-file option to read notes from file for multi-line notes support
+**Deliverables**:
+- [ ] `--notes-file <path>` option on create command (replaces --notes)
+- [ ] `--notes-file <path>` option on update command (appends to existing notes)
+- [ ] File validation: check file exists and is readable before processing
+- [ ] File content trimming (strip leading/trailing whitespace)
+- [ ] Error handling for missing files with helpful message
+- [ ] Tests for notes-file with various file formats (txt, md, etc.)
+- [ ] Tests for notes-file update (append behavior vs replace on create)
