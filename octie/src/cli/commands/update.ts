@@ -40,7 +40,7 @@ export const updateCommand = new Command('update')
       const projectPath = await getProjectPath(globalOpts.project);
       const graph = await loadGraph(projectPath);
 
-      const task = graph.getNode(id);
+      const task = graph.getNodeByIdOrPrefix(id);
       if (!task) {
         error(`Task not found: ${id}`);
         process.exit(1);

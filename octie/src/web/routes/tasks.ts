@@ -10,7 +10,7 @@
 import type { Request, Response, Router } from 'express';
 import { z } from 'zod';
 import type { TaskGraphStore } from '../../core/graph/index.js';
-import { TaskNotFoundError, CircularDependencyError, ValidationError, AtomicTaskViolationError, ERROR_SUGGESTIONS } from '../../types/index.js';
+import { TaskNotFoundError, CircularDependencyError, ValidationError, AtomicTaskViolationError, AmbiguousIdError, ERROR_SUGGESTIONS } from '../../types/index.js';
 import { TaskNode } from '../../core/models/task-node.js';
 import { v4 as uuidv4 } from 'uuid';
 import type { ApiResponse } from '../server.js';
@@ -223,9 +223,15 @@ export function registerTaskRoutes(
     }
 
     try {
-      const task = graph.getNodeOrThrow(id);
+      const task = graph.getNodeByIdOrPrefix(id);
+      if (!task) {
+        return sendError(res, 'TASK_NOT_FOUND', `Task with ID '${id}' not found`, 404);
+      }
       return sendSuccess(res, task);
     } catch (err) {
+      if (err instanceof AmbiguousIdError) {
+        return sendError(res, 'AMBIGUOUS_ID', err.message, 400);
+      }
       if (err instanceof TaskNotFoundError) {
         return sendError(res, 'TASK_NOT_FOUND', err.message, 404);
       }
@@ -252,8 +258,8 @@ export function registerTaskRoutes(
     const data = bodyResult.data;
 
     try {
-      // Generate UUID for new task
-      const taskId = uuidv4();
+      // Generate UUID for new task with collision detection
+      const taskId = graph.generateUniqueId();
 
       // Create success criteria with IDs
       const successCriteria = data.successCriteria.map(sc => ({
@@ -347,7 +353,14 @@ export function registerTaskRoutes(
     const data = bodyResult.data;
 
     try {
-      const task = graph.getNodeOrThrow(id);
+      // Support short UUID prefix lookup
+      const task = graph.getNodeByIdOrPrefix(id);
+      if (!task) {
+        return sendError(res, 'TASK_NOT_FOUND', `Task with ID '${id}' not found`, 404);
+      }
+
+      // Use the full ID for all operations
+      const fullId = task.id;
 
       // Apply updates
       if (data.title !== undefined) {
@@ -387,11 +400,11 @@ export function registerTaskRoutes(
           return sendError(res, 'BLOCKER_NOT_FOUND', `Blocker task '${data.block}' not found`, 400);
         }
         task.addBlocker(data.block);
-        graph.addEdge(data.block, id);
+        graph.addEdge(data.block, fullId);
       }
       if (data.unblock !== undefined) {
         task.removeBlocker(data.unblock);
-        graph.removeEdge(data.unblock, id);
+        graph.removeEdge(data.unblock, fullId);
       }
       if (data.addDependency !== undefined) {
         if (!graph.hasNode(data.addDependency)) {
@@ -407,8 +420,11 @@ export function registerTaskRoutes(
       graph.updateNode(task);
 
       // Return updated task
-      return sendSuccess(res, graph.getNodeOrThrow(id));
+      return sendSuccess(res, task);
     } catch (err) {
+      if (err instanceof AmbiguousIdError) {
+        return sendError(res, 'AMBIGUOUS_ID', err.message, 400);
+      }
       if (err instanceof TaskNotFoundError) {
         return sendError(res, 'TASK_NOT_FOUND', err.message, 404);
       }
@@ -439,15 +455,21 @@ export function registerTaskRoutes(
     const reconnect = req.query.reconnect === 'true';
 
     try {
-      // Check if task exists
-      const task = graph.getNodeOrThrow(id);
+      // Support short UUID prefix lookup
+      const task = graph.getNodeByIdOrPrefix(id);
+      if (!task) {
+        return sendError(res, 'TASK_NOT_FOUND', `Task with ID '${id}' not found`, 404);
+      }
+
+      // Use the full ID for all operations
+      const fullId = task.id;
 
       // Get affected tasks
-      const incoming = graph.getIncomingEdges(id);
-      const outgoing = graph.getOutgoingEdges(id);
+      const incoming = graph.getIncomingEdges(fullId);
+      const outgoing = graph.getOutgoingEdges(fullId);
 
       // Remove the task
-      graph.removeNode(id);
+      graph.removeNode(fullId);
 
       // Reconnect edges if requested
       if (reconnect) {
@@ -470,6 +492,9 @@ export function registerTaskRoutes(
         outgoingBeforeDelete: outgoing,
       });
     } catch (err) {
+      if (err instanceof AmbiguousIdError) {
+        return sendError(res, 'AMBIGUOUS_ID', err.message, 400);
+      }
       if (err instanceof TaskNotFoundError) {
         return sendError(res, 'TASK_NOT_FOUND', err.message, 404);
       }

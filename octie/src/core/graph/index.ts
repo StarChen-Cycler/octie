@@ -13,8 +13,9 @@
  */
 
 import type { TaskGraph, ProjectMetadata } from '../../types/index.js';
-import { TaskNotFoundError, ValidationError } from '../../types/index.js';
+import { TaskNotFoundError, ValidationError, AmbiguousIdError } from '../../types/index.js';
 import { TaskNode } from '../models/task-node.js';
+import { v4 as uuidv4 } from 'uuid';
 
 /**
  * TaskGraphStore class
@@ -113,6 +114,75 @@ export class TaskGraphStore {
    */
   hasNode(id: string): boolean {
     return this._nodes.has(id);
+  }
+
+  /**
+   * Get a task node by short UUID prefix (first 7-8 characters)
+   * @param prefix - Short UUID prefix to look up
+   * @returns Task node or undefined if not found
+   * @throws {AmbiguousIdError} If multiple tasks match the prefix
+   * @complexity O(n) where n is the number of tasks
+   */
+  getNodeByPrefix(prefix: string): TaskNode | undefined {
+    const matches: TaskNode[] = [];
+    const lowerPrefix = prefix.toLowerCase();
+
+    for (const [id, node] of this._nodes) {
+      if (id.toLowerCase().startsWith(lowerPrefix)) {
+        matches.push(node);
+        if (matches.length > 1) {
+          throw new AmbiguousIdError(prefix, matches.map(m => m.id));
+        }
+      }
+    }
+
+    return matches[0];
+  }
+
+  /**
+   * Get a task node by ID or prefix
+   * @param id - Task ID or short UUID prefix to look up
+   * @returns Task node or undefined if not found
+   * @complexity O(1) for full ID, O(n) for prefix
+   */
+  getNodeByIdOrPrefix(id: string): TaskNode | undefined {
+    // Try exact match first (O(1))
+    const exactMatch = this.getNode(id);
+    if (exactMatch) return exactMatch;
+
+    // Fall back to prefix search (O(n))
+    return this.getNodeByPrefix(id);
+  }
+
+  /**
+   * Generate a unique task ID with collision detection
+   * Ensures that the first 7 characters of the UUID are unique across all tasks
+   * @returns A unique task ID
+   * @throws {Error} If unable to generate unique ID after many attempts
+   */
+  generateUniqueId(): string {
+    const MAX_ATTEMPTS = 100;
+    const PREFIX_LENGTH = 7;
+
+    for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
+      const id = uuidv4();
+      const prefix = id.substring(0, PREFIX_LENGTH);
+
+      // Check if any existing task has the same prefix
+      let prefixExists = false;
+      for (const existingId of this._nodes.keys()) {
+        if (existingId.substring(0, PREFIX_LENGTH) === prefix) {
+          prefixExists = true;
+          break;
+        }
+      }
+
+      if (!prefixExists) {
+        return id;
+      }
+    }
+
+    throw new Error(`Failed to generate unique ID after ${MAX_ATTEMPTS} attempts. Too many tasks?`);
   }
 
   /**

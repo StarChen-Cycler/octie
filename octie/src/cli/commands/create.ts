@@ -192,7 +192,8 @@ export const createCommand = new Command('create')
       }
 
       // Build task data
-      const taskId = uuidv4();
+      // Use graph.generateUniqueId() to ensure first 7 characters are unique
+      const taskId = graph.generateUniqueId();
       const taskData = {
         id: taskId,
         title: options.title.trim(),

@@ -25,8 +25,8 @@ export const getCommand = new Command('get')
       const projectPath = await getProjectPath(globalOpts.project);
       const graph = await loadGraph(projectPath);
 
-      // Find task
-      const task = graph.getNode(id);
+      // Find task (supports full UUID or short prefix)
+      const task = graph.getNodeByIdOrPrefix(id);
 
       if (!task) {
         error(chalk.red(`Task not found: ${id}`));

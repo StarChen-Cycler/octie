@@ -271,6 +271,20 @@ export class TaskNotFoundError extends OctieError {
 }
 
 /**
+ * Error thrown when a short UUID prefix matches multiple tasks
+ */
+export class AmbiguousIdError extends OctieError {
+  constructor(prefix: string, matchingIds: string[]) {
+    super(
+      `ID prefix '${prefix}' matches multiple tasks: ${matchingIds.map(id => id.substring(0, 7)).join(', ')}. Please provide more characters.`,
+      'AMBIGUOUS_ID',
+      `The ID prefix '${prefix}' is too short and matches ${matchingIds.length} tasks. Provide more characters (up to the full UUID) to uniquely identify a task.`
+    );
+    this.name = 'AmbiguousIdError';
+  }
+}
+
+/**
  * Error thrown when a project is not found
  */
 export class ProjectNotFoundError extends OctieError {

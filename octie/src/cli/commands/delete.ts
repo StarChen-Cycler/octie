@@ -23,19 +23,23 @@ export const deleteCommand = new Command('delete')
       const projectPath = await getProjectPath(globalOpts.project);
       const graph = await loadGraph(projectPath);
 
-      const task = graph.getNode(id);
+      // Support short UUID prefix lookup
+      const task = graph.getNodeByIdOrPrefix(id);
       if (!task) {
         error(`Task not found: ${id}`);
         process.exit(1);
       }
 
+      // Use the full ID for all subsequent operations
+      const fullId = task.id;
+
       // Show impact
-      const dependents = graph.getOutgoingEdges(id);
-      const blockers = graph.getIncomingEdges(id);
+      const dependents = graph.getOutgoingEdges(fullId);
+      const blockers = graph.getIncomingEdges(fullId);
 
       console.log('');
       console.log(chalk.bold('Task to delete:'));
-      console.log(`  ${chalk.cyan(id.substring(0, 8))} - ${task.title}`);
+      console.log(`  ${chalk.cyan(fullId.substring(0, 8))} - ${task.title}`);
       console.log('');
 
       if (dependents.length > 0) {
@@ -74,7 +78,7 @@ export const deleteCommand = new Command('delete')
       // Perform deletion
       if (options.reconnect) {
         info('Reconnecting edges...');
-        cutNode(graph, id);
+        cutNode(graph, fullId);
       } else if (options.cascade) {
         info('Cascading deletion to dependents...');
         // TODO: Implement cascade deletion
@@ -82,13 +86,13 @@ export const deleteCommand = new Command('delete')
         process.exit(1);
       } else {
         // Simple removal
-        graph.removeNode(id);
+        graph.removeNode(fullId);
       }
 
       // Save
       await saveGraph(projectPath, graph);
 
-      success(`Task deleted: ${chalk.cyan(id.substring(0, 8))}`);
+      success(`Task deleted: ${chalk.cyan(fullId.substring(0, 8))}`);
 
       process.exit(0);
     } catch (err) {
