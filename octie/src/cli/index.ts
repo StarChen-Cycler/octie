@@ -5,8 +5,7 @@
  * Main entry point for all CLI commands
  */
 
-import { Command, InvalidArgumentError } from 'commander';
-import chalk from 'chalk';
+import { Command, CommanderError } from 'commander';
 import { initCommand } from './commands/init.js';
 import { createCommand } from './commands/create.js';
 import { listCommand } from './commands/list.js';
@@ -19,7 +18,6 @@ import { exportCommand } from './commands/export.js';
 import { importCommand } from './commands/import.js';
 import { serveCommand } from './commands/serve.js';
 import { formatError } from './utils/helpers.js';
-import { InvalidArgumentError as OctieInvalidArgumentError } from '../types/index.js';
 
 // Version from package.json
 const VERSION = '1.0.0';
@@ -28,19 +26,16 @@ const VERSION = '1.0.0';
  * Global error handler
  * Provides consistent error formatting with suggestions and optional stack traces
  */
-function handleError(error: unknown): void {
+function handleError(error: unknown): never {
   const verbose = process.env.DEBUG === 'true' || process.env.VERBOSE === 'true';
 
-  // Handle Commander's InvalidArgumentError
-  if (error instanceof InvalidArgumentError) {
-    console.error(formatError(
-      new OctieInvalidArgumentError(error.message),
-      verbose
-    ));
-    process.exit(1);
+  // Handle Commander's normal exits (--help, --version) - exit cleanly
+  if (error instanceof CommanderError) {
+    // Commander has already output the error via writeErr, just exit
+    process.exit(error.exitCode);
   }
 
-  // Handle all errors with our formatter
+  // Handle all other errors with our formatter
   console.error(formatError(error, verbose));
   process.exit(1);
 }
@@ -56,8 +51,8 @@ function createProgram(): Command {
     .description('Graph-based task management system')
     .version(VERSION, '-v, --version', 'Display version number')
     .configureOutput({
-      writeErr: (str) => console.error(chalk.red(str)),
-      writeOut: (str) => console.log(str),
+      writeErr: (str) => process.stderr.write(str),
+      writeOut: (str) => process.stdout.write(str),
     });
 
   // Global options
