@@ -1,14 +1,21 @@
 {
   "name": "octie",
   "version": "1.0.0",
-  "description": "A graph-based task management system with CLI and web UI",
-  "main": "dist/index.js",
+  "description": "A graph-based task management system with CLI and web UI for atomic, verifiable tasks",
+  "main": "dist/core/index.js",
+  "types": "dist/core/index.d.ts",
   "type": "module",
   "bin": {
     "octie": "./dist/cli/index.js"
   },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
   "scripts": {
     "build": "tsc && npm run build:web",
+    "build:cli": "tsc",
     "build:web": "cd web-ui && npm run build",
     "dev": "tsc --watch",
     "dev:web": "cd web-ui && npm run dev",
@@ -24,17 +31,34 @@
     "typecheck": "tsc --noEmit",
     "clean": "rm -rf dist",
     "prebuild": "npm run clean",
-    "serve": "node dist/cli/index.js serve"
+    "serve": "node dist/cli/index.js serve",
+    "prepublishOnly": "npm run build && npm test"
   },
   "keywords": [
     "task-management",
+    "project-management",
     "graph",
     "dag",
     "cli",
-    "project-management"
+    "productivity",
+    "atomic-tasks",
+    "task-tracker",
+    "command-line",
+    "web-ui",
+    "topological-sort",
+    "dependency-graph"
   ],
   "author": "",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/anthropics/octie.git",
+    "directory": "octie"
+  },
+  "bugs": {
+    "url": "https://github.com/anthropics/octie/issues"
+  },
+  "homepage": "https://github.com/anthropics/octie#readme",
   "engines": {
     "node": ">=20.0.0"
   },

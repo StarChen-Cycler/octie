@@ -1,0 +1,913 @@
+openapi: 3.0.3
+info:
+  title: Octie API
+  description: |
+    Graph-based task management system API. Octie uses directed graphs to represent
+    task dependencies, with atomic task definitions that include success criteria,
+    deliverables, blockers, and auto-managed timestamps.
+
+    ## Atomic Task Requirements
+    Tasks must be specific, executable, and verifiable:
+    - Title must contain an action verb (implement, create, fix, etc.)
+    - Description must be at least 50 characters
+    - Must have 1-10 success criteria (quantitative, measurable)
+    - Must have 1-5 deliverables (specific outputs)
+  version: 1.0.0
+  contact:
+    name: Octie Support
+    url: https://github.com/anthropics/octie/issues
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: http://localhost:3000
+    description: Local development server
+
+tags:
+  - name: Tasks
+    description: Task CRUD operations
+  - name: Graph
+    description: Graph analysis and validation
+  - name: Health
+    description: System health and info
+
+paths:
+  /health:
+    get:
+      tags: [Health]
+      summary: Health check
+      description: Returns server health status
+      responses:
+        '200':
+          description: Server is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: ok
+                  timestamp:
+                    type: string
+                    format: date-time
+
+  /api:
+    get:
+      tags: [Health]
+      summary: API information
+      description: Returns API metadata and available endpoints
+      responses:
+        '200':
+          description: API info
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  name:
+                    type: string
+                    example: Octie API
+                  version:
+                    type: string
+                    example: 1.0.0
+                  endpoints:
+                    type: array
+                    items:
+                      type: string
+
+  /api/project:
+    get:
+      tags: [Health]
+      summary: Get project metadata
+      description: Returns project configuration and metadata
+      responses:
+        '200':
+          description: Project metadata
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+        '404':
+          description: Project not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/tasks:
+    get:
+      tags: [Tasks]
+      summary: List all tasks
+      description: Retrieve all tasks with optional filtering
+      parameters:
+        - name: status
+          in: query
+          description: Filter by task status
+          schema:
+            $ref: '#/components/schemas/TaskStatus'
+        - name: priority
+          in: query
+          description: Filter by task priority
+          schema:
+            $ref: '#/components/schemas/TaskPriority'
+        - name: search
+          in: query
+          description: Search in task title and description
+          schema:
+            type: string
+        - name: limit
+          in: query
+          description: Maximum number of results
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 50
+        - name: offset
+          in: query
+          description: Number of results to skip
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+      responses:
+        '200':
+          description: List of tasks
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      tasks:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Task'
+                      total:
+                        type: integer
+                        description: Total number of matching tasks
+
+    post:
+      tags: [Tasks]
+      summary: Create a new task
+      description: |
+        Create a new atomic task. All required fields must be provided.
+        The task must pass atomic task validation.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TaskCreate'
+            examples:
+              basic:
+                summary: Basic task creation
+                value:
+                  title: Implement user authentication
+                  description: Create JWT-based authentication system with login, logout, and token refresh endpoints
+                  success_criteria:
+                    - text: Login returns valid JWT on correct credentials
+                    - text: Token refresh works correctly
+                  deliverables:
+                    - text: src/auth/login.ts
+                    - text: tests/auth/login.test.ts
+                  priority: top
+      responses:
+        '201':
+          description: Task created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    $ref: '#/components/schemas/Task'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                atomic_violation:
+                  summary: Atomic task validation failed
+                  value:
+                    success: false
+                    error:
+                      code: ATOMIC_TASK_VIOLATION
+                      message: Title must contain an action verb
+
+  /api/tasks/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        description: Task UUID
+        schema:
+          type: string
+          format: uuid
+
+    get:
+      tags: [Tasks]
+      summary: Get task by ID
+      description: Retrieve detailed information about a specific task
+      responses:
+        '200':
+          description: Task details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    $ref: '#/components/schemas/Task'
+        '404':
+          description: Task not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    put:
+      tags: [Tasks]
+      summary: Update a task
+      description: |
+        Update task fields. The `updated_at` timestamp is automatically updated.
+        The `completed_at` timestamp is automatically managed based on success criteria
+        and deliverables completion status.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TaskUpdate'
+      responses:
+        '200':
+          description: Task updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    $ref: '#/components/schemas/Task'
+        '404':
+          description: Task not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    delete:
+      tags: [Tasks]
+      summary: Delete a task
+      description: Delete a task with optional edge reconnection
+      parameters:
+        - name: reconnect
+          in: query
+          description: Reconnect edges after deletion (A→B→C becomes A→C)
+          schema:
+            type: boolean
+            default: false
+      responses:
+        '200':
+          description: Task deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      message:
+                        type: string
+                        example: Task deleted successfully
+        '404':
+          description: Task not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/tasks/{id}/merge:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        description: Source task UUID (will be deleted after merge)
+        schema:
+          type: string
+          format: uuid
+
+    post:
+      tags: [Tasks]
+      summary: Merge two tasks
+      description: |
+        Merge source task into target task. Combines description, success criteria,
+        deliverables, related files, and notes. Reconnects edges from source to target.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - targetId
+              properties:
+                targetId:
+                  type: string
+                  format: uuid
+                  description: Target task UUID
+      responses:
+        '200':
+          description: Tasks merged successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    $ref: '#/components/schemas/Task'
+        '404':
+          description: Task not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/graph:
+    get:
+      tags: [Graph]
+      summary: Get full graph structure
+      description: Returns the complete graph with all nodes and edges
+      responses:
+        '200':
+          description: Graph structure
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    $ref: '#/components/schemas/GraphData'
+
+  /api/graph/topology:
+    get:
+      tags: [Graph]
+      summary: Get topological order
+      description: Returns tasks in topological order (dependencies first)
+      responses:
+        '200':
+          description: Topological order
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      sorted:
+                        type: array
+                        items:
+                          type: string
+                          format: uuid
+                        description: Task IDs in topological order
+                      hasCycle:
+                        type: boolean
+                        description: Whether the graph contains cycles
+                      cycleNodes:
+                        type: array
+                        items:
+                          type: string
+                          format: uuid
+                        description: Task IDs involved in cycles (if any)
+
+  /api/graph/validate:
+    post:
+      tags: [Graph]
+      summary: Validate graph structure
+      description: Validates the graph for integrity issues
+      responses:
+        '200':
+          description: Validation result
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      isValid:
+                        type: boolean
+                        description: Whether the graph is valid
+                      hasCycle:
+                        type: boolean
+                        description: Whether the graph has cycles
+                      cycleStats:
+                        type: object
+                        description: Statistics about cycles (if any)
+                        properties:
+                          cycleCount:
+                            type: integer
+                          cyclicNodes:
+                            type: array
+                            items:
+                              type: string
+                              format: uuid
+
+  /api/graph/cycles:
+    get:
+      tags: [Graph]
+      summary: Detect cycles
+      description: Returns all cycles detected in the graph
+      responses:
+        '200':
+          description: Cycle detection result
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      cycles:
+                        type: array
+                        description: Array of cycle paths
+                        items:
+                          type: array
+                          items:
+                            type: string
+                            format: uuid
+
+  /api/graph/critical-path:
+    get:
+      tags: [Graph]
+      summary: Get critical path
+      description: Returns the longest path through the graph
+      responses:
+        '200':
+          description: Critical path
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      path:
+                        type: array
+                        items:
+                          type: string
+                          format: uuid
+                        description: Task IDs on critical path
+                      duration:
+                        type: integer
+                        description: Critical path length
+
+  /api/stats:
+    get:
+      tags: [Graph]
+      summary: Get project statistics
+      description: Returns statistics about the project and task distribution
+      responses:
+        '200':
+          description: Project statistics
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    $ref: '#/components/schemas/GraphStatistics'
+
+components:
+  schemas:
+    TaskStatus:
+      type: string
+      enum:
+        - not_started
+        - pending
+        - in_progress
+        - completed
+        - blocked
+
+    TaskPriority:
+      type: string
+      enum:
+        - top
+        - second
+        - later
+
+    SuccessCriterion:
+      type: object
+      required:
+        - id
+        - text
+        - completed
+      properties:
+        id:
+          type: string
+          format: uuid
+        text:
+          type: string
+          minLength: 1
+          description: Quantitative, measurable criterion
+        completed:
+          type: boolean
+          default: false
+        completed_at:
+          type: string
+          format: date-time
+          nullable: true
+
+    Deliverable:
+      type: object
+      required:
+        - id
+        - text
+        - completed
+      properties:
+        id:
+          type: string
+          format: uuid
+        text:
+          type: string
+          minLength: 1
+          description: Specific output expected
+        completed:
+          type: boolean
+          default: false
+        file_path:
+          type: string
+          description: Optional link to actual file
+
+    C7Verification:
+      type: object
+      properties:
+        library_id:
+          type: string
+          description: C7 library ID (e.g., /mongodb/docs)
+        verified_at:
+          type: string
+          format: date-time
+        notes:
+          type: string
+
+    Task:
+      type: object
+      required:
+        - id
+        - title
+        - description
+        - status
+        - priority
+        - success_criteria
+        - deliverables
+        - blockers
+        - dependencies
+        - edges
+        - related_files
+        - notes
+        - created_at
+        - updated_at
+      properties:
+        id:
+          type: string
+          format: uuid
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+        description:
+          type: string
+          minLength: 50
+          maxLength: 10000
+        status:
+          $ref: '#/components/schemas/TaskStatus'
+        priority:
+          $ref: '#/components/schemas/TaskPriority'
+        success_criteria:
+          type: array
+          minItems: 1
+          maxItems: 10
+          items:
+            $ref: '#/components/schemas/SuccessCriterion'
+        deliverables:
+          type: array
+          minItems: 1
+          maxItems: 5
+          items:
+            $ref: '#/components/schemas/Deliverable'
+        blockers:
+          type: array
+          items:
+            type: string
+            format: uuid
+          description: Task IDs that must complete first
+        dependencies:
+          type: array
+          items:
+            type: string
+            format: uuid
+          description: Soft dependency task IDs
+        edges:
+          type: array
+          items:
+            type: string
+            format: uuid
+          description: Outgoing edges (tasks this enables)
+        sub_items:
+          type: array
+          items:
+            type: string
+            format: uuid
+          description: Child task IDs
+        related_files:
+          type: array
+          items:
+            type: string
+          description: File paths related to this task
+        notes:
+          type: string
+          description: Additional context (markdown supported)
+        c7_verified:
+          type: array
+          items:
+            $ref: '#/components/schemas/C7Verification'
+        created_at:
+          type: string
+          format: date-time
+          description: Auto-generated on creation (immutable)
+        updated_at:
+          type: string
+          format: date-time
+          description: Auto-updated on any field change
+        completed_at:
+          type: string
+          format: date-time
+          nullable: true
+          description: Auto-set when all success_criteria AND deliverables are complete
+
+    TaskCreate:
+      type: object
+      required:
+        - title
+        - description
+        - success_criteria
+        - deliverables
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+        description:
+          type: string
+          minLength: 50
+          maxLength: 10000
+        priority:
+          $ref: '#/components/schemas/TaskPriority'
+        success_criteria:
+          type: array
+          minItems: 1
+          maxItems: 10
+          items:
+            type: object
+            required:
+              - text
+            properties:
+              text:
+                type: string
+                minLength: 1
+        deliverables:
+          type: array
+          minItems: 1
+          maxItems: 5
+          items:
+            type: object
+            required:
+              - text
+            properties:
+              text:
+                type: string
+                minLength: 1
+              file_path:
+                type: string
+        blockers:
+          type: array
+          items:
+            type: string
+            format: uuid
+        dependencies:
+          type: array
+          items:
+            type: string
+            format: uuid
+        related_files:
+          type: array
+          items:
+            type: string
+        notes:
+          type: string
+
+    TaskUpdate:
+      type: object
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+        description:
+          type: string
+          minLength: 50
+          maxLength: 10000
+        status:
+          $ref: '#/components/schemas/TaskStatus'
+        priority:
+          $ref: '#/components/schemas/TaskPriority'
+        add_success_criterion:
+          type: object
+          properties:
+            text:
+              type: string
+        complete_criterion:
+          type: string
+          format: uuid
+          description: ID of criterion to mark complete
+        add_deliverable:
+          type: object
+          properties:
+            text:
+              type: string
+            file_path:
+              type: string
+        complete_deliverable:
+          type: string
+          format: uuid
+          description: ID of deliverable to mark complete
+        block:
+          type: string
+          format: uuid
+          description: Task ID to add as blocker
+        unblock:
+          type: string
+          format: uuid
+          description: Task ID to remove from blockers
+        add_dependency:
+          type: string
+          format: uuid
+          description: Task ID to add as dependency
+        notes:
+          type: string
+          description: Text to append to existing notes
+
+    GraphData:
+      type: object
+      properties:
+        tasks:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/Task'
+        outgoingEdges:
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              type: string
+              format: uuid
+        incomingEdges:
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              type: string
+              format: uuid
+        metadata:
+          $ref: '#/components/schemas/ProjectMetadata'
+
+    ProjectMetadata:
+      type: object
+      properties:
+        project_name:
+          type: string
+        version:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+        task_count:
+          type: integer
+
+    GraphStatistics:
+      type: object
+      properties:
+        totalTasks:
+          type: integer
+        rootTasks:
+          type: integer
+          description: Tasks with no incoming edges
+        orphanTasks:
+          type: integer
+          description: Tasks with no edges at all
+        statusCounts:
+          type: object
+          properties:
+            not_started:
+              type: integer
+            pending:
+              type: integer
+            in_progress:
+              type: integer
+            completed:
+              type: integer
+            blocked:
+              type: integer
+        priorityCounts:
+          type: object
+          properties:
+            top:
+              type: integer
+            second:
+              type: integer
+            later:
+              type: integer
+
+    ApiResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        data:
+          type: object
+
+    ErrorResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        error:
+          type: object
+          properties:
+            code:
+              type: string
+              description: Error code
+              enum:
+                - TASK_NOT_FOUND
+                - VALIDATION_ERROR
+                - ATOMIC_TASK_VIOLATION
+                - CIRCULAR_DEPENDENCY
+                - FILE_OPERATION_ERROR
+            message:
+              type: string
+              description: Human-readable error message
+            details:
+              type: object
+              description: Additional error context
