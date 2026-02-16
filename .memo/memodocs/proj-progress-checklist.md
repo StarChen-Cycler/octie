@@ -626,33 +626,41 @@
 **Completed**: 2026-02-16
 **Git Commit**: dfea03a
 
-#### [ ] Unit Tests - Graph Algorithms
+#### [x] Unit Tests - Graph Algorithms
 **Blockers**: Graph Algorithms Complete
-**Related Files**: octie/tests/unit/core/graph/*.test.ts
+**Related Files**: octie/test/graph/sort.test.ts, octie/test/graph/cycle.test.ts, octie/test/graph/traversal.test.ts, octie/test/graph/operations.test.ts
 **C7 MCP Verified**: /vitest
 **Deliverables**:
-- [ ] Topological sort tests (empty, single, linear, parallel, cyclic)
-- [ ] Cycle detection tests (no cycle, single cycle, multiple cycles, self-loop)
-- [ ] BFS traversal tests (forward, backward)
-- [ ] DFS path finding tests
-- [ ] Cut node tests
-- [ ] Insert node tests
-- [ ] Move subtree tests
-- [ ] Merge tasks tests
-- [ ] Critical path tests
+- [x] Topological sort tests (12 tests - empty, single, linear, parallel, cyclic, self-loop, cache, critical path, isValidDAG, getExecutionLevels)
+- [x] Cycle detection tests (16 tests - no cycle, single cycle, multiple cycles, self-loop, hasCycle, getCyclicNodes, findShortestCycle, findCyclesForTask, validateAcyclic, getCycleStatistics)
+- [x] BFS traversal tests (4 tests - isolated node, forward/outgoing, backward/incoming, error handling)
+- [x] DFS path finding tests (3 tests - path exists, no path, start equals end)
+- [x] Additional traversal tests (findAllPaths, findShortestPath, areConnected, getDistance, getConnectedComponents)
+- [x] Cut node tests (6 tests - linear chain, multiple edges, no incoming, no outgoing, error handling, duplicate prevention)
+- [x] Insert node tests (4 tests - basic insertion, error handling for missing nodes/non-existent edges)
+- [x] Move subtree tests (6 tests - basic move, remove from current parents, self-loop prevention, duplicate edge prevention, error handling)
+- [x] Merge tasks tests (9 tests - basic merge, deduplication, error handling, filtering, edge reconnection)
+- [x] Descendants/ancestors tests (8 tests - getDescendants, getAncestors with various scenarios)
+- [x] Subtree validation tests (4 tests - isValidSubtreeMove with valid/invalid scenarios)
+- [x] Total: 84 tests across all graph algorithm modules (all passing)
+**Completed**: 2026-02-16
+**Git Commit**: 4548eb1 (algorithms), ec1b7cd (operations)
 
-#### [ ] Unit Tests - Storage Layer
+#### [x] Unit Tests - Storage Layer
 **Blockers**: Storage Layer Complete
-**Related Files**: octie/tests/unit/core/storage/*.test.ts
+**Related Files**: octie/tests/unit/core/storage/file-store.test.ts, octie/tests/unit/core/storage/atomic-write.test.ts, octie/tests/unit/core/storage/indexer.test.ts
 **C7 MCP Verified**: /vitest
 **Deliverables**:
-- [ ] Atomic write tests
-- [ ] Load/save tests
-- [ ] Backup rotation tests
-- [ ] Index update tests
-- [ ] Index rebuild tests
-- [ ] Path normalization tests
-- [ ] Cross-platform path tests
+- [x] Atomic write tests (27 tests - write file atomically, string/object content, empty content rejection, backup creation, temp file cleanup, cross-device compatibility)
+- [x] Load/save tests (24 tests - constructor, path getters, init, exists, createProject, save/load with tasks/edges/timestamps, delete)
+- [x] Backup rotation tests (backup creation with timestamps, keep configured number of backups, handle rotation errors gracefully)
+- [x] Index update tests (8 tests - add new task, update task indexes on status/priority change, remove task from indexes, handle multiple tasks with same status)
+- [x] Index rebuild tests (3 tests - rebuild all indexes from graph, identify orphan tasks, clear previous indexes on rebuild)
+- [x] Path normalization tests (3 tests - normalize forward slashes, backslashes, mixed slashes)
+- [x] Cross-platform path tests (7 tests - Windows paths, Unix paths, relative paths, base name extraction, temp file generation in same directory)
+- [x] Total: 68 tests across all storage modules (24 file-store + 27 atomic-write + 17 indexer)
+**Completed**: 2026-02-16
+**Git Commit**: (to be committed)
 
 #### [ ] Unit Tests - CLI Commands
 **Blockers**: CLI Commands Complete
