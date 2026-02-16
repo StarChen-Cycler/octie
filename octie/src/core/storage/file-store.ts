@@ -17,7 +17,7 @@
  */
 
 import { join } from 'node:path';
-import type { ProjectFile, ProjectIndexes, ProjectMetadata } from '../../types/index.js';
+import type { ProjectFile, ProjectIndexes, ProjectMetadata, GraphEdge } from '../../types/index.js';
 import { FileOperationError, ValidationError } from '../../types/index.js';
 import { AtomicFileWriter } from './atomic-write.js';
 import { TaskGraphStore } from '../graph/index.js';
@@ -170,6 +170,9 @@ export class TaskStorage {
         graph.addNode(node);
       }
 
+      // Note: Edges are automatically restored when nodes are added
+      // via the TaskNode.edges field, so we don't need to restore them again
+
       return graph;
 
     } catch (error) {
@@ -201,6 +204,18 @@ export class TaskStorage {
       // Convert graph to JSON-serializable format
       const json = graph.toJSON();
 
+      // Convert edges to GraphEdge[] format
+      const edges: GraphEdge[] = [];
+      for (const [fromId, targets] of Object.entries(json.outgoingEdges)) {
+        for (const toId of targets) {
+          edges.push({
+            from: fromId,
+            to: toId,
+            type: 'blocks' as const, // Default edge type for now
+          });
+        }
+      }
+
       // Build project file structure
       const projectFile: ProjectFile = {
         $schema: 'https://octie.dev/schemas/project-v1.json',
@@ -208,6 +223,7 @@ export class TaskStorage {
         format: 'octie-project',
         metadata: json.metadata,
         tasks: json.nodes,
+        edges,
         indexes: await this._buildIndexes(graph),
       };
 
@@ -392,6 +408,7 @@ export class TaskStorage {
       format: 'octie-project',
       metadata,
       tasks: {},
+      edges: [],
       indexes: {
         byStatus: {
           not_started: [],

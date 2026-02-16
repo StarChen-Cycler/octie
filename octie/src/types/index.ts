@@ -70,6 +70,8 @@ export interface C7Verification {
  * Graph edge representing relationships between tasks
  */
 export interface GraphEdge {
+  /** Source task ID */
+  from: string;
   /** Target task ID */
   to: string;
   /** Type of edge relationship */
@@ -163,6 +165,8 @@ export interface ProjectMetadata {
 export interface ProjectFile {
   /** All tasks indexed by ID */
   tasks: Record<string, TaskNode>;
+  /** Graph edges for serialization */
+  edges: GraphEdge[];
   /** Project metadata */
   metadata: ProjectMetadata;
   /** Optional indexes for fast lookup */
