@@ -342,3 +342,51 @@ describe('Graph Operations - Serialization', () => {
     TaskGraphStore.fromInterface(data);
   });
 });
+
+// ============================================================================
+// LOAD TESTING - 10000+ Tasks
+// ============================================================================
+
+const XLARGE_SIZE = 10000;
+
+describe('Load Testing - 10000 Tasks', () => {
+  let xlargeGraph: TaskGraphStore;
+
+  beforeAll(() => {
+    xlargeGraph = createLinearGraph(XLARGE_SIZE);
+  });
+
+  bench('getNode - 10000 tasks', () => {
+    for (let i = 0; i < 100; i++) {
+      const randomIndex = Math.floor(Math.random() * XLARGE_SIZE);
+      xlargeGraph.getNode(`task-${randomIndex}`);
+    }
+  });
+
+  bench('addNode - 10000 tasks (creation)', () => {
+    const graph = new TaskGraphStore();
+    for (let i = 0; i < XLARGE_SIZE; i++) {
+      graph.addNode(createTestTask(`load-task-${i}`));
+    }
+  });
+
+  bench('topologicalSort - 10000 tasks', () => {
+    topologicalSort(xlargeGraph);
+  });
+
+  bench('detectCycle - 10000 tasks (no cycle)', () => {
+    detectCycle(xlargeGraph);
+  });
+
+  bench('bfsTraversal - 10000 tasks', () => {
+    bfsTraversal(xlargeGraph, 'task-0');
+  });
+
+  bench('toJSON - 10000 tasks', () => {
+    xlargeGraph.toJSON();
+  });
+
+  bench('toInterface - 10000 tasks', () => {
+    xlargeGraph.toInterface();
+  });
+});

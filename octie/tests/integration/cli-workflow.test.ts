@@ -776,8 +776,7 @@ describe('CLI workflow integration', () => {
       expect(loadedTask?.related_files.length).toBe(10);
     });
 
-    it.skip('should handle unicode characters in task data', async () => {
-      // TODO: Fix atomic write byte length calculation for Unicode (content.length != Buffer.byteLength)
+    it('should handle unicode characters in task data', async () => {
       await storage.createProject('unicode-test');
 
       const graph = await storage.load();
@@ -941,9 +940,7 @@ describe('CLI workflow integration', () => {
       expect(loadedTask?.blockers).toContain('non-existent-task-id');
     });
 
-    it.skip('should handle special characters in file paths', async () => {
-      // TODO: Fix atomic write byte length calculation for Unicode
-      // The issue is that content.length != Buffer.byteLength for multi-byte chars
+    it('should handle special characters in file paths', async () => {
       // Use a path with spaces and special characters
       const specialPath = join(tmpdir(), `octie-test-special-${Date.now()}`);
       const specialStorage = new TaskStorage({ projectDir: specialPath });

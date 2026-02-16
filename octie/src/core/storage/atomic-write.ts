@@ -104,9 +104,11 @@ export class AtomicFileWriter {
       if (stats.size === 0) {
         throw new FileOperationError('Write produced empty file', filePath);
       }
-      if (stats.size !== content.length) {
+      // Use Buffer.byteLength for proper Unicode handling
+      const expectedBytes = Buffer.byteLength(content, 'utf8');
+      if (stats.size !== expectedBytes) {
         throw new FileOperationError(
-          `Write size mismatch: expected ${content.length} bytes, got ${stats.size} bytes`,
+          `Write size mismatch: expected ${expectedBytes} bytes, got ${stats.size} bytes`,
           filePath
         );
       }

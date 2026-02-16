@@ -361,3 +361,72 @@ describe('Graph Statistics', () => {
     }
   });
 });
+
+// ============================================================================
+// LOAD TESTING - 10000+ Tasks
+// ============================================================================
+
+const XLARGE_SIZE = 10000;
+let xlargeTempDir: string;
+let xlargeStorage: TaskStorage;
+
+describe('Load Testing - 10000 Tasks', () => {
+  beforeAll(async () => {
+    xlargeTempDir = mkdtempSync(join(tmpdir(), 'octie-bench-xlarge-'));
+    xlargeStorage = new TaskStorage({ projectDir: join(xlargeTempDir, 'xlarge') });
+    await xlargeStorage.init();
+    const xlargeGraph = createPopulatedGraph(XLARGE_SIZE);
+    await xlargeStorage.save(xlargeGraph);
+  });
+
+  afterAll(() => {
+    if (existsSync(xlargeTempDir)) {
+      rmSync(xlargeTempDir, { recursive: true, force: true });
+    }
+  });
+
+  bench('TaskNode creation - 10000 tasks', () => {
+    for (let i = 0; i < XLARGE_SIZE; i++) {
+      createTestTask(`load-task-${i}`, i);
+    }
+  });
+
+  bench('createPopulatedGraph - 10000 tasks', () => {
+    createPopulatedGraph(XLARGE_SIZE);
+  });
+
+  bench('load - 10000 tasks', async () => {
+    await xlargeStorage.load();
+  });
+
+  bench('save - 10000 tasks', async () => {
+    const graph = await xlargeStorage.load();
+    if (graph) {
+      await xlargeStorage.save(graph);
+    }
+  });
+
+  bench('getByStatus - 10000 tasks', async () => {
+    const graph = await xlargeStorage.load();
+    if (graph) {
+      const indexer = new IndexManager(graph);
+      indexer.getByStatus('in_progress');
+    }
+  });
+
+  bench('getByPriority - 10000 tasks', async () => {
+    const graph = await xlargeStorage.load();
+    if (graph) {
+      const indexer = new IndexManager(graph);
+      indexer.getByPriority('top');
+    }
+  });
+
+  bench('search - 10000 tasks', async () => {
+    const graph = await xlargeStorage.load();
+    if (graph) {
+      const indexer = new IndexManager(graph);
+      indexer.search(['feature', '5000']);
+    }
+  });
+});
