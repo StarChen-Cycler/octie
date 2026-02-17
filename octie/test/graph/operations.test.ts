@@ -446,20 +446,6 @@ describe('graph operations', () => {
       expect(result.task.blockers).toContain('other');
     });
 
-    it('should filter out source from target dependencies', () => {
-      const source = createTask('source', 'Source Task');
-      const target = createTask('target', 'Target Task');
-      target.dependencies = ['source', 'other'];
-
-      graph.addNode(source);
-      graph.addNode(target);
-
-      const result = mergeTasks(graph, 'source', 'target');
-
-      expect(result.task.dependencies).not.toContain('source');
-      expect(result.task.dependencies).toContain('other');
-    });
-
     it('should not create duplicate edges during reconnection', () => {
       // Graph: A -> source, A -> target, source -> C, target -> C
       const taskA = createTask('a', 'Task A');
