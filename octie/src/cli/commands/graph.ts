@@ -5,7 +5,7 @@
 import { Command } from 'commander';
 import { getProjectPath, loadGraph, success, error } from '../utils/helpers.js';
 import chalk from 'chalk';
-import { detectCycle } from '../../core/graph/cycle.js';
+import { detectCycle, validateReferences } from '../../core/graph/cycle.js';
 import { topologicalSort } from '../../core/graph/sort.js';
 import { getConnectedComponents } from '../../core/graph/traversal.js';
 
@@ -79,15 +79,27 @@ graphCommand
       const projectPath = await getProjectPath(globalOpts.project);
       const graph = await loadGraph(projectPath);
 
+      // Check for cycles
       const cycleResult = detectCycle(graph);
 
       if (cycleResult.hasCycle) {
         console.error(chalk.red(`Graph validation failed: ${cycleResult.cycles.length} cycle(s) detected`));
         process.exit(1);
-      } else {
-        success('Graph validation passed: No cycles detected');
-        process.exit(0);
       }
+
+      // Check for missing blocker references
+      const refResult = validateReferences(graph);
+
+      if (refResult.hasInvalidReferences) {
+        console.error(chalk.red(`Graph validation failed: ${refResult.invalidReferences.length} missing blocker reference(s)`));
+        for (const ref of refResult.invalidReferences) {
+          console.error(chalk.red(`  Task ${ref.taskId.substring(0, 8)} references non-existent blocker: ${ref.invalidBlockerId.substring(0, 8)}`));
+        }
+        process.exit(1);
+      }
+
+      success('Graph validation passed: No cycles detected, all blocker references valid');
+      process.exit(0);
     } catch (err) {
       if (err instanceof Error) {
         error(err.message);

@@ -5,7 +5,7 @@
 import { Command } from 'commander';
 import { getProjectPath, loadGraph, saveGraph, success, error, info, warning } from '../utils/helpers.js';
 import chalk from 'chalk';
-import { cutNode } from '../../core/graph/operations.js';
+import { cutNode, cascadeDelete } from '../../core/graph/operations.js';
 
 /**
  * Create the delete command
@@ -81,9 +81,13 @@ export const deleteCommand = new Command('delete')
         cutNode(graph, fullId);
       } else if (options.cascade) {
         info('Cascading deletion to dependents...');
-        // TODO: Implement cascade deletion
-        error('Cascade deletion not yet implemented');
-        process.exit(1);
+        const deletedIds = cascadeDelete(graph, fullId);
+
+        // Save
+        await saveGraph(projectPath, graph);
+
+        success(`Deleted ${deletedIds.length} task(s): ${deletedIds.map(id => id.substring(0, 8)).join(', ')}`);
+        process.exit(0);
       } else {
         // Simple removal
         graph.removeNode(fullId);

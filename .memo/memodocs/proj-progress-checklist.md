@@ -66,6 +66,65 @@
 **Completed**: 2026-02-16
 **Git Commit**: 5fc837f
 
+#### [x] Fix Delete Reconnect Blockers Update
+**Type**: Bug Fix
+**Description**: When deleting a middle task with --reconnect, the source task's edges array is updated but the target task's blockers array is NOT updated to reference the new blocker.
+**Blockers**: None
+**Related Files**: octie/src/core/graph/operations.ts, octie/src/cli/commands/delete.ts
+**C7 MCP Verified**: /microsoft/typescript (referential integrity patterns)
+**Deliverables**:
+- [x] cutNode() updates target's blockers array when reconnecting edges
+- [x] Deleted node ID removed from all targets' blockers arrays
+- [x] After delete --reconnect A→B→C, C.blockers contains A (not deleted B)
+- [ ] Tests: Unit test for reconnect with blockers verification (pending)
+**Discovery**: Edge case testing 2026-02-18
+**Completed**: 2026-02-18
+
+#### [x] Add Missing Blocker Reference Validation
+**Type**: Bug Fix
+**Description**: octie graph validate only checks for cycles - it does NOT validate that blocker references point to existing tasks. A task can reference a non-existent UUID without any validation error.
+**Blockers**: None
+**Related Files**: octie/src/core/graph/cycle.ts, octie/src/cli/commands/graph.ts
+**C7 MCP Verified**: N/A
+**Deliverables**:
+- [x] New validateReferences() function detects missing blocker refs
+- [x] graph validate reports tasks with invalid blocker references
+- [x] Error message identifies both task ID and invalid blocker ID
+- [x] Exit code 1 on validation failure with missing refs
+- [ ] Tests: Unit test for missing reference detection (pending)
+**Discovery**: Edge case testing 2026-02-18
+**Completed**: 2026-02-18
+
+#### [x] Detect Self-Referencing Blockers as Cycles
+**Type**: Bug Fix
+**Description**: A task that blocks itself (self-loop) is NOT detected as a cycle by detectCycle(). Self-loops are 1-node cycles that should be caught.
+**Blockers**: None
+**Related Files**: octie/src/core/graph/cycle.ts
+**C7 MCP Verified**: N/A
+**Deliverables**:
+- [x] detectCycle() checks for self-loops before DFS traversal
+- [x] Self-loop reported as cycle with path [A, A]
+- [x] octie graph cycles reports self-loops
+- [x] octie graph validate fails on self-loops
+- [ ] Tests: Unit test for self-loop detection (pending)
+**Discovery**: Edge case testing 2026-02-18
+**Completed**: 2026-02-18
+
+#### [x] Implement Cascade Delete Feature
+**Type**: Feature
+**Description**: The --cascade flag is documented in CLI help but returns "not yet implemented" when used. Should delete all dependent tasks recursively.
+**Blockers**: None
+**Related Files**: octie/src/cli/commands/delete.ts, octie/src/core/graph/operations.ts
+**C7 MCP Verified**: N/A
+**Deliverables**:
+- [x] New cascadeDelete() function in operations.ts
+- [x] Uses getDescendants() to find all dependent tasks
+- [x] Deletes in reverse topological order (leaves first)
+- [x] Confirmation shows count of tasks to be deleted
+- [ ] Tests: Unit test for cascade delete with chain A→B→C (pending)
+**Discovery**: Edge case testing 2026-02-18
+**Completed**: 2026-02-18
+
 ---
 
 ### Second Priority (After Top Completes)

@@ -25,7 +25,8 @@ import { TaskNotFoundError, ValidationError } from '../../types/index.js';
  * 1. Get all incoming edges to the node
  * 2. Get all outgoing edges from the node
  * 3. For each incoming source, connect it to all outgoing targets
- * 4. Remove the node from the graph
+ * 4. Update target blockers to reference new sources instead of deleted node
+ * 5. Remove the node from the graph
  *
  * Time Complexity: O(k * m) where k = incoming edges, m = outgoing edges
  *
@@ -38,6 +39,7 @@ import { TaskNotFoundError, ValidationError } from '../../types/index.js';
  * // Graph: A -> B -> C
  * cutNode(graph, 'B');
  * // Result: A -> C (B removed, A now points directly to C)
+ * // Also: C.blockers updated from [B] to [A]
  * ```
  */
 export function cutNode(graph: TaskGraphStore, nodeId: string): void {
@@ -55,7 +57,20 @@ export function cutNode(graph: TaskGraphStore, nodeId: string): void {
       // Only add edge if it doesn't already exist
       if (!graph.hasEdge(sourceId, targetId)) {
         graph.addEdge(sourceId, targetId);
+        // Update target's blockers array to include the new source
+        const targetNode = graph.getNode(targetId);
+        if (targetNode && !targetNode.blockers.includes(sourceId)) {
+          targetNode.addBlocker(sourceId);
+        }
       }
+    }
+  }
+
+  // Remove deleted nodeId from all targets' blockers arrays
+  for (const targetId of outgoingTargets) {
+    const targetNode = graph.getNode(targetId);
+    if (targetNode && targetNode.blockers.includes(nodeId)) {
+      targetNode.removeBlocker(nodeId);
     }
   }
 
@@ -497,4 +512,83 @@ export function isValidSubtreeMove(
   // If so, adding edge subtreeRootId -> newParentId would create a cycle
   const descendants = getDescendants(graph, subtreeRootId);
   return !descendants.has(newParentId);
+}
+
+/**
+ * Cascade delete a node and all its dependent tasks
+ *
+ * Deletes the specified node and all tasks that depend on it (directly or transitively).
+ * Tasks are deleted in reverse order (leaves first) to maintain graph integrity.
+ *
+ * Before:
+ *   A -> B -> C -> D
+ * After cascadeDelete(graph, 'B'):
+ *   A (B, C, D removed)
+ *
+ * Algorithm:
+ * 1. Get all descendants of the node (tasks that depend on it transitively)
+ * 2. Iteratively find and delete leaf nodes (no outgoing edges) first
+ * 3. Continue until all descendants are deleted
+ *
+ * Time Complexity: O(k * m) where k = descendants, m = average edges
+ *
+ * @param graph - Task graph store
+ * @param nodeId - Task ID to cascade delete
+ * @returns Array of deleted task IDs (in order of deletion)
+ * @throws {TaskNotFoundError} If node not found
+ *
+ * @example
+ * ```ts
+ * // Graph: A -> B -> C -> D
+ * const deleted = cascadeDelete(graph, 'B');
+ * // Returns: ['D', 'C', 'B'] (deleted in this order)
+ * // Result: Only A remains
+ * ```
+ */
+export function cascadeDelete(graph: TaskGraphStore, nodeId: string): string[] {
+  if (!graph.hasNode(nodeId)) {
+    throw new TaskNotFoundError(nodeId);
+  }
+
+  const deletedIds: string[] = [];
+
+  // Get all tasks that depend on this node (directly or transitively)
+  const descendants = getDescendants(graph, nodeId);
+
+  // Remove the original node from descendants set for processing
+  // We'll delete it last (or as part of the iterative process)
+  const toDelete = new Set(descendants);
+
+  // Iteratively delete leaf nodes (nodes with no outgoing edges in remaining set)
+  while (toDelete.size > 0) {
+    let deletedThisRound = false;
+
+    for (const id of toDelete) {
+      // Check if this node is a leaf (no outgoing edges to other nodes in toDelete)
+      const outgoing = graph.getOutgoingEdges(id);
+      const hasDependentsInSet = outgoing.some(depId => toDelete.has(depId));
+
+      if (!hasDependentsInSet) {
+        // This is a leaf in our deletion set, safe to delete
+        graph.removeNode(id);
+        deletedIds.push(id);
+        toDelete.delete(id);
+        deletedThisRound = true;
+        break; // Restart loop after each deletion
+      }
+    }
+
+    // Safety check to prevent infinite loop
+    if (!deletedThisRound && toDelete.size > 0) {
+      // This shouldn't happen in a valid DAG, but handle gracefully
+      // Force delete remaining nodes
+      for (const id of toDelete) {
+        graph.removeNode(id);
+        deletedIds.push(id);
+      }
+      break;
+    }
+  }
+
+  return deletedIds;
 }

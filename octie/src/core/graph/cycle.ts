@@ -30,7 +30,8 @@ const enum VisitState {
  * 2. For each WHITE node, start DFS traversal
  * 3. Mark node as GRAY when entering, BLACK when exiting
  * 4. If we encounter a GRAY node during traversal, we found a cycle
- * 5. Reconstruct cycle path using parent pointers
+ * 5. Check for self-loops (task blocking itself) before DFS
+ * 6. Reconstruct cycle path using parent pointers
  *
  * Time Complexity: O(V + E)
  * Space Complexity: O(V) for recursion stack and state tracking
@@ -68,6 +69,13 @@ export function detectCycle(graph: TaskGraphStore): CycleDetectionResult {
   function dfs(nodeId: string): boolean {
     // Mark current node as being visited
     color.set(nodeId, VisitState.GRAY);
+
+    // Check for self-loop (task blocks itself)
+    const task = graph.getNode(nodeId);
+    if (task && task.blockers.includes(nodeId)) {
+      cycles.push([nodeId, nodeId]); // Self-loop: A -> A
+      // Continue to find more cycles, don't return yet
+    }
 
     // Visit all neighbors
     const neighbors = graph.getOutgoingEdges(nodeId);
@@ -228,5 +236,62 @@ export function getCycleStatistics(graph: TaskGraphStore): {
     nodesInCycles: cyclicNodes.size,
     totalNodes: graph.size,
     cyclesByLength,
+  };
+}
+
+/**
+ * Result of reference validation
+ */
+export interface ReferenceValidationResult {
+  /** True if any invalid references were found */
+  hasInvalidReferences: boolean;
+  /** List of invalid references found */
+  invalidReferences: Array<{
+    /** Task ID that has the invalid reference */
+    taskId: string;
+    /** Blocker ID that doesn't exist */
+    invalidBlockerId: string;
+  }>;
+}
+
+/**
+ * Validate that all blocker references point to existing tasks
+ *
+ * Checks each task's blockers array to ensure all referenced tasks exist.
+ * This catches orphaned references that could occur from:
+ * - Manual JSON editing
+ * - Bugs in edge manipulation
+ * - Incomplete graph operations
+ *
+ * @param graph - Task graph store
+ * @returns Validation result with any invalid references found
+ *
+ * @example
+ * ```ts
+ * const result = validateReferences(graph);
+ * if (result.hasInvalidReferences) {
+ *   for (const ref of result.invalidReferences) {
+ *     console.error(`Task ${ref.taskId} has missing blocker: ${ref.invalidBlockerId}`);
+ *   }
+ * }
+ * ```
+ */
+export function validateReferences(graph: TaskGraphStore): ReferenceValidationResult {
+  const invalidReferences: ReferenceValidationResult['invalidReferences'] = [];
+
+  for (const taskId of graph.getAllTaskIds()) {
+    const task = graph.getNode(taskId);
+    if (task) {
+      for (const blockerId of task.blockers) {
+        if (!graph.hasNode(blockerId)) {
+          invalidReferences.push({ taskId, invalidBlockerId: blockerId });
+        }
+      }
+    }
+  }
+
+  return {
+    hasInvalidReferences: invalidReferences.length > 0,
+    invalidReferences,
   };
 }
