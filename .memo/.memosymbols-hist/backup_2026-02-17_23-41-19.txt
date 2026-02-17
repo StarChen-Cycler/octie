@@ -1,6 +1,6 @@
 Memo-dec Symbols (ultra compact - 100 per line):
 --------------------------------------------------------------------------------
-Total symbols: 3399
+Total symbols: 3385
 
 octie\html\index.html
 2:tag:html 2:att:lang="en" 3:tag:head 4:tag:meta 4:att:charset="UTF-8" 5:tag:link 5:att:rel="icon" 5:att:href="./favicon.svg" 5:att:type="image/svg+xml" 6:tag:meta 6:att:name="viewport" 6:att:content="width=device-width, initial-scale=1.0" 7:tag:title 7:tag:title 8:tag:link 8:att:rel="preconnect" 8:att:href="https://fonts.googleapis.com" 9:tag:link 9:att:rel="preconnect" 9:att:href="https://fonts.gstatic.com" 9:att:crossorigin 10:tag:link 10:att:href="https://fonts.googleapis.com/css2?family=Readex+Pro:wght@300;400&display=swap" 10:att:rel="stylesheet" 11:tag:script 18:tag:script 19:tag:script 19:tag:script 20:tag:script 20:tag:script 20:att:type="module" 20:att:crossorigin 20:att:src="./assets/index-9agQl9q3.js" 21:tag:link 21:att:rel="stylesheet" 21:att:crossorigin 21:att:href="./assets/index-fUmMsp0O.css" 22:tag:head 23:tag:body 24:tag:div 24:tag:div 24:att:id="app" 25:tag:body 26:tag:html
@@ -63,10 +63,10 @@ octie\src\cli\output\json.ts
 11:var:OCTIE_SCHEMA 17:fun:formatTaskJSON 25:fun:formatProjectJSON 26:var:projectData 29:var:dataWithSchema
 
 octie\src\cli\output\markdown.ts
-13:fun:formatTaskMarkdown 14:var:lines 17:var:checkbox 18:var:statusIndicator 19:var:priorityIndicator 35:var:scCheckbox 36:var:idDisplay 49:var:dCheckbox 50:var:fileRef 124:fun:formatProjectMarkdown 125:var:lines 127:var:metadata 128:var:taskCount 141:var:tasks 142:var:rootTasks 148:var:byStatus 157:var:statusArray 165:var:statusLabel 168:var:task 170:var:checkbox 185:var:task 187:var:checkbox 203:var:sortedTasks
+13:fun:formatTaskMarkdown 14:var:lines 17:var:checkbox 18:var:statusIndicator 19:var:priorityIndicator 35:var:scCheckbox 48:var:dCheckbox 49:var:fileRef 123:fun:formatProjectMarkdown 124:var:lines 126:var:metadata 127:var:taskCount 140:var:tasks 141:var:rootTasks 147:var:byStatus 156:var:statusArray 164:var:statusLabel 167:var:task 169:var:checkbox 184:var:task 186:var:checkbox 202:var:sortedTasks
 
 octie\src\cli\output\table.ts
-24:fun:formatTasksTable 36:var:colWidths 37:var:head 41:var:table 49:var:id 50:var:status 51:var:priority 52:var:title 78:var:output 81:var:completed 82:var:inProgress 83:var:pending 84:var:blocked 103:fun:formatTaskDetailTable 104:var:lines 112:var:infoTable 140:var:symbol 141:var:idDisplay 151:var:symbol 152:var:fileRef 153:var:idDisplay
+24:fun:formatTasksTable 36:var:colWidths 37:var:head 41:var:table 49:var:id 50:var:status 51:var:priority 52:var:title 78:var:output 81:var:completed 82:var:inProgress 83:var:pending 84:var:blocked 103:fun:formatTaskDetailTable 104:var:lines 112:var:infoTable 140:var:symbol 150:var:symbol 151:var:fileRef
 
 octie\src\cli\utils\helpers.ts
 14:fun:getProjectPath 20:var:detectedPath 33:fun:loadGraph 34:var:storage 46:fun:saveGraph 47:var:storage 54:fun:success 61:fun:error 68:fun:warning 75:fun:info 82:fun:verbose 91:fun:createSpinner 93:var:dots 94:var:interval 102:var:dotStr 130:fun:parseList 145:fun:parseMultipleIds 150:var:quotedCsvMatch 153:var:quotedValues 155:var:ids 162:var:ids 173:fun:isValidUUID 174:var:uuidRegex 182:fun:formatTaskId 189:fun:formatStatus 190:var:statusColors 198:var:colorFn 205:fun:formatPriority 206:var:priorityColors 212:var:colorFn 219:fun:truncate 228:fun:formatError 231:var:lines 254:var:lines 274:fun:getErrorSuggestion 282:fun:exitWithError 305:fun:withRetry 310:var:lastError 311:var:currentDelay 313:var:attempt 338:fun:attemptRecovery 339:var:storage 343:var:backups
@@ -153,7 +153,7 @@ octie\tests\unit\cli\commands\find.test.ts
 16:var:tempDir 17:var:cliPath 18:var:storage 21:var:authTaskId 22:var:apiTaskId 23:var:dbTaskId 24:var:orphanTaskId 36:var:graph 39:var:authTask 61:var:apiTask 79:var:dbTask 99:var:orphanTask 127:var:output 132:var:tasks 138:var:output 143:var:tasks 149:var:output 154:var:tasks 161:var:output 166:var:tasks 172:var:output 177:var:tasks 183:var:output 188:var:tasks 194:var:output 199:var:tasks 206:var:output 211:var:tasks 217:var:output 222:var:tasks 230:var:output 235:var:tasks 241:var:output 246:var:tasks 254:var:output 259:var:tasks 271:var:output 276:var:tasks 284:var:output 289:var:tasks 300:var:output 305:var:tasks 311:var:output 316:var:tasks 324:var:output 329:var:tasks 335:var:output 340:var:tasks 347:var:output 352:var:tasks
 
 octie\tests\unit\cli\commands\get.test.ts
-20:var:tempDir 21:var:cliPath 22:var:storage 23:var:testTaskId 24:var:successCriteriaIds 25:var:deliverableIds 37:var:graph 42:var:task 80:var:output 92:var:output 102:var:output 112:var:output 122:var:output 133:var:output 138:var:data 146:var:output 157:var:output 168:var:fakeId 190:var:output 201:var:output 213:var:output 225:var:output 237:var:output
+20:var:tempDir 21:var:cliPath 22:var:storage 23:var:testTaskId 35:var:graph 38:var:task 76:var:output 88:var:output 98:var:output 108:var:output 118:var:output 129:var:output 134:var:data 142:var:output 153:var:output 164:var:fakeId 186:var:output
 
 octie\tests\unit\cli\commands\graph.test.ts
 23:var:tempDir 24:var:cliPath 25:var:storage 37:var:graph 39:var:task1 56:var:task2 73:var:task3 111:var:output 121:var:graph 122:var:taskIds 146:var:output 155:var:graph 156:var:taskIds 181:var:output 194:var:output 206:var:output 216:var:graph 217:var:taskIds 222:var:output 234:var:output 248:var:output
@@ -166,7 +166,7 @@ octie\tests\unit\cli\commands\init.test.ts
 22:var:tempDir 23:var:cliPath 43:var:output 48:var:octieDir 52:var:octieContents 65:var:projectJsonPath 68:var:projectContent 81:var:configJsonPath 118:var:err 127:var:customDir 130:var:output 148:var:projectName 150:var:output 157:var:projectJsonPath 158:var:projectContent 168:var:projectJsonPath 169:var:projectContent 176:var:output 187:var:output 232:var:err 246:var:storage 249:var:graph 258:var:windowsStylePath 261:var:output 274:var:pathWithSpaces 277:var:output
 
 octie\tests\unit\cli\commands\list.test.ts
-21:var:tempDir 22:var:cliPath 23:var:storage 24:var:taskIds 25:var:successCriteriaIds 26:var:deliverableIds 38:var:graph 43:var:task1 60:var:task2 77:var:task3 112:var:output 123:var:output 134:var:output 145:var:output 155:var:output 167:var:output 178:var:output 190:var:output 195:var:data 201:var:output 211:var:output 224:var:graph 225:var:allTasks 226:var:taskIds 237:var:output 249:var:output 262:var:emptyDir 263:var:emptyStorage 266:var:output 281:var:output 295:var:output 306:var:output
+21:var:tempDir 22:var:cliPath 23:var:storage 35:var:graph 37:var:task1 54:var:task2 71:var:task3 106:var:output 117:var:output 128:var:output 139:var:output 149:var:output 161:var:output 172:var:output 184:var:output 189:var:data 195:var:output 205:var:output 218:var:graph 219:var:allTasks 220:var:taskIds 231:var:output 243:var:output 256:var:emptyDir 257:var:emptyStorage 260:var:output 275:var:output
 
 octie\tests\unit\cli\commands\merge.test.ts
 21:var:tempDir 22:var:cliPath 23:var:storage 24:var:sourceTaskId 25:var:targetTaskId 37:var:graph 40:var:criterion1Id 41:var:criterion2Id 42:var:deliverable1Id 43:var:deliverable2Id 45:var:sourceTask 66:var:targetTask 104:var:output 111:var:graph 126:var:graph 127:var:task 138:var:graph 139:var:task 150:var:graph 151:var:task 164:var:graph 165:var:task 174:var:output 195:var:fakeId 206:var:fakeId 219:var:output

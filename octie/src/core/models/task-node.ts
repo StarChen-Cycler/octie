@@ -473,7 +473,8 @@ export class TaskNode implements TaskNodeType {
   success_criteria: SuccessCriterion[];
   deliverables: Deliverable[];
   blockers: string[];
-  dependencies: string[];
+  /** Explanatory text describing WHY this task depends on its blockers */
+  dependencies: string;
   sub_items: string[];
   related_files: string[];
   notes: string;
@@ -524,7 +525,8 @@ export class TaskNode implements TaskNodeType {
     success_criteria?: SuccessCriterion[];
     deliverables?: Deliverable[];
     blockers?: string[];
-    dependencies?: string[];
+    /** Explanatory text describing WHY this task depends on its blockers */
+    dependencies?: string;
     sub_items?: string[];
     related_files?: string[];
     notes?: string;
@@ -619,7 +621,7 @@ export class TaskNode implements TaskNodeType {
     this.success_criteria = [...(data.success_criteria || [])];
     this.deliverables = [...(data.deliverables || [])];
     this.blockers = [...(data.blockers || [])];
-    this.dependencies = [...(data.dependencies || [])];
+    this.dependencies = data.dependencies || '';
     this.sub_items = [...(data.sub_items || [])];
     this.related_files = [...(data.related_files || [])];
     this.notes = (data.notes || '').trim();
@@ -819,26 +821,21 @@ export class TaskNode implements TaskNodeType {
   }
 
   /**
-   * Add a dependency task ID
-   * @param dependencyId - Task ID this task depends on
+   * Set the dependencies explanation text (twin to blockers)
+   * @param explanation - Explanatory text describing WHY this task depends on its blockers
    */
-  addDependency(dependencyId: string): void {
-    if (!this.dependencies.includes(dependencyId)) {
-      this.dependencies.push(dependencyId);
-      this._touch();
-    }
+  setDependencies(explanation: string): void {
+    this.dependencies = explanation.trim();
+    this._touch();
   }
 
   /**
-   * Remove a dependency task ID
-   * @param dependencyId - Task ID to remove from dependencies
+   * Clear the dependencies explanation text
+   * Typically called when removing the last blocker
    */
-  removeDependency(dependencyId: string): void {
-    const index = this.dependencies.indexOf(dependencyId);
-    if (index > -1) {
-      this.dependencies.splice(index, 1);
-      this._touch();
-    }
+  clearDependencies(): void {
+    this.dependencies = '';
+    this._touch();
   }
 
   /**

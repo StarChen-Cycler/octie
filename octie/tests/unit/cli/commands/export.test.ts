@@ -50,7 +50,7 @@ describe('export command', () => {
         { id: uuidv4(), text: 'login.test.ts', completed: false },
       ],
       blockers: [],
-      dependencies: [],
+      dependencies: '',
       related_files: ['src/auth/'],
       notes: 'Use bcrypt',
       c7_verified: [],

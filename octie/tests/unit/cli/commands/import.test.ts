@@ -57,7 +57,7 @@ describe('import command', () => {
             { id: deliverableId, text: 'imported.ts', completed: false },
           ],
           blockers: [],
-          dependencies: [],
+          dependencies: '',
           related_files: [],
           notes: 'Imported task notes',
           c7_verified: [],
@@ -173,7 +173,7 @@ describe('import command', () => {
         success_criteria: [{ id: uuidv4(), text: 'Task is created and saved', completed: true }],
         deliverables: [{ id: uuidv4(), text: 'existing.ts', completed: true }],
         blockers: [],
-        dependencies: [],
+        dependencies: '',
         related_files: [],
         notes: '',
         c7_verified: [],
@@ -207,7 +207,7 @@ describe('import command', () => {
         success_criteria: [{ id: uuidv4(), text: 'Task is created and saved', completed: true }],
         deliverables: [{ id: uuidv4(), text: 'existing.ts', completed: true }],
         blockers: [],
-        dependencies: [],
+        dependencies: '',
         related_files: [],
         notes: '',
         c7_verified: [],
@@ -526,7 +526,7 @@ Second task that is already completed and has sufficient description length for 
         success_criteria: [{ id: uuidv4(), text: 'Criterion 1', completed: false }],
         deliverables: [{ id: uuidv4(), text: 'src/feature.ts', completed: false }],
         blockers: [],
-        dependencies: [],
+        dependencies: '',
       });
       graph.addNode(existingTask);
       await storage.save(graph);
@@ -647,7 +647,7 @@ Task with explicit format specification to test that the --format md flag works 
           { id: del2, text: 'Second deliverable pending', completed: false, file_path: 'src/pending.ts' },
         ],
         blockers: [],
-        dependencies: [],
+        dependencies: '',
         related_files: ['src/feature/'],
         notes: 'Test notes for roundtrip',
         c7_verified: [],
@@ -718,7 +718,7 @@ Task with explicit format specification to test that the --format md flag works 
           { id: del1, text: 'All deliverables done', completed: true },
         ],
         blockers: [],
-        dependencies: [],
+        dependencies: '',
         related_files: [],
         notes: '',
         c7_verified: [],
@@ -783,7 +783,7 @@ Task with explicit format specification to test that the --format md flag works 
           { id: del1, text: 'src/notification.ts', completed: false, file_path: 'src/notification.ts' },
         ],
         blockers: [],
-        dependencies: [],
+        dependencies: '',
         related_files: [],
         notes: '',
         c7_verified: [],
@@ -842,7 +842,7 @@ Task with explicit format specification to test that the --format md flag works 
         success_criteria: [{ id: uuidv4(), text: 'Feature A implementation complete', completed: true }],
         deliverables: [{ id: uuidv4(), text: 'src/feature-a.ts', completed: true, file_path: 'src/feature-a.ts' }],
         blockers: [],
-        dependencies: [],
+        dependencies: '',
       });
 
       // Task 2: Partially complete
@@ -860,7 +860,7 @@ Task with explicit format specification to test that the --format md flag works 
           { id: uuidv4(), text: 'src/feature-b-edges.ts', completed: false, file_path: 'src/feature-b-edges.ts' },
         ],
         blockers: [],
-        dependencies: [],
+        dependencies: '',
       });
 
       // Task 3: Not started
@@ -872,7 +872,7 @@ Task with explicit format specification to test that the --format md flag works 
         success_criteria: [{ id: uuidv4(), text: 'Feature C not started', completed: false }],
         deliverables: [{ id: uuidv4(), text: 'src/feature-c.ts', completed: false, file_path: 'src/feature-c.ts' }],
         blockers: [],
-        dependencies: [],
+        dependencies: '',
       });
 
       graph.addNode(task1);

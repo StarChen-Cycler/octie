@@ -307,14 +307,6 @@ export function mergeTasks(
     target.removeBlocker(sourceId);
   }
 
-  // Remove source from target's dependencies (source is being merged/removed)
-  if (target.dependencies.includes(sourceId)) {
-    const idx = target.dependencies.indexOf(sourceId);
-    if (idx !== -1) {
-      target.dependencies.splice(idx, 1);
-    }
-  }
-
   // Merge blockers (avoiding duplicates and self-references)
   for (const blockerId of source.blockers) {
     if (blockerId !== targetId && !target.blockers.includes(blockerId)) {
@@ -322,10 +314,12 @@ export function mergeTasks(
     }
   }
 
-  // Merge dependencies (avoiding duplicates and self-references)
-  for (const depId of source.dependencies) {
-    if (depId !== targetId && !target.dependencies.includes(depId)) {
-      target.addDependency(depId);
+  // Merge dependencies explanation text (combine both)
+  if (source.dependencies) {
+    if (target.dependencies) {
+      target.setDependencies(`${target.dependencies}\n${source.dependencies}`);
+    } else {
+      target.setDependencies(source.dependencies);
     }
   }
 

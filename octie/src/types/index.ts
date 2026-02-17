@@ -97,10 +97,10 @@ export interface TaskData {
   success_criteria: SuccessCriterion[];
   /** Array of specific expected outputs (min 1, max 5) */
   deliverables: Deliverable[];
-  /** Task IDs that must complete before this task can start */
+  /** Task IDs that must complete before this task can start (creates graph edges) */
   blockers: string[];
-  /** Task IDs this depends on (informational, soft dependencies) */
-  dependencies: string[];
+  /** Explanatory text describing WHY this task depends on its blockers (twin to blockers) */
+  dependencies: string;
   /** Child task IDs (sub-items) */
   sub_items: string[];
   /** File paths relevant to this task (relative to project root) */

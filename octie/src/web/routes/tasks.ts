@@ -43,7 +43,7 @@ const TaskCreateSchema = z.object({
   priority: z.enum(['top', 'second', 'later']).optional().default('second'),
   status: z.enum(['not_started', 'pending', 'in_progress', 'completed', 'blocked']).optional().default('not_started'),
   blockers: z.array(z.string().uuid()).default([]),
-  dependencies: z.array(z.string().uuid()).default([]),
+  dependencies: z.string().default(''), // Explanatory text (twin to blockers)
   relatedFiles: z.array(z.string()).default([]),
   notes: z.string().default(''),
   c7Verified: z.array(z.object({
@@ -73,7 +73,7 @@ const TaskUpdateSchema = z.object({
   completeDeliverable: z.string().uuid().optional(),
   block: z.string().uuid().optional(),
   unblock: z.string().uuid().optional(),
-  addDependency: z.string().uuid().optional(),
+  dependencyExplanation: z.string().optional(), // Set/update dependencies text
   notes: z.string().optional(),
 });
 
@@ -276,16 +276,20 @@ export function registerTaskRoutes(
         file_path: d.file_path,
       }));
 
-      // Validate blockers and dependencies exist
+      // Twin validation: blockers and dependencies must be provided together
+      if (data.blockers.length > 0 && !data.dependencies) {
+        return sendError(res, 'TWIN_VALIDATION_ERROR',
+          'When blockers are provided, dependencies explanation text is also required', 400);
+      }
+      if (data.dependencies && data.blockers.length === 0) {
+        return sendError(res, 'TWIN_VALIDATION_ERROR',
+          'When dependencies explanation is provided, blockers are also required', 400);
+      }
+
+      // Validate blockers exist
       for (const blockerId of data.blockers) {
         if (!graph.hasNode(blockerId)) {
           return sendError(res, 'BLOCKER_NOT_FOUND', `Blocker task '${blockerId}' not found`, 400);
-        }
-      }
-
-      for (const depId of data.dependencies) {
-        if (!graph.hasNode(depId)) {
-          return sendError(res, 'DEPENDENCY_NOT_FOUND', `Dependency task '${depId}' not found`, 400);
         }
       }
 
@@ -399,18 +403,32 @@ export function registerTaskRoutes(
         if (!graph.hasNode(data.block)) {
           return sendError(res, 'BLOCKER_NOT_FOUND', `Blocker task '${data.block}' not found`, 400);
         }
+        // Twin validation: block requires dependencyExplanation
+        if (!data.dependencyExplanation) {
+          return sendError(res, 'TWIN_VALIDATION_ERROR',
+            'When adding a blocker, dependencyExplanation is required', 400);
+        }
         task.addBlocker(data.block);
         graph.addEdge(data.block, fullId);
+        // Update dependencies explanation
+        const existingDeps = task.dependencies || '';
+        task.setDependencies(existingDeps ? `${existingDeps}\n${data.dependencyExplanation}` : data.dependencyExplanation);
       }
       if (data.unblock !== undefined) {
         task.removeBlocker(data.unblock);
         graph.removeEdge(data.unblock, fullId);
-      }
-      if (data.addDependency !== undefined) {
-        if (!graph.hasNode(data.addDependency)) {
-          return sendError(res, 'DEPENDENCY_NOT_FOUND', `Dependency task '${data.addDependency}' not found`, 400);
+        // Auto-clear dependencies if last blocker removed
+        if (task.blockers.length === 0) {
+          task.clearDependencies();
         }
-        task.addDependency(data.addDependency);
+      }
+      // Update dependencies explanation (standalone)
+      if (data.dependencyExplanation !== undefined && data.block === undefined) {
+        if (task.blockers.length === 0) {
+          return sendError(res, 'TWIN_VALIDATION_ERROR',
+            'Cannot set dependencies explanation without blockers', 400);
+        }
+        task.setDependencies(data.dependencyExplanation);
       }
       if (data.notes !== undefined) {
         task.appendNotes(data.notes);

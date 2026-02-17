@@ -33,7 +33,8 @@ export function formatTaskMarkdown(task: TaskNode): string {
     lines.push('### Success Criteria');
     for (const sc of task.success_criteria) {
       const scCheckbox = sc.completed ? '[x]' : '[ ]';
-      const idDisplay = `\`${sc.id.substring(0, 8)}\``;
+      // Export FULL UUID for import preservation (decoupled from GET display which uses short IDs)
+      const idDisplay = `\`${sc.id}\``;
       lines.push(`- ${scCheckbox} ${sc.text} ${idDisplay}`);
       if (sc.completed && sc.completed_at) {
         lines.push(`  - Completed: ${sc.completed_at}`);
@@ -48,7 +49,9 @@ export function formatTaskMarkdown(task: TaskNode): string {
     for (const d of task.deliverables) {
       const dCheckbox = d.completed ? '[x]' : '[ ]';
       const fileRef = d.file_path ? ` → \`${d.file_path}\`` : '';
-      lines.push(`- ${dCheckbox} ${d.text}${fileRef}`);
+      // Export FULL UUID for import preservation (decoupled from GET display which uses short IDs)
+      const idDisplay = `\`${d.id}\``;
+      lines.push(`- ${dCheckbox} ${d.text}${fileRef} ${idDisplay}`);
     }
     lines.push('');
   }

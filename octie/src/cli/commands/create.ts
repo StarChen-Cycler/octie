@@ -89,7 +89,7 @@ export const createCommand = new Command('create')
   )
   .option('-p, --priority <level>', 'Task priority: top | second | later', 'second')
   .option('-b, --blockers <ids>', 'Comma-separated task IDs that block this task (creates graph edges for execution order)')
-  .option('-d, --dependencies <ids>', 'Comma-separated task IDs this depends on (informational notes, NOT graph edges)')
+  .option('-d, --dependencies <text>', 'Explanatory text: WHY this task depends on its blockers (required if --blockers is set)')
   .addOption(
     new Option(
       '-f, --related-files <paths>',
@@ -176,6 +176,24 @@ export const createCommand = new Command('create')
         process.exit(1);
       }
 
+      // Twin validation: blockers and dependencies must be provided together
+      const blockers = parseList(options.blockers || '');
+      const dependenciesText = (options.dependencies || '').trim();
+
+      if (blockers.length > 0 && !dependenciesText) {
+        error('When --blockers is provided, --dependencies explanation text is also required.');
+        info('The twin feature requires both blockers (task IDs) and dependencies (explanation).');
+        info('Example: --blockers abc123 --dependencies "Needs the API spec from abc123"');
+        process.exit(1);
+      }
+
+      if (dependenciesText && blockers.length === 0) {
+        error('When --dependencies is provided, --blockers task IDs are also required.');
+        info('The twin feature requires both blockers (task IDs) and dependencies (explanation).');
+        info('Example: --blockers abc123 --dependencies "Needs the API spec from abc123"');
+        process.exit(1);
+      }
+
       // Handle notes: support both --notes and --notes-file
       let notes = '';
       if (options.notesFile) {
@@ -221,7 +239,7 @@ export const createCommand = new Command('create')
           completed: false,
         })),
         blockers: parseList(options.blockers || ''),
-        dependencies: parseList(options.dependencies || ''),
+        dependencies: dependenciesText,
         related_files: options.relatedFiles || [],
         notes,
         c7_verified: c7Verifications,
@@ -247,18 +265,12 @@ export const createCommand = new Command('create')
         process.exit(1);
       }
 
-      // Validate blockers and dependencies exist
+      // Validate blockers exist
       const allTaskIds = graph.getAllTaskIds();
       const invalidBlockers = task.blockers.filter(id => !allTaskIds.includes(id));
-      const invalidDependencies = task.dependencies.filter(id => !allTaskIds.includes(id));
 
       if (invalidBlockers.length > 0) {
         error(`Blocker task IDs not found: ${invalidBlockers.join(', ')}`);
-        process.exit(1);
-      }
-
-      if (invalidDependencies.length > 0) {
-        error(`Dependency task IDs not found: ${invalidDependencies.join(', ')}`);
         process.exit(1);
       }
 
@@ -280,6 +292,9 @@ export const createCommand = new Command('create')
 
       if (task.blockers.length > 0) {
         info(`Blocked by: ${task.blockers.map(id => chalk.cyan(id)).join(', ')}`);
+        if (task.dependencies) {
+          info(`Dependencies: ${task.dependencies}`);
+        }
       }
 
       console.log('');
@@ -300,17 +315,21 @@ export const createCommand = new Command('create')
 createCommand.on('--help', () => {
   displayAtomicTaskPolicy();
   console.log('');
-  console.log(chalk.bold('Blockers vs Dependencies:'));
-  console.log(chalk.cyan('  --blockers (-b)') + ': Creates GRAPH EDGES affecting execution order.');
+  console.log(chalk.bold('Blockers & Dependencies (Twin Feature):'));
+  console.log(chalk.cyan('  --blockers (-b)') + ': Comma-separated task IDs that block this task.');
+  console.log('                Creates GRAPH EDGES affecting execution order.');
   console.log('                Task A blocks Task B → A must complete before B starts.');
-  console.log('                Used for topological sort, cycle detection, and task ordering.');
   console.log('');
-  console.log(chalk.cyan('  --dependencies (-d)') + ': Informational NOTES only (no graph edges).');
-  console.log('                  Documents WHY a task depends on another. Pure metadata.');
-  console.log('                  Does NOT affect execution order or task traversal.');
+  console.log(chalk.cyan('  --dependencies (-d)') + ': Explanatory text WHY this task depends on its blockers.');
+  console.log('                  REQUIRED when --blockers is set (twin validation).');
+  console.log('                  Does NOT affect execution order - pure metadata.');
   console.log('');
-  console.log(chalk.yellow('  Example:'));
-  console.log('    Task "Build Frontend" depends on Task "API Design".');
-  console.log('    Use --blockers for the execution relationship.');
-  console.log('    Use --dependencies to document the reason (e.g., "need API spec").');
+  console.log(chalk.yellow('  Example (both required together):'));
+  console.log('    octie create --title "Build Frontend" \\');
+  console.log('      --blockers abc123,def456 \\');
+  console.log('      --dependencies "Needs API spec from abc123 and auth from def456"');
+  console.log('');
+  console.log(chalk.red('  Error if only one provided:'));
+  console.log('    --blockers without --dependencies → Error: twin required');
+  console.log('    --dependencies without --blockers → Error: twin required');
 });

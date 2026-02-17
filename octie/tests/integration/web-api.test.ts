@@ -81,7 +81,7 @@ describe('Web API Integration Tests', () => {
         { id: uuidv4(), text: 'src/test-feature.ts', completed: false },
       ],
       blockers: [],
-      dependencies: [],
+      dependencies: '',
       related_files: [],
       notes: '',
       c7_verified: [],
@@ -417,12 +417,13 @@ describe('Web API Integration Tests', () => {
             description: 'A valid description that is at least fifty characters long for testing purposes',
             successCriteria: [{ text: 'Test criterion for validation' }],
             deliverables: [{ text: 'test.ts' }],
-            dependencies: [fakeDepId],
+            blockers: [fakeDepId],
+            dependencies: 'Needs output from this task',
           })
           .expect(400);
 
         expect(response.body.success).toBe(false);
-        expect(response.body.error.code).toBe('DEPENDENCY_NOT_FOUND');
+        expect(response.body.error.code).toBe('BLOCKER_NOT_FOUND');
       });
     });
 
@@ -496,7 +497,7 @@ describe('Web API Integration Tests', () => {
           ],
           deliverables: [{ id: uuidv4(), text: 'test.ts', completed: false }],
           blockers: [],
-          dependencies: [],
+          dependencies: '',
           related_files: [],
           notes: '',
           c7_verified: [],

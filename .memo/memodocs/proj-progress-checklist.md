@@ -47,6 +47,21 @@
 - [x] Unit tests for item ID display (6 tests, all passing)
 **Completed**: 2026-02-17
 **Git Commit**: 4486fb1
+
+#### [x] Fix Export/Import UUID Preservation
+**Type**: Bug Fix
+**Blockers**: None
+**Related Files**: octie/src/cli/output/markdown.ts, octie/src/cli/commands/import.ts, octie/tests/unit/cli/commands/get.test.ts, octie/tests/unit/cli/commands/list.test.ts
+**C7 MCP Verified**: N/A
+**Deliverables**:
+- [x] MD export uses FULL UUIDs for success criteria (not truncated 8-char)
+- [x] MD export uses FULL UUIDs for deliverables (was missing, now added)
+- [x] MD import parses and preserves full UUIDs from export
+- [x] MD import strips UUID from text content (clean text on re-import)
+- [x] GET table output continues to show short 8-char IDs (unchanged)
+- [x] Roundtrip test: export → import preserves same UUIDs
+- [x] Tests: Updated get.test.ts and list.test.ts to expect full UUIDs in MD format
+**Completed**: 2026-02-17
 - [x] Additional types: TopologicalSortResult, CycleDetectionResult, TaskFilterOptions, TaskCreateOptions, TaskUpdateOptions, MergeResult, GraphStatistics
 **Completed**: 2026-02-16
 **Git Commit**: 5fc837f

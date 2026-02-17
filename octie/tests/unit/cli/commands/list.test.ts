@@ -297,9 +297,9 @@ describe('list command', () => {
         { encoding: 'utf-8' }
       );
 
-      // Check that item IDs are displayed in markdown code format (8-char short UUID)
-      // Check for 8-char ID pattern in markdown code format
-      expect(output).toMatch(/`[a-z0-9]{8}`/);
+      // Check that item IDs are displayed in markdown code format (full UUID for import/export preservation)
+      // Check for full UUID pattern in markdown code format (decoupled from table display which uses short IDs)
+      expect(output).toMatch(/`[a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12}`/);
     });
 
     it('should display deliverable IDs in markdown format', () => {
@@ -308,9 +308,9 @@ describe('list command', () => {
         { encoding: 'utf-8' }
       );
 
-      // Check that item IDs are displayed in markdown code format (8-char short UUID)
-      // Check for 8-char ID pattern in markdown code format
-      expect(output).toMatch(/`[a-z0-9]{8}`/);
+      // Check that item IDs are displayed in markdown code format (full UUID for import/export preservation)
+      // Check for full UUID pattern in markdown code format (decoupled from table display which uses short IDs)
+      expect(output).toMatch(/`[a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12}`/);
     });
   });
 });

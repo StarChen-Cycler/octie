@@ -237,9 +237,18 @@ function parseMarkdownTasks(content: string): ParsedMarkdownTask[] {
             if (lt.startsWith('- ')) {
               const { checked, content } = parseCheckbox(lt.substring(2));
               if (content) {
+                // Extract full UUID from end of content (format: "text \`uuid\`")
+                // UUID pattern: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+                const uuidMatch = content.match(/^(.+?)\s*`([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})`$/);
+                let id = uuidv4();
+                let text = content;
+                if (uuidMatch && uuidMatch[1] && uuidMatch[2]) {
+                  text = uuidMatch[1].trim();
+                  id = uuidMatch[2];
+                }
                 success_criteria.push({
-                  id: uuidv4(),
-                  text: content,
+                  id,
+                  text,
                   completed: checked,
                   completed_at: checked ? new Date().toISOString() : undefined,
                 });
@@ -275,10 +284,20 @@ function parseMarkdownTasks(content: string): ParsedMarkdownTask[] {
               const itemText = lt.substring(2).trim();
               const { checked, content } = parseCheckbox(itemText);
 
-              // Check for file path: "text → `file.ts`"
-              let filePath: string | undefined;
+              // Extract full UUID from end of content (format: "text → `filepath` `uuid`" or "text `uuid`")
+              let id = uuidv4();
               let text = content;
-              const fileMatch = content.match(/^(.+?)\s*→\s*`([^`]+)`$/);
+              let filePath: string | undefined;
+
+              // First try to extract UUID from end
+              const uuidMatch = content.match(/^(.+?)\s*`([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})`$/);
+              if (uuidMatch && uuidMatch[1] && uuidMatch[2]) {
+                text = uuidMatch[1].trim();
+                id = uuidMatch[2];
+              }
+
+              // Then check for file path: "text → `file.ts`"
+              const fileMatch = text.match(/^(.+?)\s*→\s*`([^`]+)`$/);
               if (fileMatch && fileMatch[1] && fileMatch[2]) {
                 text = fileMatch[1].trim();
                 filePath = fileMatch[2];
@@ -286,7 +305,7 @@ function parseMarkdownTasks(content: string): ParsedMarkdownTask[] {
 
               if (text) {
                 deliverables.push({
-                  id: uuidv4(),
+                  id,
                   text,
                   completed: checked,
                   file_path: filePath,
