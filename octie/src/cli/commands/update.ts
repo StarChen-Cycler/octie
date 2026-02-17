@@ -23,10 +23,10 @@ export const updateCommand = new Command('update')
   .option('--add-success-criterion <text>', 'Add a success criterion')
   .option('--complete-criterion <id>', 'Mark success criterion as complete')
   .option('--remove-criterion <id>', 'Remove a success criterion by ID')
-  .option('--block <id>', 'Add a blocker')
-  .option('--unblock <id>', 'Remove a blocker')
-  .option('--add-dependency <id>', 'Add a dependency')
-  .option('--remove-dependency <id>', 'Remove a dependency')
+  .option('--block <id>', 'Add a blocker (creates graph edge for execution order)')
+  .option('--unblock <id>', 'Remove a blocker (removes graph edge)')
+  .option('--add-dependency <id>', 'Add a dependency note (informational, no graph edge)')
+  .option('--remove-dependency <id>', 'Remove a dependency note')
   .option('--add-related-file <path>', 'Add a related file path')
   .option('--remove-related-file <path>', 'Remove a related file path')
   .option('--verify-c7 <library:notes>', 'Add C7 library verification (format: library-id or library-id:notes)')
@@ -235,3 +235,20 @@ export const updateCommand = new Command('update')
       process.exit(1);
     }
   });
+
+// Add help text to explain blockers vs dependencies
+updateCommand.on('--help', () => {
+  console.log('');
+  console.log(chalk.bold('Blockers vs Dependencies:'));
+  console.log(chalk.cyan('  --block / --unblock') + ': Creates/removes GRAPH EDGES.');
+  console.log('                         Affects execution order, topological sort, and cycle detection.');
+  console.log('');
+  console.log(chalk.cyan('  --add-dependency / --remove-dependency') + ': Informational NOTES only.');
+  console.log('                                            Documents WHY tasks are related.');
+  console.log('                                            Does NOT affect execution order.');
+  console.log('');
+  console.log(chalk.yellow('  Example:'));
+  console.log('    Task B is blocked by Task A (--block A).');
+  console.log('    This means A must complete before B starts.');
+  console.log('    Use --add-dependency A to document the reason (e.g., "needs A\'s output").');
+});

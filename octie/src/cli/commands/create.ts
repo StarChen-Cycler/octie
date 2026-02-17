@@ -88,8 +88,8 @@ export const createCommand = new Command('create')
       .makeOptionMandatory(true)
   )
   .option('-p, --priority <level>', 'Task priority: top | second | later', 'second')
-  .option('-b, --blockers <ids>', 'Comma-separated task IDs that block this task')
-  .option('-d, --dependencies <ids>', 'Comma-separated task IDs this depends on')
+  .option('-b, --blockers <ids>', 'Comma-separated task IDs that block this task (creates graph edges for execution order)')
+  .option('-d, --dependencies <ids>', 'Comma-separated task IDs this depends on (informational notes, NOT graph edges)')
   .option('-f, --related-files <paths>', 'Comma-separated file paths relevant to task')
   .addOption(
     new Option('-c, --c7-verified <library:notes>', 'C7 library verification (format: library-id or library-id:notes, can be specified multiple times)')
@@ -289,4 +289,18 @@ export const createCommand = new Command('create')
 // Add help text to display atomic task policy when --help is shown
 createCommand.on('--help', () => {
   displayAtomicTaskPolicy();
+  console.log('');
+  console.log(chalk.bold('Blockers vs Dependencies:'));
+  console.log(chalk.cyan('  --blockers (-b)') + ': Creates GRAPH EDGES affecting execution order.');
+  console.log('                Task A blocks Task B → A must complete before B starts.');
+  console.log('                Used for topological sort, cycle detection, and task ordering.');
+  console.log('');
+  console.log(chalk.cyan('  --dependencies (-d)') + ': Informational NOTES only (no graph edges).');
+  console.log('                  Documents WHY a task depends on another. Pure metadata.');
+  console.log('                  Does NOT affect execution order or task traversal.');
+  console.log('');
+  console.log(chalk.yellow('  Example:'));
+  console.log('    Task "Build Frontend" depends on Task "API Design".');
+  console.log('    Use --blockers for the execution relationship.');
+  console.log('    Use --dependencies to document the reason (e.g., "need API spec").');
 });
