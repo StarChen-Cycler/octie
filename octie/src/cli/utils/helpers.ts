@@ -133,6 +133,41 @@ export function parseList(value: string): string[] {
 }
 
 /**
+ * Parse multiple IDs from various formats
+ * Supports:
+ * - "id1","id2","id3" (quoted CSV format)
+ * - id1,id2,id3 (simple comma-separated)
+ * - Single ID (backward compatible)
+ *
+ * Used with Commander.js collector pattern:
+ * .option('--ids <id>', 'IDs to process', parseMultipleIds, [])
+ */
+export function parseMultipleIds(value: string, previous: string[]): string[] {
+  if (!value) return previous;
+
+  // Check for quoted CSV format: "id1","id2","id3"
+  // This happens when user wraps in quotes to prevent shell parsing
+  const quotedCsvMatch = value.match(/^"([^"]+)"(?:,"([^"]+)")*/);
+  if (quotedCsvMatch) {
+    // Extract all quoted values
+    const quotedValues = value.match(/"([^"]+)"/g);
+    if (quotedValues) {
+      const ids = quotedValues.map(v => v.replace(/"/g, '').trim()).filter(Boolean);
+      return previous.concat(ids);
+    }
+  }
+
+  // Fall back to simple comma-separated: id1,id2,id3
+  if (value.includes(',')) {
+    const ids = value.split(',').map(item => item.trim()).filter(Boolean);
+    return previous.concat(ids);
+  }
+
+  // Single ID (backward compatible)
+  return previous.concat([value.trim()]);
+}
+
+/**
  * Validate UUID format
  */
 export function isValidUUID(id: string): boolean {

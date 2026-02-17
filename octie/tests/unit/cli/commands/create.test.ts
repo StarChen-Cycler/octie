@@ -736,4 +736,96 @@ describe('create command', () => {
       expect(task?.notes).toBe('Trimmed content');
     });
   });
+
+  describe('related-files multiple values (CLI integration)', () => {
+    let cliTempDir: string;
+    let cliStorage: TaskStorage;
+    let cliPath: string;
+
+    beforeEach(async () => {
+      cliTempDir = join(tmpdir(), `octie-cli-files-test-${uuidv4()}`);
+      cliStorage = new TaskStorage({ projectDir: cliTempDir });
+      await cliStorage.createProject('cli-files-test-project');
+      cliPath = join(process.cwd(), 'dist', 'cli', 'index.js');
+    });
+
+    afterEach(() => {
+      try {
+        rmSync(cliTempDir, { recursive: true, force: true });
+      } catch {
+        // Ignore cleanup errors
+      }
+    });
+
+    it('should support multiple --related-files flags', async () => {
+      const output = execSync(
+        `node ${cliPath} --project "${cliTempDir}" create ` +
+        `--title "Implement auth module" ` +
+        `--description "Create authentication module with login logout and session management for secure user authentication" ` +
+        `--success-criterion "Auth module works correctly" ` +
+        `--deliverable "src/auth/index.ts" ` +
+        `--related-files "src/auth/login.ts" ` +
+        `--related-files "src/auth/logout.ts"`,
+        { encoding: 'utf-8' }
+      );
+
+      expect(output).toContain('Task created');
+
+      const graph = await cliStorage.load();
+      const tasks = graph.getAllTasks();
+      expect(tasks.length).toBeGreaterThan(0);
+      const task = tasks[tasks.length - 1];
+      expect(task?.related_files).toContain('src/auth/login.ts');
+      expect(task?.related_files).toContain('src/auth/logout.ts');
+      expect(task?.related_files.length).toBe(2);
+    });
+
+    it('should support comma-separated --related-files', async () => {
+      const output = execSync(
+        `node ${cliPath} --project "${cliTempDir}" create ` +
+        `--title "Implement API endpoints" ` +
+        `--description "Create REST API endpoints for user management including CRUD operations with proper validation" ` +
+        `--success-criterion "API endpoints work correctly" ` +
+        `--deliverable "src/api/users.ts" ` +
+        `--related-files "src/api/users.ts,src/api/types.ts,src/api/middleware.ts"`,
+        { encoding: 'utf-8' }
+      );
+
+      expect(output).toContain('Task created');
+
+      const graph = await cliStorage.load();
+      const tasks = graph.getAllTasks();
+      expect(tasks.length).toBeGreaterThan(0);
+      const task = tasks[tasks.length - 1];
+      expect(task?.related_files).toContain('src/api/users.ts');
+      expect(task?.related_files).toContain('src/api/types.ts');
+      expect(task?.related_files).toContain('src/api/middleware.ts');
+      expect(task?.related_files.length).toBe(3);
+    });
+
+    it('should support mixed --related-files usage', async () => {
+      const output = execSync(
+        `node ${cliPath} --project "${cliTempDir}" create ` +
+        `--title "Implement database layer" ` +
+        `--description "Create database access layer with connection pooling and query optimization for better performance" ` +
+        `--success-criterion "Database layer works correctly" ` +
+        `--deliverable "src/db/connection.ts" ` +
+        `--related-files "src/db/connection.ts,src/db/pool.ts" ` +
+        `--related-files "src/db/queries.ts"`,
+        { encoding: 'utf-8' }
+      );
+
+      expect(output).toContain('Task created');
+
+      const graph = await cliStorage.load();
+      const tasks = graph.getAllTasks();
+      expect(tasks.length).toBeGreaterThan(0);
+      const task = tasks[tasks.length - 1];
+      // Should have all 3 files from mixed usage
+      expect(task?.related_files).toContain('src/db/connection.ts');
+      expect(task?.related_files).toContain('src/db/pool.ts');
+      expect(task?.related_files).toContain('src/db/queries.ts');
+      expect(task?.related_files.length).toBe(3);
+    });
+  });
 });

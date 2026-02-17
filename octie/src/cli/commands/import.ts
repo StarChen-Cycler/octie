@@ -392,6 +392,64 @@ function parseMarkdownTasks(content: string): ParsedMarkdownTask[] {
         }
       }
 
+      // Extract C7 verifications (Library Verifications section)
+      const c7_verified: Array<{ library_id: string; verified_at: string; notes?: string }> = [];
+      for (let j = i; j < taskEndIndex; j++) {
+        const l = lines[j];
+        if (l === undefined) continue;
+        if (l.trim() === '### Library Verifications') {
+          let k = j + 1;
+          while (k < taskEndIndex) {
+            const itemLine = lines[k];
+            if (itemLine === undefined) {
+              k++;
+              continue;
+            }
+            const lt = itemLine.trim();
+            if (lt.startsWith('### ') || lt === '---') break;
+
+            // Parse: "- /library/id (verified: 2026-02-16T18:11:52.088Z)"
+            const c7Match = lt.match(/^-?\s*([\/\w.-]+)\s*\(verified:\s*(\d{4}-\d{2}-\d{2}T[\d:.Z]+)\)$/);
+            if (c7Match && c7Match[1] && c7Match[2]) {
+              const library_id = c7Match[1];
+              const verified_at = c7Match[2];
+
+              // Look for optional notes on next line(s) (indented with "  - ")
+              let c7Notes: string | undefined;
+              const noteLines: string[] = [];
+              let nextK = k + 1;
+              while (nextK < taskEndIndex) {
+                const nextLine = lines[nextK];
+                if (nextLine === undefined) break;
+                const nextLt = nextLine.trim();
+                // Check for indented note: "  - note text"
+                if (nextLt.startsWith('- ') && nextLine.startsWith('  ')) {
+                  noteLines.push(nextLt.substring(2).trim());
+                  nextK++;
+                } else if (nextLt.startsWith('-') || nextLt.startsWith('### ') || nextLt === '---') {
+                  // Stop at next item or section
+                  break;
+                } else {
+                  break;
+                }
+              }
+              if (noteLines.length > 0) {
+                c7Notes = noteLines.join(' ');
+                k = nextK - 1; // Update k to skip processed note lines
+              }
+
+              c7_verified.push({
+                library_id,
+                verified_at,
+                notes: c7Notes,
+              });
+            }
+            k++;
+          }
+          break;
+        }
+      }
+
       // Create task with default required fields if missing
       const task: ParsedMarkdownTask = {
         id: taskId,
@@ -410,7 +468,7 @@ function parseMarkdownTasks(content: string): ParsedMarkdownTask[] {
         sub_items: [],
         related_files,
         notes,
-        c7_verified: [],
+        c7_verified,
         completed,
       };
 

@@ -624,4 +624,94 @@ describe('update command', () => {
       expect(output).toContain('--priority');
     });
   });
+
+  describe('multiple ID support for complete operations', () => {
+    let criterionId2: string;
+    let deliverableId2: string;
+
+    beforeEach(async () => {
+      // Add second criterion and deliverable for multi-complete tests
+      const graph = await storage.load();
+      const task = graph.getNode(testTaskId);
+      if (task) {
+        criterionId2 = uuidv4();
+        deliverableId2 = uuidv4();
+        task.addSuccessCriterion({ id: criterionId2, text: 'Second criterion for testing', completed: false });
+        task.addDeliverable({ id: deliverableId2, text: 'second-file.ts', completed: false });
+        graph.updateNode(task);
+        await storage.save(graph);
+      }
+    });
+
+    it('should complete single deliverable (backward compatibility)', async () => {
+      const output = execSync(
+        `node ${cliPath} --project "${tempDir}" update ${testTaskId} --complete-deliverable "${deliverableId}"`,
+        { encoding: 'utf-8' }
+      );
+
+      expect(output).toContain('Task updated');
+
+      const graph = await storage.load();
+      const task = graph.getNode(testTaskId);
+      const deliverable = task?.deliverables.find(d => d.id === deliverableId);
+      expect(deliverable?.completed).toBe(true);
+    });
+
+    it('should complete multiple deliverables with comma-separated format', async () => {
+      const output = execSync(
+        `node ${cliPath} --project "${tempDir}" update ${testTaskId} --complete-deliverable "${deliverableId},${deliverableId2}"`,
+        { encoding: 'utf-8' }
+      );
+
+      expect(output).toContain('Task updated');
+
+      const graph = await storage.load();
+      const task = graph.getNode(testTaskId);
+      const del1 = task?.deliverables.find(d => d.id === deliverableId);
+      const del2 = task?.deliverables.find(d => d.id === deliverableId2);
+      expect(del1?.completed).toBe(true);
+      expect(del2?.completed).toBe(true);
+    });
+
+    it('should complete multiple criteria with comma-separated format', async () => {
+      const output = execSync(
+        `node ${cliPath} --project "${tempDir}" update ${testTaskId} --complete-criterion "${criterionId},${criterionId2}"`,
+        { encoding: 'utf-8' }
+      );
+
+      expect(output).toContain('Task updated');
+
+      const graph = await storage.load();
+      const task = graph.getNode(testTaskId);
+      const crit1 = task?.success_criteria.find(c => c.id === criterionId);
+      const crit2 = task?.success_criteria.find(c => c.id === criterionId2);
+      expect(crit1?.completed).toBe(true);
+      expect(crit2?.completed).toBe(true);
+    });
+
+    it('should complete single criterion (backward compatibility)', async () => {
+      const output = execSync(
+        `node ${cliPath} --project "${tempDir}" update ${testTaskId} --complete-criterion "${criterionId}"`,
+        { encoding: 'utf-8' }
+      );
+
+      expect(output).toContain('Task updated');
+
+      const graph = await storage.load();
+      const task = graph.getNode(testTaskId);
+      const criterion = task?.success_criteria.find(c => c.id === criterionId);
+      expect(criterion?.completed).toBe(true);
+    });
+
+    it('should handle invalid IDs gracefully in multi-complete', async () => {
+      // First criterion is valid, second is invalid
+      // The CLI should complete the first and error on the second
+      expect(() => {
+        execSync(
+          `node ${cliPath} --project "${tempDir}" update ${testTaskId} --complete-criterion "${criterionId},invalid-uuid"`,
+          { encoding: 'utf-8', stdio: 'pipe' }
+        );
+      }).toThrow();
+    });
+  });
 });

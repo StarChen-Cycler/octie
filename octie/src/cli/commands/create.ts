@@ -90,7 +90,17 @@ export const createCommand = new Command('create')
   .option('-p, --priority <level>', 'Task priority: top | second | later', 'second')
   .option('-b, --blockers <ids>', 'Comma-separated task IDs that block this task (creates graph edges for execution order)')
   .option('-d, --dependencies <ids>', 'Comma-separated task IDs this depends on (informational notes, NOT graph edges)')
-  .option('-f, --related-files <paths>', 'Comma-separated file paths relevant to task')
+  .addOption(
+    new Option(
+      '-f, --related-files <paths>',
+      'File paths relevant to task (can be specified multiple times or comma-separated)'
+    )
+      .argParser((value: string, previous: string[]) => {
+        // Support both comma-separated and multiple flag usage
+        const items = value.includes(',') ? value.split(',').map(s => s.trim()) : [value.trim()];
+        return [...(previous || []), ...items.filter(Boolean)];
+      })
+  )
   .addOption(
     new Option('-c, --c7-verified <library:notes>', 'C7 library verification (format: library-id or library-id:notes, can be specified multiple times)')
       .argParser((value: string, previous: string[]) => [...(previous || []), value])
@@ -212,7 +222,7 @@ export const createCommand = new Command('create')
         })),
         blockers: parseList(options.blockers || ''),
         dependencies: parseList(options.dependencies || ''),
-        related_files: parseList(options.relatedFiles || ''),
+        related_files: options.relatedFiles || [],
         notes,
         c7_verified: c7Verifications,
         sub_items: [],

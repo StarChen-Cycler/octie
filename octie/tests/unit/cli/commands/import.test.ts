@@ -919,4 +919,184 @@ Task with explicit format specification to test that the --format md flag works 
       rmSync(newTempDir, { recursive: true, force: true });
     });
   });
+
+  describe('C7 verifications round-trip', () => {
+    let mdImportFile: string;
+    let mdImportDir: string;
+
+    beforeEach(() => {
+      mdImportDir = join(tmpdir(), `octie-md-import-${uuidv4()}`);
+      mkdirSync(mdImportDir, { recursive: true });
+      mdImportFile = join(mdImportDir, 'import.md');
+    });
+
+    afterEach(() => {
+      try {
+        rmSync(mdImportDir, { recursive: true, force: true });
+      } catch {
+        // Ignore cleanup errors
+      }
+    });
+
+    it('should import C7 verifications from markdown', async () => {
+      // Create markdown with C7 verifications
+      const mdContent = `## [x] Task with C7 verifications
+**ID**: \`c7-test-001\` | **Status**: completed | **Priority**: top
+
+### Description
+This task has C7 library verifications attached for documentation purposes and reference tracking.
+
+### Success Criteria
+- [x] Task works correctly
+
+### Deliverables
+- [x] Output file
+
+### Library Verifications
+- /expressjs/express (verified: 2026-02-16T18:11:52.088Z)
+  - Used Router pattern for API routes
+- /mongodb/docs (verified: 2026-02-17T10:00:00.000Z)
+
+### Notes
+Additional context here.
+`;
+      writeFileSync(mdImportFile, mdContent);
+
+      const output = execSync(
+        `node ${cliPath} --project "${tempDir}" import "${mdImportFile}" --format md`,
+        { encoding: 'utf-8' }
+      );
+
+      expect(output).toContain('Parsed 1 task(s)');
+      expect(output).toContain('Imported');
+
+      const graph = await storage.load();
+      const task = graph.getNode('c7-test-001');
+      expect(task).toBeDefined();
+      expect(task?.c7_verified).toHaveLength(2);
+      expect(task?.c7_verified[0].library_id).toBe('/expressjs/express');
+      expect(task?.c7_verified[0].verified_at).toBe('2026-02-16T18:11:52.088Z');
+      expect(task?.c7_verified[0].notes).toBe('Used Router pattern for API routes');
+      expect(task?.c7_verified[1].library_id).toBe('/mongodb/docs');
+      expect(task?.c7_verified[1].notes).toBeUndefined();
+    });
+
+    it('should round-trip C7 verifications through export/import', async () => {
+      // Create a task with C7 verifications via CLI
+      const createOutput = execSync(
+        `node ${cliPath} --project "${tempDir}" create ` +
+        `--title "Task for round-trip test" ` +
+        `--description "Create a task that will be exported and re-imported to verify C7 verifications are preserved" ` +
+        `--success-criterion "Task has C7 verifications" ` +
+        `--deliverable "output.ts" ` +
+        `--c7-verified "/vitest-dev/vitest:Used for testing" ` +
+        `--c7-verified "/tj/commander.js"`,
+        { encoding: 'utf-8' }
+      );
+
+      expect(createOutput).toContain('Task created');
+
+      // Export to markdown
+      const exportFile = join(tempDir, 'export-test.md');
+      const exportOutput = execSync(
+        `node ${cliPath} --project "${tempDir}" export --type md --output "${exportFile}"`,
+        { encoding: 'utf-8' }
+      );
+      expect(exportOutput).toContain('Exported');
+
+      // Read exported content to verify C7 is present
+      const exportedContent = readFileSync(exportFile, 'utf-8');
+      expect(exportedContent).toContain('### Library Verifications');
+      expect(exportedContent).toContain('/vitest-dev/vitest');
+      expect(exportedContent).toContain('/tj/commander.js');
+
+      // Create a new project and import the markdown
+      const newTempDir = join(tmpdir(), `octie-import-c7-${uuidv4()}`);
+      const newStorage = new TaskStorage({ projectDir: newTempDir });
+      await newStorage.createProject('import-c7-test');
+
+      const importOutput = execSync(
+        `node ${cliPath} --project "${newTempDir}" import "${exportFile}" --format md`,
+        { encoding: 'utf-8' }
+      );
+
+      expect(importOutput).toContain('Parsed');
+      expect(importOutput).toContain('Imported');
+
+      // Verify C7 verifications are preserved
+      const importedGraph = await newStorage.load();
+      const tasks = importedGraph.getAllTasks();
+      const importedTask = tasks.find(t => t.title === 'Task for round-trip test');
+      expect(importedTask).toBeDefined();
+      expect(importedTask?.c7_verified.length).toBeGreaterThanOrEqual(2);
+
+      // Check specific C7 entries
+      const vitestC7 = importedTask?.c7_verified.find(c => c.library_id === '/vitest-dev/vitest');
+      expect(vitestC7).toBeDefined();
+      expect(vitestC7?.notes).toBe('Used for testing');
+
+      const commanderC7 = importedTask?.c7_verified.find(c => c.library_id === '/tj/commander.js');
+      expect(commanderC7).toBeDefined();
+
+      // Clean up
+      rmSync(newTempDir, { recursive: true, force: true });
+    });
+
+    it('should handle C7 verifications without notes', async () => {
+      const mdContent = `## [ ] Task without C7 notes
+**ID**: \`c7-no-notes\` | **Status**: not_started | **Priority**: second
+
+### Description
+Task with C7 verification but no notes attached, just library ID and timestamp for reference.
+
+### Success Criteria
+- [ ] Criterion 1
+
+### Deliverables
+- [ ] Deliverable 1
+
+### Library Verifications
+- /simple/library (verified: 2026-02-15T00:00:00.000Z)
+`;
+      writeFileSync(mdImportFile, mdContent);
+
+      execSync(
+        `node ${cliPath} --project "${tempDir}" import "${mdImportFile}" --format md`,
+        { encoding: 'utf-8' }
+      );
+
+      const graph = await storage.load();
+      const task = graph.getNode('c7-no-notes');
+      expect(task).toBeDefined();
+      expect(task?.c7_verified).toHaveLength(1);
+      expect(task?.c7_verified[0].library_id).toBe('/simple/library');
+      expect(task?.c7_verified[0].notes).toBeUndefined();
+    });
+
+    it('should handle tasks without Library Verifications section', async () => {
+      const mdContent = `## [ ] Task without C7
+**ID**: \`no-c7-task\` | **Status**: not_started | **Priority**: second
+
+### Description
+Task without any C7 verifications attached, just a plain task with no external library references.
+
+### Success Criteria
+- [ ] Criterion 1
+
+### Deliverables
+- [ ] Deliverable 1
+`;
+      writeFileSync(mdImportFile, mdContent);
+
+      execSync(
+        `node ${cliPath} --project "${tempDir}" import "${mdImportFile}" --format md`,
+        { encoding: 'utf-8' }
+      );
+
+      const graph = await storage.load();
+      const task = graph.getNode('no-c7-task');
+      expect(task).toBeDefined();
+      expect(task?.c7_verified).toHaveLength(0);
+    });
+  });
 });

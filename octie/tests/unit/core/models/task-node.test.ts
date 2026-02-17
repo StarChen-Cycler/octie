@@ -1059,4 +1059,113 @@ describe('TaskNode', () => {
       expect(restored.completed_at).toBe(original.completed_at);
     });
   });
+
+  describe('auto-status-reset on criterion/deliverable addition', () => {
+    it('should reset status from completed to in_progress when adding new criterion', () => {
+      const task = new TaskNode({
+        title: 'Implement login endpoint',
+        description: 'Create POST /auth/login endpoint that validates credentials and returns JWT token. The endpoint should use bcrypt for password hashing and return a 200 status with valid JWT on correct credentials.',
+        success_criteria: [
+          { id: uuidv4(), text: 'Endpoint returns 200', completed: false },
+        ],
+        deliverables: [
+          { id: uuidv4(), text: 'src/api/auth/login.ts', completed: false },
+        ],
+      });
+
+      // Complete everything and set status to completed
+      task.completeCriterion(task.success_criteria[0].id);
+      task.completeDeliverable(task.deliverables[0].id);
+      task.setStatus('in_progress');
+      task.setStatus('completed');
+
+      expect(task.status).toBe('completed');
+      expect(task.completed_at).not.toBeNull();
+
+      // Add new criterion - should reset status
+      task.addSuccessCriterion({
+        id: uuidv4(),
+        text: 'Password is hashed with bcrypt',
+        completed: false,
+      });
+
+      expect(task.status).toBe('in_progress');
+      expect(task.completed_at).toBeNull();
+    });
+
+    it('should reset status from completed to in_progress when adding new deliverable', () => {
+      const task = new TaskNode({
+        title: 'Implement login endpoint',
+        description: 'Create POST /auth/login endpoint that validates credentials and returns JWT token. The endpoint should use bcrypt for password hashing and return a 200 status with valid JWT on correct credentials.',
+        success_criteria: [
+          { id: uuidv4(), text: 'Endpoint returns 200', completed: false },
+        ],
+        deliverables: [
+          { id: uuidv4(), text: 'src/api/auth/login.ts', completed: false },
+        ],
+      });
+
+      // Complete everything and set status to completed
+      task.completeCriterion(task.success_criteria[0].id);
+      task.completeDeliverable(task.deliverables[0].id);
+      task.setStatus('in_progress');
+      task.setStatus('completed');
+
+      expect(task.status).toBe('completed');
+
+      // Add new deliverable - should reset status
+      task.addDeliverable({
+        id: uuidv4(),
+        text: 'tests/api/auth/login.test.ts',
+        completed: false,
+      });
+
+      expect(task.status).toBe('in_progress');
+      expect(task.completed_at).toBeNull();
+    });
+
+    it('should not change status when adding criterion to non-completed task', () => {
+      const task = new TaskNode({
+        title: 'Implement login endpoint',
+        description: 'Create POST /auth/login endpoint that validates credentials and returns JWT token. The endpoint should use bcrypt for password hashing and return a 200 status with valid JWT on correct credentials.',
+        success_criteria: [
+          { id: uuidv4(), text: 'Endpoint returns 200', completed: false },
+        ],
+        deliverables: [
+          { id: uuidv4(), text: 'src/api/auth/login.ts', completed: false },
+        ],
+        status: 'in_progress',
+      });
+
+      // Add new criterion to in_progress task
+      task.addSuccessCriterion({
+        id: uuidv4(),
+        text: 'Password is hashed with bcrypt',
+        completed: false,
+      });
+
+      // Status should remain in_progress (not changed)
+      expect(task.status).toBe('in_progress');
+    });
+
+    it('should not change status when uncompleting criterion on non-completed task', () => {
+      const task = new TaskNode({
+        title: 'Implement login endpoint',
+        description: 'Create POST /auth/login endpoint that validates credentials and returns JWT token. The endpoint should use bcrypt for password hashing and return a 200 status with valid JWT on correct credentials.',
+        success_criteria: [
+          { id: uuidv4(), text: 'Endpoint returns 200', completed: true },
+          { id: uuidv4(), text: 'Unit tests pass', completed: true },
+        ],
+        deliverables: [
+          { id: uuidv4(), text: 'src/api/auth/login.ts', completed: true },
+        ],
+        status: 'pending',
+      });
+
+      // Uncomplete a criterion - status should remain pending (not auto-changed)
+      task.uncompleteCriterion(task.success_criteria[0].id);
+
+      expect(task.status).toBe('pending');
+    });
+  });
 });

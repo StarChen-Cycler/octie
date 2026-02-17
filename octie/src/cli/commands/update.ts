@@ -3,7 +3,7 @@
  */
 
 import { Command } from 'commander';
-import { getProjectPath, loadGraph, saveGraph, success, error } from '../utils/helpers.js';
+import { getProjectPath, loadGraph, saveGraph, success, error, parseMultipleIds } from '../utils/helpers.js';
 import chalk from 'chalk';
 import { randomUUID } from 'node:crypto';
 import { readFileSync, existsSync } from 'node:fs';
@@ -18,10 +18,10 @@ export const updateCommand = new Command('update')
   .option('--status <status>', 'Task status')
   .option('--priority <priority>', 'Task priority')
   .option('--add-deliverable <text>', 'Add a deliverable')
-  .option('--complete-deliverable <id>', 'Mark deliverable as complete')
+  .option('--complete-deliverable <id>', 'Mark deliverable(s) as complete (supports: id, id1,id2, or "id1","id2")', parseMultipleIds, [])
   .option('--remove-deliverable <id>', 'Remove a deliverable by ID')
   .option('--add-success-criterion <text>', 'Add a success criterion')
-  .option('--complete-criterion <id>', 'Mark success criterion as complete')
+  .option('--complete-criterion <id>', 'Mark success criterion(s) as complete (supports: id, id1,id2, or "id1","id2")', parseMultipleIds, [])
   .option('--remove-criterion <id>', 'Remove a success criterion by ID')
   .option('--block <id>', 'Add a blocker (creates graph edge for execution order)')
   .option('--unblock <id>', 'Remove a blocker (removes graph edge)')
@@ -70,9 +70,11 @@ export const updateCommand = new Command('update')
         updated = true;
       }
 
-      // Complete deliverable
-      if (options.completeDeliverable) {
-        task.completeDeliverable(options.completeDeliverable);
+      // Complete deliverable(s) - now supports multiple IDs
+      if (options.completeDeliverable && options.completeDeliverable.length > 0) {
+        for (const deliverableId of options.completeDeliverable) {
+          task.completeDeliverable(deliverableId);
+        }
         updated = true;
       }
 
@@ -92,9 +94,11 @@ export const updateCommand = new Command('update')
         updated = true;
       }
 
-      // Complete criterion
-      if (options.completeCriterion) {
-        task.completeCriterion(options.completeCriterion);
+      // Complete criterion/criteria - now supports multiple IDs
+      if (options.completeCriterion && options.completeCriterion.length > 0) {
+        for (const criterionId of options.completeCriterion) {
+          task.completeCriterion(criterionId);
+        }
         updated = true;
       }
 

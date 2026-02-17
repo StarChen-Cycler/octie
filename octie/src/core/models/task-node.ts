@@ -999,7 +999,7 @@ export class TaskNode implements TaskNodeType {
   }
 
   /**
-   * Update completed_at timestamp based on completion state
+   * Update completed_at timestamp and status based on completion state
    * Called automatically after any change to success_criteria or deliverables
    * @private
    */
@@ -1012,6 +1012,12 @@ export class TaskNode implements TaskNodeType {
     } else if (!isComplete && this._completed_at) {
       // Not all complete but timestamp is set - clear it
       this._completed_at = null;
+
+      // Auto-reset status from 'completed' to 'in_progress' when task becomes incomplete
+      // This happens when a new criterion/deliverable is added to a completed task
+      if (this.status === 'completed') {
+        this.status = 'in_progress';
+      }
     }
   }
 
