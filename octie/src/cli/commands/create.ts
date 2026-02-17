@@ -6,6 +6,7 @@ import { Command, Option } from 'commander';
 import { v4 as uuidv4 } from 'uuid';
 import { TaskNode } from '../../core/models/task-node.js';
 import { getProjectPath, loadGraph, saveGraph, success, error, info, parseList } from '../utils/helpers.js';
+import { AtomicTaskViolationError } from '../../types/index.js';
 import chalk from 'chalk';
 import { readFileSync, existsSync } from 'node:fs';
 import { resolve } from 'node:path';
@@ -105,7 +106,13 @@ export const createCommand = new Command('create')
     new Option('-c, --c7-verified <library:notes>', 'C7 library verification (format: library-id or library-id:notes, can be specified multiple times)')
       .argParser((value: string, previous: string[]) => [...(previous || []), value])
   )
-  .option('-n, --notes <text>', 'Additional context or comments')
+  .addOption(
+    new Option(
+      '-n, --notes <text>',
+      'Additional context or comments (can be specified multiple times)'
+    )
+      .argParser((value: string, previous: string[]) => [...(previous || []), value])
+  )
   .option('--notes-file <path>', 'Read notes from file (multi-line notes support)')
   .option('-i, --interactive', 'Interactive mode with prompts')
   .option('--project <path>', 'Path to Octie project directory')
@@ -194,8 +201,8 @@ export const createCommand = new Command('create')
         process.exit(1);
       }
 
-      // Handle notes: support both --notes and --notes-file
-      let notes = '';
+      // Handle notes: support both --notes (multiple) and --notes-file
+      let notes: string[] = [];
       if (options.notesFile) {
         // Read notes from file
         const notesPath = resolve(options.notesFile);
@@ -204,20 +211,20 @@ export const createCommand = new Command('create')
           process.exit(1);
         }
         try {
-          notes = readFileSync(notesPath, 'utf-8').trim();
+          const fileContent = readFileSync(notesPath, 'utf-8').trim();
+          if (fileContent) {
+            notes.push(fileContent);
+          }
         } catch (err) {
           error(`Failed to read notes file: ${err instanceof Error ? err.message : 'Unknown error'}`);
           process.exit(1);
         }
       }
-      if (options.notes) {
-        // Append inline notes after file content (if both provided)
-        if (notes) {
-          notes += ' ' + options.notes.trim();
-        } else {
-          notes = options.notes.trim();
-        }
+      if (options.notes && Array.isArray(options.notes)) {
+        // Append all inline notes after file content
+        notes = notes.concat(options.notes.map((n: string) => n.trim()).filter(Boolean));
       }
+      const notesText = notes.join('\n\n');
 
       // Build task data
       // Use graph.generateUniqueId() to ensure first 7 characters are unique
@@ -241,7 +248,7 @@ export const createCommand = new Command('create')
         blockers: parseList(options.blockers || ''),
         dependencies: dependenciesText,
         related_files: options.relatedFiles || [],
-        notes,
+        notes: notesText,
         c7_verified: c7Verifications,
         sub_items: [],
         edges: [],
@@ -254,7 +261,18 @@ export const createCommand = new Command('create')
       } catch (err) {
         if (err instanceof Error) {
           error(err.message);
-          if (err.message.includes('atomic') || err.message.includes('vague')) {
+
+          // Show specific rejection reasons for atomic task violations
+          if (err instanceof AtomicTaskViolationError && err.violations.length > 0) {
+            console.log('');
+            console.log(chalk.yellow.bold('Specific issues found:'));
+            for (const violation of err.violations) {
+              console.log(chalk.red('  ✗ ') + violation);
+            }
+            console.log('');
+            info('See atomic task policy below for guidance');
+            displayAtomicTaskPolicy();
+          } else if (err.message.includes('atomic') || err.message.includes('vague')) {
             console.log('');
             info('See atomic task policy above for guidance');
             displayAtomicTaskPolicy();
@@ -265,14 +283,26 @@ export const createCommand = new Command('create')
         process.exit(1);
       }
 
-      // Validate blockers exist
-      const allTaskIds = graph.getAllTaskIds();
-      const invalidBlockers = task.blockers.filter(id => !allTaskIds.includes(id));
+      // Validate blockers exist and resolve short UUIDs to full UUIDs
+      const resolvedBlockers: string[] = [];
+      const invalidBlockers: string[] = [];
+
+      for (const blockerId of task.blockers) {
+        const resolvedTask = graph.getNodeByIdOrPrefix(blockerId);
+        if (resolvedTask) {
+          resolvedBlockers.push(resolvedTask.id);
+        } else {
+          invalidBlockers.push(blockerId);
+        }
+      }
 
       if (invalidBlockers.length > 0) {
         error(`Blocker task IDs not found: ${invalidBlockers.join(', ')}`);
         process.exit(1);
       }
+
+      // Update task blockers with resolved full UUIDs
+      task.blockers = resolvedBlockers;
 
       // Add to graph
       graph.addNode(task);

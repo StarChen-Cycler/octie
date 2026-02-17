@@ -710,8 +710,8 @@ describe('create command', () => {
       const tasks = graph.getAllTasks();
       expect(tasks.length).toBeGreaterThan(0);
       const task = tasks[tasks.length - 1];
-      // When both are provided, inline notes are appended to file notes
-      expect(task?.notes).toBe('Notes from file Inline notes');
+      // When both are provided, inline notes are appended to file notes with double newline
+      expect(task?.notes).toBe('Notes from file\n\nInline notes');
     });
 
     it('should trim whitespace from file content', async () => {

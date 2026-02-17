@@ -231,7 +231,7 @@ describe('TaskNode', () => {
       }).toThrow(AtomicTaskViolationError);
     });
 
-    it('should throw AtomicTaskViolationError for vague title "fix"', () => {
+    it('should throw AtomicTaskViolationError for title too short "fix"', () => {
       expect(() => {
         new TaskNode({
           title: 'Fix',

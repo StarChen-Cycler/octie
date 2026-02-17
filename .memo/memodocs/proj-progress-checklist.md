@@ -125,6 +125,38 @@
 **Discovery**: Edge case testing 2026-02-18
 **Completed**: 2026-02-18
 
+#### [x] Fix Create Command Bugs (3 issues)
+**Type**: Bug Fix
+**Description**: Three bugs in the `octie create` command:
+1. Blockers don't accept short UUIDs (only full UUIDs validated)
+2. Multiple --notes flags only save the last one
+3. Vague patterns too restrictive (action verbs in VAGUE_PATTERNS)
+**Blockers**: None
+**Related Files**: octie/src/cli/commands/create.ts, octie/src/core/models/task-node.ts
+**C7 MCP Verified**: N/A
+**Deliverables**:
+- [x] Blockers resolve short UUIDs to full UUIDs using getNodeByIdOrPrefix()
+- [x] --notes uses argParser accumulator pattern (multiple notes supported)
+- [x] VAGUE_PATTERNS removed words that are also action verbs (fix, update, handle, optimize, improve, enhance, refactor, manage, multiple, deal with)
+- [x] Vague pattern matching checks for word anywhere in title, not just at start
+- [x] Test: Short UUID blocker resolution verified with CLI
+- [x] Test: Multiple notes verified with CLI (5 notes all saved)
+- [x] Test: Task "Write SlidingWindowLimiter class..." now passes validation
+**Completed**: 2026-02-18
+
+#### [x] Improve Atomic Task Rejection Messages
+**Type**: Enhancement
+**Description**: Add specific rejection reasons to atomic task violation errors so AI agents know exactly what to fix.
+**Blockers**: None
+**Related Files**: octie/src/cli/commands/create.ts
+**C7 MCP Verified**: N/A
+**Deliverables**:
+- [x] AtomicTaskViolationError shows "Specific issues found:" section
+- [x] Each violation listed with red ✗ marker for visibility
+- [x] Violations shown BEFORE the generic policy guidance
+- [x] Test: "Work on stuff" task shows 4 specific issues
+**Completed**: 2026-02-18
+
 ---
 
 ### Second Priority (After Top Completes)

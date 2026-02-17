@@ -230,25 +230,19 @@ const ACTION_VERBS = [
 
 /**
  * Vague patterns that indicate non-specific tasks
+ * Note: Action verbs like 'fix', 'update', 'handle', etc. are NOT here
+ * because they are valid action verbs that make tasks specific when combined
+ * with context (e.g., "Fix login bug" is specific, "Fix stuff" is vague)
  */
 const VAGUE_PATTERNS = [
   'stuff',
   'things',
   'etc',
   'various',
-  'multiple',
   'some',
   'something',
-  'fix',
-  'update',
   'work on',
-  'handle',
   'deal with',
-  'manage',
-  'optimize',
-  'improve',
-  'enhance',
-  'refactor',
 ];
 
 /**
@@ -319,10 +313,13 @@ export function validateAtomicTask(taskData: {
     );
   }
 
-  // Check for vague titles
+  // Check for vague titles (vague words anywhere in title)
   const isVague = VAGUE_PATTERNS.some(pattern => {
     const patternLower = pattern.toLowerCase();
-    return titleLower === patternLower || titleLower.startsWith(patternLower + ' ');
+    // Match if title is exactly the pattern, starts with it, or contains it as a word
+    return titleLower === patternLower ||
+           titleLower.startsWith(patternLower + ' ') ||
+           titleLower.includes(' ' + patternLower);
   });
 
   if (isVague) {
