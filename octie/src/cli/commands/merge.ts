@@ -3,7 +3,7 @@
  */
 
 import { Command } from 'commander';
-import { getProjectPath, loadGraph, saveGraph, success, error, info } from '../utils/helpers.js';
+import { getProjectPath, loadGraph, saveGraph, success, error, info, confirmPrompt } from '../utils/helpers.js';
 import chalk from 'chalk';
 import { mergeTasks } from '../../core/graph/operations.js';
 
@@ -64,9 +64,11 @@ export const mergeCommand = new Command('merge')
 
       // Confirm
       if (!options.force) {
-        console.log(chalk.yellow('Merge these tasks? (y/N)'));
-        console.log(chalk.gray('(Use --force to skip confirmation)'));
-        // For now, auto-confirm to avoid blocking
+        const confirmed = await confirmPrompt(chalk.yellow('Merge these tasks? (y/N)'));
+        if (!confirmed) {
+          info('Merge cancelled');
+          process.exit(0);
+        }
       }
 
       // Perform merge (ignore return value for now)

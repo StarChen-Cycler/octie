@@ -332,6 +332,28 @@ export async function withRetry<T>(
 }
 
 /**
+ * Prompt user for confirmation
+ * Returns true if user confirms (y/yes), false otherwise
+ */
+export async function confirmPrompt(message: string): Promise<boolean> {
+  const readline = await import('node:readline/promises');
+  const { stdin, stdout } = await import('node:process');
+
+  const rl = readline.createInterface({
+    input: stdin,
+    output: stdout,
+  });
+
+  try {
+    const answer = await rl.question(message + ' ');
+    const normalized = answer.trim().toLowerCase();
+    return normalized === 'y' || normalized === 'yes';
+  } finally {
+    rl.close();
+  }
+}
+
+/**
  * Attempt to recover from a corrupted project file
  * Tries to restore from backup and provides actionable suggestions
  */

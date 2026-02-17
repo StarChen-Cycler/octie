@@ -3,7 +3,7 @@
  */
 
 import { Command } from 'commander';
-import { getProjectPath, loadGraph, saveGraph, success, error, info, warning } from '../utils/helpers.js';
+import { getProjectPath, loadGraph, saveGraph, success, error, info, warning, confirmPrompt } from '../utils/helpers.js';
 import chalk from 'chalk';
 import { cutNode, cascadeDelete } from '../../core/graph/operations.js';
 
@@ -66,9 +66,11 @@ export const deleteCommand = new Command('delete')
 
       // Confirm deletion
       if (!options.force) {
-        console.log(chalk.yellow('Delete this task? (y/N)'));
-        console.log(chalk.gray('(Use --force to skip confirmation)'));
-        // For now, auto-confirm to avoid blocking
+        const confirmed = await confirmPrompt(chalk.yellow('Delete this task? (y/N)'));
+        if (!confirmed) {
+          info('Deletion cancelled');
+          process.exit(0);
+        }
       }
 
       // Create backup before deletion
