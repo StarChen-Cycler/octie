@@ -64,6 +64,7 @@ export const mergeCommand = new Command('merge')
 
       // Confirm
       if (!options.force) {
+        console.log(chalk.gray('(Use --force to skip confirmation)'));
         const confirmed = await confirmPrompt(chalk.yellow('Merge these tasks? (y/N)'));
         if (!confirmed) {
           info('Merge cancelled');

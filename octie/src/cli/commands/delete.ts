@@ -66,6 +66,7 @@ export const deleteCommand = new Command('delete')
 
       // Confirm deletion
       if (!options.force) {
+        console.log(chalk.gray('(Use --force to skip confirmation)'));
         const confirmed = await confirmPrompt(chalk.yellow('Delete this task? (y/N)'));
         if (!confirmed) {
           info('Deletion cancelled');
