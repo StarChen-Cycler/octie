@@ -1035,3 +1035,94 @@
 **Completed**: 2026-02-17
 **Git Commit**: 27c5a56
 
+#### [x] Support Multiple IDs in --complete-criterion and --complete-deliverable
+**Type**: Bug Fix
+**Blockers**: None
+**Related Files**: octie/src/cli/commands/update.ts, octie/src/cli/utils/helpers.ts
+**C7 MCP Verified**: /tj/commander.js (custom option parsing with commaSeparatedList pattern)
+**Description**: `--complete-criterion` and `--complete-deliverable` flags only accept single ID, need to support multiple IDs in format "id1","id2","id3"
+**Root Cause**: Commander.js default option parsing only handles single string values; custom parser needed for quoted CSV format
+**Deliverables**:
+- [x] Add `parseMultipleIds()` helper function to helpers.ts that parses "id1","id2","id3" format
+- [x] Update `--complete-deliverable` option to use custom parser (backward compatible with single ID)
+- [x] Update `--complete-criterion` option to use custom parser (backward compatible with single ID)
+- [x] Update action handlers to iterate through parsed IDs array
+- [x] Test single ID: `--complete-deliverable "abc123"` (backward compatibility)
+- [x] Test multiple IDs comma-separated: `--complete-criterion id1,id2,id3`
+- [x] Test invalid IDs are handled gracefully by existing TaskNode methods
+- [x] Update help text with format examples
+**Completed**: 2026-02-17
+**Git Commit**: 63fc00d
+
+#### [x] Blockers/Dependencies Twin Feature with Explanatory Text
+**Type**: Feature Enhancement
+**Blockers**: None
+**Related Files**: octie/src/core/models/task-node.ts, octie/src/cli/commands/create.ts, octie/src/cli/commands/update.ts, octie/src/cli/commands/import.ts, octie/src/cli/output/markdown.ts
+**C7 MCP Verified**: N/A
+**Deliverables**:
+- [x] Change dependencies from `string[]` (task IDs) to `string` (single explanatory text) - Already correct in types/index.ts:103
+- [x] Create command requires both --blockers <ids> AND --dependencies <explanation> together (twin validation) - create.ts:179-195
+- [x] Update command enforces twin changes: --block/--unblock requires --dependencies update - update.ts:111-154
+- [x] Removing last blocker clears dependencies field; removing from multiple blockers requires updating explanations - update.ts:131-136
+- [x] Error messages show current paired info when attempting partial update - update.ts:115-117, create.ts:184-195
+- [x] Markdown import/export supports explanatory text format for dependencies - markdown.ts:64-68, import.ts:325-347
+- [x] Tests cover twin validation, partial update rejection, and edge cases - create.test.ts, update.test.ts
+- [x] Help text updated to explain dependencies as explanatory text (not IDs) - create.ts:318-335, update.ts:264-290
+- [x] Fix ParsedMarkdownTask interface type bug in import.ts (dependencies: string[] → string)
+- [x] Fix missing `info` import in update.ts
+- [x] Update outdated tests to use new API (setDependencies, clearDependencies)
+**Completed**: 2026-02-17
+
+
+#### [x] Fix C7 Verifications Not Imported from Markdown
+**Type**: Bug Fix
+**Blockers**: None
+**Related Files**: octie/src/cli/commands/import.ts
+**C7 MCP Verified**: N/A
+**Description**: C7 verification data is exported to markdown in "### Library Verifications" section but not parsed during import, causing data loss on round-trip
+**Root Cause**: `parseMarkdownTasks()` function always sets `c7_verified: []` (empty array) instead of parsing the "### Library Verifications" section from markdown
+**Deliverables**:
+- [x] Add extraction logic for "### Library Verifications" section in parseMarkdownTasks()
+- [x] Parse library_id and verified_at from format: "- /library/id (verified: ISO-timestamp)"
+- [x] Parse optional notes from indented lines under each C7 entry
+- [x] Match format used by export: markdown.ts lines 91-101
+- [x] Add unit test: C7 verifications are preserved on export/import round-trip
+- [x] Test with multiple C7 verifications per task
+- [x] Test with C7 notes (multi-line indented text)
+- [x] Verify empty c7_verified array when section is missing
+**Completed**: 2026-02-17
+**Git Commit**: 63fc00d
+
+
+#### [x] Fix --related-files Multiple Values Bug
+**Type**: Bug Fix
+**Blockers**: None
+**Related Files**: octie/src/cli/commands/create.ts
+**C7 MCP Verified**: /tj/commander.js (argParser accumulator pattern for repeatable options)
+**Description**: `octie create --related-files file1 --related-files file2` only saves last value (file2). Need to support multiple file paths
+**Root Cause**: Line 93 uses plain `.option()` without argParser, which only captures the last value when option is specified multiple times
+**Deliverables**:
+- [x] Update `--related-files` option to use `.argParser()` accumulator pattern (same as --success-criterion, --deliverable)
+- [x] Handle both array input (multiple options) and string input (comma-separated)
+- [x] Test multiple options: `--related-files file1.ts --related-files file2.ts`
+- [x] Test comma-separated: `--related-files "file1.ts,file2.ts"`
+- [x] Test mixed usage: `--related-files "file1.ts,file2.ts" --related-files file3.ts`
+- [x] Verify backward compatibility with existing single value usage
+**Completed**: 2026-02-17
+**Git Commit**: 63fc00d
+
+#### [x] Auto-Status-Reset on Criterion/Deliverable Addition
+**Type**: Feature Enhancement
+**Blockers**: None
+**Related Files**: octie/src/core/models/task-node.ts, octie/tests/unit/core/models/task-node.test.ts
+**C7 MCP Verified**: N/A
+**Description**: When agent creates a new success criterion or deliverable in a completed task, auto-reset task status from 'completed' to 'in_progress' (similar to how completed_at is already set to null)
+**Deliverables**:
+- [x] Modify `_checkCompletion()` in task-node.ts to detect when task transitions from complete to incomplete
+- [x] Add status auto-reset logic: if (status === 'completed' && !isComplete) → status = 'in_progress'
+- [x] Add unit test: adding criterion to completed task sets status to 'in_progress'
+- [x] Add unit test: adding deliverable to completed task sets status to 'in_progress'
+- [x] Add unit test: tasks with non-completed status are unaffected by new items
+- [x] Verify existing `completed_at` behavior is preserved (null when incomplete, timestamp when complete)
+**Completed**: 2026-02-17
+**Git Commit**: 63fc00d

@@ -3,7 +3,7 @@
  */
 
 import { Command } from 'commander';
-import { getProjectPath, loadGraph, saveGraph, success, error, parseMultipleIds } from '../utils/helpers.js';
+import { getProjectPath, loadGraph, saveGraph, success, error, info, parseMultipleIds } from '../utils/helpers.js';
 import chalk from 'chalk';
 import { randomUUID } from 'node:crypto';
 import { readFileSync, existsSync } from 'node:fs';
@@ -23,10 +23,10 @@ export const updateCommand = new Command('update')
   .option('--add-success-criterion <text>', 'Add a success criterion')
   .option('--complete-criterion <id>', 'Mark success criterion(s) as complete (supports: id, id1,id2, or "id1","id2")', parseMultipleIds, [])
   .option('--remove-criterion <id>', 'Remove a success criterion by ID')
-  .option('--block <id>', 'Add a blocker (creates graph edge for execution order)')
+  .option('--block <id>', 'Add a blocker (requires --dependency-explanation)')
   .option('--unblock <id>', 'Remove a blocker (removes graph edge)')
-  .option('--add-dependency <id>', 'Add a dependency note (informational, no graph edge)')
-  .option('--remove-dependency <id>', 'Remove a dependency note')
+  .option('--dependency-explanation <text>', 'Set/update dependencies explanation (required with --block)')
+  .option('--clear-dependencies', 'Clear dependencies explanation (for removing last blocker)')
   .option('--add-related-file <path>', 'Add a related file path')
   .option('--remove-related-file <path>', 'Remove a related file path')
   .option('--verify-c7 <library:notes>', 'Add C7 library verification (format: library-id or library-id:notes)')
@@ -108,10 +108,19 @@ export const updateCommand = new Command('update')
         updated = true;
       }
 
-      // Add blocker
+      // Add blocker (twin validation: requires --dependency-explanation)
       if (options.block) {
+        if (!options.dependencyExplanation) {
+          error('When using --block, --dependency-explanation is required (twin feature).');
+          info(`Current dependencies: "${task.dependencies || '(none)'}"`);
+          info('Example: --block abc123 --dependency-explanation "Needs API spec from abc123"');
+          process.exit(1);
+        }
         task.addBlocker(options.block);
         graph.addEdge(options.block, id);
+        // Update dependencies explanation (append to existing)
+        const existingDeps = task.dependencies || '';
+        task.setDependencies(existingDeps ? `${existingDeps}\n${options.dependencyExplanation}` : options.dependencyExplanation);
         updated = true;
       }
 
@@ -119,18 +128,29 @@ export const updateCommand = new Command('update')
       if (options.unblock) {
         task.removeBlocker(options.unblock);
         graph.removeEdge(options.unblock, id);
+        // If no more blockers, clear dependencies automatically
+        if (task.blockers.length === 0) {
+          task.clearDependencies();
+          info('No more blockers - dependencies explanation cleared automatically.');
+        }
         updated = true;
       }
 
-      // Add dependency
-      if (options.addDependency) {
-        task.addDependency(options.addDependency);
+      // Set/update dependencies explanation
+      if (options.dependencyExplanation && !options.block) {
+        // Standalone dependency explanation update (must have blockers)
+        if (task.blockers.length === 0) {
+          error('Cannot set dependencies explanation without blockers.');
+          info('Use --block to add a blocker first, or provide both --block and --dependency-explanation together.');
+          process.exit(1);
+        }
+        task.setDependencies(options.dependencyExplanation);
         updated = true;
       }
 
-      // Remove dependency
-      if (options.removeDependency) {
-        task.removeDependency(options.removeDependency);
+      // Clear dependencies (for explicit clearing when last blocker removed)
+      if (options.clearDependencies) {
+        task.clearDependencies();
         updated = true;
       }
 
@@ -243,16 +263,28 @@ export const updateCommand = new Command('update')
 // Add help text to explain blockers vs dependencies
 updateCommand.on('--help', () => {
   console.log('');
-  console.log(chalk.bold('Blockers vs Dependencies:'));
-  console.log(chalk.cyan('  --block / --unblock') + ': Creates/removes GRAPH EDGES.');
-  console.log('                         Affects execution order, topological sort, and cycle detection.');
+  console.log(chalk.bold('Blockers & Dependencies (Twin Feature):'));
+  console.log(chalk.cyan('  --block <id>') + ': Add a blocker (creates graph edge).');
+  console.log('                REQUIRES --dependency-explanation (twin validation).');
   console.log('');
-  console.log(chalk.cyan('  --add-dependency / --remove-dependency') + ': Informational NOTES only.');
-  console.log('                                            Documents WHY tasks are related.');
-  console.log('                                            Does NOT affect execution order.');
+  console.log(chalk.cyan('  --unblock <id>') + ': Remove a blocker (removes graph edge).');
+  console.log('                  If last blocker removed, dependencies auto-cleared.');
   console.log('');
-  console.log(chalk.yellow('  Example:'));
-  console.log('    Task B is blocked by Task A (--block A).');
-  console.log('    This means A must complete before B starts.');
-  console.log('    Use --add-dependency A to document the reason (e.g., "needs A\'s output").');
+  console.log(chalk.cyan('  --dependency-explanation <text>') + ': Set/update dependencies explanation.');
+  console.log('                                     Required with --block.');
+  console.log('');
+  console.log(chalk.cyan('  --clear-dependencies') + ': Explicitly clear dependencies explanation.');
+  console.log('');
+  console.log(chalk.yellow('  Examples:'));
+  console.log('    Add blocker with explanation:');
+  console.log('      octie update abc --block xyz --dependency-explanation "Needs xyz output"');
+  console.log('');
+  console.log('    Update existing dependencies text:');
+  console.log('      octie update abc --dependency-explanation "Updated reason"');
+  console.log('');
+  console.log('    Remove blocker (auto-clears if last one):');
+  console.log('      octie update abc --unblock xyz');
+  console.log('');
+  console.log(chalk.red('  Error if twin missing:'));
+  console.log('    --block without --dependency-explanation → Error');
 });

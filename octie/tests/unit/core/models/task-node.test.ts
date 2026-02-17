@@ -788,7 +788,7 @@ describe('TaskNode', () => {
       expect(task.blockers).not.toContain(blockerId);
     });
 
-    it('should add dependency', () => {
+    it('should set dependencies explanation', () => {
       const task = new TaskNode({
         title: 'Implement login endpoint',
         description: 'Create POST /auth/login endpoint that validates credentials and returns JWT token. The endpoint should use bcrypt for password hashing and return a 200 status with valid JWT on correct credentials.',
@@ -800,13 +800,13 @@ describe('TaskNode', () => {
         ],
       });
 
-      const depId = uuidv4();
-      task.addDependency(depId);
+      const explanation = 'Needs API spec from auth-design task';
+      task.setDependencies(explanation);
 
-      expect(task.dependencies).toContain(depId);
+      expect(task.dependencies).toBe(explanation);
     });
 
-    it('should remove dependency', () => {
+    it('should clear dependencies explanation', () => {
       const task = new TaskNode({
         title: 'Implement login endpoint',
         description: 'Create POST /auth/login endpoint that validates credentials and returns JWT token. The endpoint should use bcrypt for password hashing and return a 200 status with valid JWT on correct credentials.',
@@ -818,12 +818,12 @@ describe('TaskNode', () => {
         ],
       });
 
-      const depId = uuidv4();
-      task.addDependency(depId);
-      expect(task.dependencies).toContain(depId);
+      const explanation = 'Needs API spec from auth-design task';
+      task.setDependencies(explanation);
+      expect(task.dependencies).toBe(explanation);
 
-      task.removeDependency(depId);
-      expect(task.dependencies).not.toContain(depId);
+      task.clearDependencies();
+      expect(task.dependencies).toBe('');
     });
   });
 

@@ -35,7 +35,7 @@ interface ParsedMarkdownTask {
   success_criteria: SuccessCriterion[];
   deliverables: Deliverable[];
   blockers: string[];
-  dependencies: string[];
+  dependencies: string;
   sub_items: string[];
   related_files: string[];
   notes: string;
@@ -322,12 +322,13 @@ function parseMarkdownTasks(content: string): ParsedMarkdownTask[] {
         }
       }
 
-      // Extract dependencies
-      const dependencies: string[] = [];
+      // Extract dependencies (explanatory text - twin to blockers)
+      let dependencies = '';
       for (let j = i; j < taskEndIndex; j++) {
         const l = lines[j];
         if (l === undefined) continue;
         if (l.trim() === '### Dependencies') {
+          const depLines: string[] = [];
           let k = j + 1;
           while (k < taskEndIndex) {
             const itemLine = lines[k];
@@ -337,10 +338,10 @@ function parseMarkdownTasks(content: string): ParsedMarkdownTask[] {
             }
             const lt = itemLine.trim();
             if (lt.startsWith('### ') || lt === '---') break;
-            const ref = extractTaskReference(lt);
-            if (ref) dependencies.push(ref);
+            depLines.push(itemLine);
             k++;
           }
+          dependencies = depLines.join('\n').trim();
           break;
         }
       }

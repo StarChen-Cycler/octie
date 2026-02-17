@@ -56,7 +56,7 @@ describe('create command', () => {
           { id: uuidv4(), text: 'src/api/auth/login.ts', completed: false },
         ],
         blockers: [],
-        dependencies: [],
+        dependencies: '',
         related_files: [],
         notes: '',
         c7_verified: [],
@@ -91,7 +91,7 @@ describe('create command', () => {
           { id: uuidv4(), text: 'src/auth/hashing.ts', completed: false },
         ],
         blockers: [],
-        dependencies: [],
+        dependencies: '',
         related_files: [],
         notes: '',
         c7_verified: [],
@@ -119,7 +119,7 @@ describe('create command', () => {
           { id: uuidv4(), text: 'tests/models/user.factory.ts', completed: false },
         ],
         blockers: [],
-        dependencies: [],
+        dependencies: '',
         related_files: [],
         notes: '',
         c7_verified: [],
@@ -147,7 +147,7 @@ describe('create command', () => {
           { id: uuidv4(), text: 'fixed-code.ts', completed: false },
         ],
         blockers: [],
-        dependencies: [],
+        dependencies: '',
         related_files: [],
         notes: '',
         c7_verified: [],
@@ -172,7 +172,7 @@ describe('create command', () => {
           { id: uuidv4(), text: 'login.ts', completed: false },
         ],
         blockers: [],
-        dependencies: [],
+        dependencies: '',
         related_files: [],
         notes: '',
         c7_verified: [],
@@ -201,7 +201,7 @@ describe('create command', () => {
           { id: uuidv4(), text: 'output.ts', completed: false },
         ],
         blockers: [],
-        dependencies: [],
+        dependencies: '',
         related_files: [],
         notes: '',
         c7_verified: [],
@@ -230,7 +230,7 @@ describe('create command', () => {
         ],
         deliverables: deliverables,
         blockers: [],
-        dependencies: [],
+        dependencies: '',
         related_files: [],
         notes: '',
         c7_verified: [],
@@ -255,7 +255,7 @@ describe('create command', () => {
           { id: uuidv4(), text: 'better-code.ts', completed: false },
         ],
         blockers: [],
-        dependencies: [],
+        dependencies: '',
         related_files: [],
         notes: '',
         c7_verified: [],
@@ -283,7 +283,7 @@ describe('create command', () => {
           { id: uuidv4(), text: 'tests/api/auth/login.test.ts', completed: false },
         ],
         blockers: [],
-        dependencies: [],
+        dependencies: '',
         related_files: [],
         notes: '',
         c7_verified: [],
@@ -311,7 +311,7 @@ describe('create command', () => {
           { id: uuidv4(), text: 'output.ts', completed: false },
         ],
         blockers: [],
-        dependencies: [],
+        dependencies: '',
         related_files: [],
         notes: '',
         c7_verified: [],
@@ -336,7 +336,7 @@ describe('create command', () => {
           { id: uuidv4(), text: 'output.ts', completed: false },
         ],
         blockers: [],
-        dependencies: [],
+        dependencies: '',
         related_files: [],
         notes: '',
         c7_verified: [],
@@ -364,7 +364,7 @@ describe('create command', () => {
           { id: uuidv4(), text: 'fix.ts', completed: false },
         ],
         blockers: [],
-        dependencies: [],
+        dependencies: '',
         related_files: [],
         notes: '',
         c7_verified: [],
@@ -390,7 +390,7 @@ describe('create command', () => {
           { id: uuidv4(), text: 'output.ts', completed: false },
         ],
         blockers: [],
-        dependencies: [],
+        dependencies: '',
         related_files: [],
         notes: '',
         c7_verified: [],
@@ -422,7 +422,7 @@ describe('create command', () => {
           { id: uuidv4(), text: 'blocker.ts', completed: false },
         ],
         blockers: [],
-        dependencies: [],
+        dependencies: '',
         related_files: [],
         notes: '',
         c7_verified: [],
@@ -447,7 +447,7 @@ describe('create command', () => {
           { id: uuidv4(), text: 'dependent.ts', completed: false },
         ],
         blockers: [blockerId],
-        dependencies: [],
+        dependencies: '',
         related_files: [],
         notes: '',
         c7_verified: [],
@@ -478,7 +478,7 @@ describe('create command', () => {
           { id: uuidv4(), text: 'blocker1.ts', completed: false },
         ],
         blockers: [],
-        dependencies: [],
+        dependencies: '',
         related_files: [],
         notes: '',
         c7_verified: [],
@@ -499,7 +499,7 @@ describe('create command', () => {
           { id: uuidv4(), text: 'blocker2.ts', completed: false },
         ],
         blockers: [],
-        dependencies: [],
+        dependencies: '',
         related_files: [],
         notes: '',
         c7_verified: [],
@@ -523,7 +523,7 @@ describe('create command', () => {
           { id: uuidv4(), text: 'dependent.ts', completed: false },
         ],
         blockers: [blocker1Id, blocker2Id],
-        dependencies: [],
+        dependencies: '',
         related_files: [],
         notes: '',
         c7_verified: [],
@@ -552,7 +552,7 @@ describe('create command', () => {
           { id: uuidv4(), text: 'src/api/auth/login.ts', completed: false },
         ],
         blockers: [],
-        dependencies: [],
+        dependencies: '',
         related_files: [],
         notes: '',
         c7_verified: [
@@ -582,7 +582,7 @@ describe('create command', () => {
           { id: uuidv4(), text: 'src/api/auth/login.ts', completed: false },
         ],
         blockers: [],
-        dependencies: [],
+        dependencies: '',
         related_files: [],
         notes: '',
         c7_verified: [
@@ -826,6 +826,105 @@ describe('create command', () => {
       expect(task?.related_files).toContain('src/db/pool.ts');
       expect(task?.related_files).toContain('src/db/queries.ts');
       expect(task?.related_files.length).toBe(3);
+    });
+  });
+
+  describe('twin validation (blockers + dependencies)', () => {
+    let cliTempDir: string;
+    let cliStorage: TaskStorage;
+    let cliPath: string;
+    let blockerId: string;
+
+    beforeEach(async () => {
+      cliTempDir = join(tmpdir(), `octie-cli-twin-${uuidv4()}`);
+      cliStorage = new TaskStorage({ projectDir: cliTempDir });
+      await cliStorage.createProject('twin-test-project');
+      cliPath = join(process.cwd(), 'dist', 'cli', 'index.js');
+
+      // Create a blocker task for twin tests
+      const output = execSync(
+        `node ${cliPath} --project "${cliTempDir}" create ` +
+        `--title "Implement base API" ` +
+        `--description "Create the base API infrastructure including server setup and routing for all endpoints to use" ` +
+        `--success-criterion "API server starts successfully" ` +
+        `--deliverable "src/api/server.ts"`,
+        { encoding: 'utf-8' }
+      );
+      // Extract blocker ID from output
+      const match = output.match(/Task created: ([a-f0-9-]+)/);
+      blockerId = match?.[1] || '';
+    });
+
+    afterEach(() => {
+      try {
+        rmSync(cliTempDir, { recursive: true, force: true });
+      } catch {
+        // Ignore cleanup errors
+      }
+    });
+
+    it('should create task with both blockers and dependencies together (twin)', async () => {
+      const output = execSync(
+        `node ${cliPath} --project "${cliTempDir}" create ` +
+        `--title "Implement user endpoint" ` +
+        `--description "Create GET /user endpoint that returns user profile information from the database" ` +
+        `--success-criterion "Returns user profile with 200 status" ` +
+        `--deliverable "src/api/user.ts" ` +
+        `--blockers "${blockerId}" ` +
+        `--dependencies "Needs base API server from blocker"`,
+        { encoding: 'utf-8' }
+      );
+
+      expect(output).toContain('Task created');
+
+      const graph = await cliStorage.load();
+      const tasks = graph.getAllTasks();
+      const task = tasks.find(t => t.title === 'Implement user endpoint');
+      expect(task).toBeDefined();
+      expect(task?.blockers).toContain(blockerId);
+      expect(task?.dependencies).toBe('Needs base API server from blocker');
+    });
+
+    it('should reject --blockers without --dependencies (partial twin)', () => {
+      let errorMsg = '';
+      try {
+        execSync(
+          `node ${cliPath} --project "${cliTempDir}" create ` +
+          `--title "Implement profile endpoint" ` +
+          `--description "Create GET /profile endpoint that returns user profile data from database storage" ` +
+          `--success-criterion "Returns profile data" ` +
+          `--deliverable "src/api/profile.ts" ` +
+          `--blockers "${blockerId}"`,
+          { encoding: 'utf-8', stdio: 'pipe' }
+        );
+      } catch (err: any) {
+        errorMsg = err.stderr?.toString() || err.stdout?.toString() || '';
+      }
+
+      expect(errorMsg).toContain('blockers');
+      expect(errorMsg).toContain('dependencies');
+      expect(errorMsg).toContain('required');
+    });
+
+    it('should reject --dependencies without --blockers (partial twin)', () => {
+      let errorMsg = '';
+      try {
+        execSync(
+          `node ${cliPath} --project "${cliTempDir}" create ` +
+          `--title "Implement settings endpoint" ` +
+          `--description "Create GET /settings endpoint that returns user application settings and preferences" ` +
+          `--success-criterion "Returns settings" ` +
+          `--deliverable "src/api/settings.ts" ` +
+          `--dependencies "Some dependency explanation"`,
+          { encoding: 'utf-8', stdio: 'pipe' }
+        );
+      } catch (err: any) {
+        errorMsg = err.stderr?.toString() || err.stdout?.toString() || '';
+      }
+
+      expect(errorMsg).toContain('dependencies');
+      expect(errorMsg).toContain('blockers');
+      expect(errorMsg).toContain('required');
     });
   });
 });

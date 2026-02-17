@@ -54,7 +54,7 @@ describe('update command', () => {
         { id: deliverableId, text: 'src/api/auth/login.ts', completed: false },
       ],
       blockers: [],
-      dependencies: [],
+      dependencies: '',
       related_files: [],
       notes: '',
       c7_verified: [],
@@ -233,7 +233,7 @@ describe('update command', () => {
   });
 
   describe('blocker management', () => {
-    it('should add blocker to task', async () => {
+    it('should add blocker to task with dependency explanation (twin)', async () => {
       // Create another task to use as blocker
       const graph = await storage.load();
       const blockerTaskId = uuidv4();
@@ -247,7 +247,7 @@ describe('update command', () => {
         success_criteria: [{ id: uuidv4(), text: 'Complete', completed: false }],
         deliverables: [{ id: uuidv4(), text: 'output.ts', completed: false }],
         blockers: [],
-        dependencies: [],
+        dependencies: '',
         related_files: [],
         notes: '',
         c7_verified: [],
@@ -258,9 +258,9 @@ describe('update command', () => {
       graph.addNode(blockerTask);
       await storage.save(graph);
 
-      // Add blocker
+      // Add blocker with dependency explanation (twin validation)
       const output = execSync(
-        `node ${cliPath} --project "${tempDir}" update ${testTaskId} --block "${blockerTaskId}"`,
+        `node ${cliPath} --project "${tempDir}" update ${testTaskId} --block "${blockerTaskId}" --dependency-explanation "Needs output from blocker task"`,
         { encoding: 'utf-8' }
       );
 
@@ -269,6 +269,7 @@ describe('update command', () => {
       const updatedGraph = await storage.load();
       const task = updatedGraph.getNode(testTaskId);
       expect(task?.blockers).toContain(blockerTaskId);
+      expect(task?.dependencies).toContain('Needs output from blocker task');
     });
   });
 
@@ -346,21 +347,21 @@ describe('update command', () => {
       }).toThrow();
     });
 
-    it('should add and remove a dependency', async () => {
-      // Create another task to use as dependency
+    it('should set and clear dependencies explanation', async () => {
+      // Create another task to use as blocker
       const graph = await storage.load();
-      const depTaskId = uuidv4();
+      const blockerTaskId = uuidv4();
 
-      const depTask = new TaskNode({
-        id: depTaskId,
-        title: 'Implement dependency task',
+      const blockerTask = new TaskNode({
+        id: blockerTaskId,
+        title: 'Implement blocker task',
         description: 'Valid description that is long enough to meet minimum requirements for the test case',
         status: 'not_started',
         priority: 'top',
         success_criteria: [{ id: uuidv4(), text: 'Complete', completed: false }],
         deliverables: [{ id: uuidv4(), text: 'output.ts', completed: false }],
         blockers: [],
-        dependencies: [],
+        dependencies: '',
         related_files: [],
         notes: '',
         c7_verified: [],
@@ -368,30 +369,33 @@ describe('update command', () => {
         edges: [],
       });
 
-      graph.addNode(depTask);
+      graph.addNode(blockerTask);
       await storage.save(graph);
 
-      // Add dependency
+      // Add blocker with dependency explanation (twin validation)
       execSync(
-        `node ${cliPath} --project "${tempDir}" update ${testTaskId} --add-dependency "${depTaskId}"`,
+        `node ${cliPath} --project "${tempDir}" update ${testTaskId} --block "${blockerTaskId}" --dependency-explanation "Needs output from blocker"`,
         { encoding: 'utf-8' }
       );
 
       let updatedGraph = await storage.load();
       let task = updatedGraph.getNode(testTaskId);
-      expect(task?.dependencies).toContain(depTaskId);
+      expect(task?.blockers).toContain(blockerTaskId);
+      expect(task?.dependencies).toBe('Needs output from blocker');
 
-      // Remove dependency
+      // Clear dependencies by removing the blocker (auto-clear)
       const output = execSync(
-        `node ${cliPath} --project "${tempDir}" update ${testTaskId} --remove-dependency "${depTaskId}"`,
+        `node ${cliPath} --project "${tempDir}" update ${testTaskId} --unblock "${blockerTaskId}"`,
         { encoding: 'utf-8' }
       );
 
       expect(output).toContain('Task updated');
+      expect(output).toContain('cleared');
 
       updatedGraph = await storage.load();
       task = updatedGraph.getNode(testTaskId);
-      expect(task?.dependencies).not.toContain(depTaskId);
+      expect(task?.blockers).not.toContain(blockerTaskId);
+      expect(task?.dependencies).toBe('');
     });
 
     it('should add and remove a related file', async () => {
@@ -712,6 +716,128 @@ describe('update command', () => {
           { encoding: 'utf-8', stdio: 'pipe' }
         );
       }).toThrow();
+    });
+  });
+
+  describe('twin validation (block + dependency-explanation)', () => {
+    let blockerTaskId: string;
+
+    beforeEach(async () => {
+      // Create a blocker task
+      const blockerOutput = execSync(
+        `node ${cliPath} --project "${tempDir}" create ` +
+        `--title "Blocker task for twin test" ` +
+        `--description "This is a blocker task that will be used to test twin validation in update command" ` +
+        `--success-criterion "Blocker complete" ` +
+        `--deliverable "blocker.ts"`,
+        { encoding: 'utf-8' }
+      );
+      const match = blockerOutput.match(/Task created: ([a-f0-9-]+)/);
+      blockerTaskId = match?.[1] || '';
+    });
+
+    it('should add blocker with dependency-explanation (twin)', async () => {
+      const output = execSync(
+        `node ${cliPath} --project "${tempDir}" update ${testTaskId} ` +
+        `--block "${blockerTaskId}" ` +
+        `--dependency-explanation "Needs blocker output to proceed"`,
+        { encoding: 'utf-8' }
+      );
+
+      expect(output).toContain('Task updated');
+
+      const graph = await storage.load();
+      const task = graph.getNode(testTaskId);
+      expect(task?.blockers).toContain(blockerTaskId);
+      expect(task?.dependencies).toContain('Needs blocker output to proceed');
+    });
+
+    it('should reject --block without --dependency-explanation', () => {
+      let errorMsg = '';
+      try {
+        execSync(
+          `node ${cliPath} --project "${tempDir}" update ${testTaskId} ` +
+          `--block "${blockerTaskId}"`,
+          { encoding: 'utf-8', stdio: 'pipe' }
+        );
+      } catch (err: any) {
+        errorMsg = err.stderr?.toString() || err.stdout?.toString() || '';
+      }
+
+      expect(errorMsg).toContain('block');
+      expect(errorMsg).toContain('dependency-explanation');
+      expect(errorMsg).toContain('required');
+    });
+
+    it('should auto-clear dependencies when last blocker is removed', async () => {
+      // First add a blocker with dependency-explanation
+      execSync(
+        `node ${cliPath} --project "${tempDir}" update ${testTaskId} ` +
+        `--block "${blockerTaskId}" ` +
+        `--dependency-explanation "Initial dependency explanation"`,
+        { encoding: 'utf-8' }
+      );
+
+      // Verify blocker and dependencies are set
+      let graph = await storage.load();
+      let task = graph.getNode(testTaskId);
+      expect(task?.blockers).toContain(blockerTaskId);
+      expect(task?.dependencies).toContain('Initial dependency');
+
+      // Remove the blocker
+      const output = execSync(
+        `node ${cliPath} --project "${tempDir}" update ${testTaskId} ` +
+        `--unblock "${blockerTaskId}"`,
+        { encoding: 'utf-8' }
+      );
+
+      expect(output).toContain('Task updated');
+      expect(output).toContain('dependencies');
+      expect(output).toContain('cleared');
+
+      // Verify blocker removed and dependencies cleared
+      graph = await storage.load();
+      task = graph.getNode(testTaskId);
+      expect(task?.blockers).not.toContain(blockerTaskId);
+      expect(task?.dependencies).toBe('');
+    });
+
+    it('should show current dependencies info on partial update attempt', () => {
+      // First set up blockers and dependencies
+      execSync(
+        `node ${cliPath} --project "${tempDir}" update ${testTaskId} ` +
+        `--block "${blockerTaskId}" ` +
+        `--dependency-explanation "Current dependency reason"`,
+        { encoding: 'utf-8' }
+      );
+
+      // Try to add another blocker without dependency-explanation
+      let errorMsg = '';
+      try {
+        // Create another blocker
+        const blocker2Output = execSync(
+          `node ${cliPath} --project "${tempDir}" create ` +
+          `--title "Second blocker" ` +
+          `--description "Another blocker task for testing partial update error messages" ` +
+          `--success-criterion "Complete" ` +
+          `--deliverable "blocker2.ts"`,
+          { encoding: 'utf-8' }
+        );
+        const match = blocker2Output.match(/Task created: ([a-f0-9-]+)/);
+        const blocker2Id = match?.[1] || '';
+
+        execSync(
+          `node ${cliPath} --project "${tempDir}" update ${testTaskId} ` +
+          `--block "${blocker2Id}"`,
+          { encoding: 'utf-8', stdio: 'pipe' }
+        );
+      } catch (err: any) {
+        errorMsg = err.stderr?.toString() || err.stdout?.toString() || '';
+      }
+
+      // Error should show current dependencies info
+      expect(errorMsg).toContain('dependency-explanation');
+      expect(errorMsg).toContain('required');
     });
   });
 });
