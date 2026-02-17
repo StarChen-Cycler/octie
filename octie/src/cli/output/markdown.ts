@@ -33,7 +33,8 @@ export function formatTaskMarkdown(task: TaskNode): string {
     lines.push('### Success Criteria');
     for (const sc of task.success_criteria) {
       const scCheckbox = sc.completed ? '[x]' : '[ ]';
-      lines.push(`- ${scCheckbox} ${sc.text}`);
+      const idDisplay = `\`${sc.id.substring(0, 8)}\``;
+      lines.push(`- ${scCheckbox} ${sc.text} ${idDisplay}`);
       if (sc.completed && sc.completed_at) {
         lines.push(`  - Completed: ${sc.completed_at}`);
       }
@@ -61,12 +62,10 @@ export function formatTaskMarkdown(task: TaskNode): string {
     lines.push('');
   }
 
-  // Dependencies
-  if (task.dependencies.length > 0) {
+  // Dependencies (explanatory text - twin to blockers)
+  if (task.dependencies) {
     lines.push('### Dependencies');
-    for (const depId of task.dependencies) {
-      lines.push(`- #${depId}`);
-    }
+    lines.push(task.dependencies);
     lines.push('');
   }
 

@@ -64,12 +64,12 @@ export function formatTasksTable(
         ]);
       }
 
-      if (task.dependencies.length > 0) {
+      if (task.dependencies) {
         table.push([
           '',
-          chalk.gray('Depends on:'),
+          chalk.gray('Dependencies:'),
           '',
-          chalk.cyan(task.dependencies.map(id => id.substring(0, 8)).join(', ')),
+          chalk.cyan(task.dependencies.substring(0, 40) + (task.dependencies.length > 40 ? '...' : '')),
         ]);
       }
     }
@@ -138,7 +138,8 @@ export function formatTaskDetailTable(task: TaskNode): string {
     lines.push(chalk.bold('Success Criteria:'));
     for (const sc of task.success_criteria) {
       const symbol = sc.completed ? chalk.green('✓') : chalk.gray('○');
-      lines.push(`  ${symbol} ${sc.text}`);
+      const idDisplay = chalk.gray(`(${sc.id.substring(0, 8)})`);
+      lines.push(`  ${symbol} ${sc.text} ${idDisplay}`);
     }
     lines.push('');
   }
@@ -149,7 +150,8 @@ export function formatTaskDetailTable(task: TaskNode): string {
     for (const d of task.deliverables) {
       const symbol = d.completed ? chalk.green('✓') : chalk.gray('○');
       const fileRef = d.file_path ? chalk.gray(` (${d.file_path})`) : '';
-      lines.push(`  ${symbol} ${d.text}${fileRef}`);
+      const idDisplay = chalk.gray(`(${d.id.substring(0, 8)})`);
+      lines.push(`  ${symbol} ${d.text}${fileRef} ${idDisplay}`);
     }
     lines.push('');
   }
@@ -160,8 +162,8 @@ export function formatTaskDetailTable(task: TaskNode): string {
     lines.push('');
   }
 
-  if (task.dependencies.length > 0) {
-    lines.push(chalk.bold('Depends on:'), chalk.cyan(task.dependencies.join(', ')));
+  if (task.dependencies) {
+    lines.push(chalk.bold('Dependencies:'), chalk.cyan(task.dependencies));
     lines.push('');
   }
 

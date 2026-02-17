@@ -21,6 +21,9 @@ describe('list command', () => {
   let tempDir: string;
   let cliPath: string;
   let storage: TaskStorage;
+  let taskIds: string[];
+  let successCriteriaIds: string[];
+  let deliverableIds: string[];
 
   beforeEach(async () => {
     // Create unique temp directory for each test
@@ -31,19 +34,22 @@ describe('list command', () => {
     // CLI entry point
     cliPath = join(process.cwd(), 'dist', 'cli', 'index.js');
 
-    // Create test tasks
+    // Create test tasks with captured IDs
     const graph = await storage.load();
+    taskIds = [uuidv4(), uuidv4(), uuidv4()];
+    successCriteriaIds = [uuidv4(), uuidv4(), uuidv4()];
+    deliverableIds = [uuidv4(), uuidv4(), uuidv4()];
 
     const task1 = new TaskNode({
-      id: uuidv4(),
+      id: taskIds[0],
       title: 'Implement login endpoint',
       description: 'Create login endpoint with JWT authentication for secure user access',
       status: 'not_started',
       priority: 'top',
-      success_criteria: [{ id: uuidv4(), text: 'Endpoint returns 200 with valid JWT', completed: false }],
-      deliverables: [{ id: uuidv4(), text: 'login.ts', completed: false }],
+      success_criteria: [{ id: successCriteriaIds[0], text: 'Endpoint returns 200 with valid JWT', completed: false }],
+      deliverables: [{ id: deliverableIds[0], text: 'login.ts', completed: false }],
       blockers: [],
-      dependencies: [],
+      dependencies: '',
       related_files: [],
       notes: '',
       c7_verified: [],
@@ -52,15 +58,15 @@ describe('list command', () => {
     });
 
     const task2 = new TaskNode({
-      id: uuidv4(),
+      id: taskIds[1],
       title: 'Write comprehensive unit tests',
       description: 'Create comprehensive unit tests for login functionality with full coverage',
       status: 'in_progress',
       priority: 'second',
-      success_criteria: [{ id: uuidv4(), text: 'All unit tests pass successfully', completed: false }],
-      deliverables: [{ id: uuidv4(), text: 'login.test.ts', completed: false }],
+      success_criteria: [{ id: successCriteriaIds[1], text: 'All unit tests pass successfully', completed: false }],
+      deliverables: [{ id: deliverableIds[1], text: 'login.test.ts', completed: false }],
       blockers: [],
-      dependencies: [],
+      dependencies: '',
       related_files: [],
       notes: '',
       c7_verified: [],
@@ -69,15 +75,15 @@ describe('list command', () => {
     });
 
     const task3 = new TaskNode({
-      id: uuidv4(),
+      id: taskIds[2],
       title: 'Write API documentation',
       description: 'Write comprehensive API documentation for login endpoint with examples',
       status: 'completed',
       priority: 'later',
-      success_criteria: [{ id: uuidv4(), text: 'Documentation is complete and verified', completed: true }],
-      deliverables: [{ id: uuidv4(), text: 'docs/api/login.md', completed: true }],
+      success_criteria: [{ id: successCriteriaIds[2], text: 'Documentation is complete and verified', completed: true }],
+      deliverables: [{ id: deliverableIds[2], text: 'docs/api/login.md', completed: true }],
       blockers: [],
-      dependencies: [],
+      dependencies: '',
       related_files: [],
       notes: '',
       c7_verified: [],
@@ -281,6 +287,30 @@ describe('list command', () => {
       expect(output).toContain('--status');
       expect(output).toContain('--priority');
       // Note: --format is now a global option, not a local command option
+    });
+  });
+
+  describe('item ID display', () => {
+    it('should display success criteria IDs in markdown format', () => {
+      const output = execSync(
+        `node ${cliPath} --project "${tempDir}" list --format md`,
+        { encoding: 'utf-8' }
+      );
+
+      // Check that item IDs are displayed in markdown code format (8-char short UUID)
+      // Check for 8-char ID pattern in markdown code format
+      expect(output).toMatch(/`[a-z0-9]{8}`/);
+    });
+
+    it('should display deliverable IDs in markdown format', () => {
+      const output = execSync(
+        `node ${cliPath} --project "${tempDir}" list --format md`,
+        { encoding: 'utf-8' }
+      );
+
+      // Check that item IDs are displayed in markdown code format (8-char short UUID)
+      // Check for 8-char ID pattern in markdown code format
+      expect(output).toMatch(/`[a-z0-9]{8}`/);
     });
   });
 });

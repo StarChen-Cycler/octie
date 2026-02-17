@@ -21,6 +21,8 @@ describe('get command', () => {
   let cliPath: string;
   let storage: TaskStorage;
   let testTaskId: string;
+  let successCriteriaIds: string[];
+  let deliverableIds: string[];
 
   beforeEach(async () => {
     // Create unique temp directory for each test
@@ -31,9 +33,11 @@ describe('get command', () => {
     // CLI entry point
     cliPath = join(process.cwd(), 'dist', 'cli', 'index.js');
 
-    // Create test task
+    // Create test task with captured IDs
     const graph = await storage.load();
     testTaskId = uuidv4();
+    successCriteriaIds = [uuidv4(), uuidv4()];
+    deliverableIds = [uuidv4(), uuidv4()];
 
     const task = new TaskNode({
       id: testTaskId,
@@ -42,15 +46,15 @@ describe('get command', () => {
       status: 'in_progress',
       priority: 'top',
       success_criteria: [
-        { id: uuidv4(), text: 'Endpoint returns 200 with valid JWT', completed: true },
-        { id: uuidv4(), text: 'Endpoint returns 401 on invalid credentials', completed: false },
+        { id: successCriteriaIds[0], text: 'Endpoint returns 200 with valid JWT', completed: true },
+        { id: successCriteriaIds[1], text: 'Endpoint returns 401 on invalid credentials', completed: false },
       ],
       deliverables: [
-        { id: uuidv4(), text: 'src/api/auth/login.ts', completed: true },
-        { id: uuidv4(), text: 'tests/api/auth/login.test.ts', completed: false },
+        { id: deliverableIds[0], text: 'src/api/auth/login.ts', completed: true },
+        { id: deliverableIds[1], text: 'tests/api/auth/login.test.ts', completed: false },
       ],
       blockers: [],
-      dependencies: [],
+      dependencies: '',
       related_files: ['src/auth/', 'tests/auth/'],
       notes: 'Use bcrypt for password hashing',
       c7_verified: [],
@@ -189,6 +193,56 @@ describe('get command', () => {
 
       expect(output).toContain('Get task details');
       // Note: --format is now a global option, check main help instead
+    });
+  });
+
+  describe('item ID display', () => {
+    it('should display success criteria IDs in markdown format', () => {
+      const output = execSync(
+        `node ${cliPath} get ${testTaskId} --format md --project "${tempDir}"`,
+        { encoding: 'utf-8' }
+      );
+
+      // Check that item IDs are displayed in markdown code format (8-char short UUID)
+      expect(output).toContain('### Success Criteria');
+      // Check for 8-char ID pattern in markdown code format
+      expect(output).toMatch(/`[a-z0-9]{8}`/);
+    });
+
+    it('should display deliverable IDs in markdown format', () => {
+      const output = execSync(
+        `node ${cliPath} get ${testTaskId} --format md --project "${tempDir}"`,
+        { encoding: 'utf-8' }
+      );
+
+      // Check that item IDs are displayed in markdown code format (8-char short UUID)
+      expect(output).toContain('### Deliverables');
+      // Check for 8-char ID pattern in markdown code format
+      expect(output).toMatch(/`[a-z0-9]{8}`/);
+    });
+
+    it('should display success criteria IDs in table format', () => {
+      const output = execSync(
+        `node ${cliPath} get ${testTaskId} --project "${tempDir}"`,
+        { encoding: 'utf-8' }
+      );
+
+      // Check that item IDs are displayed in parentheses (8-char short UUID)
+      expect(output).toContain('Success Criteria:');
+      // Check for 8-char ID pattern in parentheses
+      expect(output).toMatch(/\([a-z0-9]{8}\)/);
+    });
+
+    it('should display deliverable IDs in table format', () => {
+      const output = execSync(
+        `node ${cliPath} get ${testTaskId} --project "${tempDir}"`,
+        { encoding: 'utf-8' }
+      );
+
+      // Check that item IDs are displayed in parentheses (8-char short UUID)
+      expect(output).toContain('Deliverables:');
+      // Check for 8-char ID pattern in parentheses
+      expect(output).toMatch(/\([a-z0-9]{8}\)/);
     });
   });
 });
