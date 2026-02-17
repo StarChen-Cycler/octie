@@ -34,7 +34,19 @@
 - [x] ProjectMetadata interface
 - [x] ProjectFile interface for serialization
 - [x] ProjectIndexes interface
-- [x] Custom error classes (OctieError, TaskNotFoundError, CircularDependencyError, FileOperationError, ValidationError, AtomicTaskViolationError)
+
+#### [x] Task Item IDs in List and Get Output
+**Blockers**: None
+**Related Files**: octie/src/cli/output/markdown.ts, octie/src/cli/output/table.ts, octie/src/cli/index.ts, octie/tests/unit/cli/commands/get.test.ts, octie/tests/unit/cli/commands/list.test.ts
+**C7 MCP Verified**: N/A
+**Deliverables**:
+- [x] Markdown list format shows item IDs for success criteria (8 char short UUID)
+- [x] Markdown list format shows item IDs for deliverables (8 char short UUID)
+- [x] Get table output shows item IDs for success criteria
+- [x] Get table output shows item IDs for deliverables
+- [x] Unit tests for item ID display (6 tests, all passing)
+**Completed**: 2026-02-17
+**Git Commit**: 4486fb1
 - [x] Additional types: TopologicalSortResult, CycleDetectionResult, TaskFilterOptions, TaskCreateOptions, TaskUpdateOptions, MergeResult, GraphStatistics
 **Completed**: 2026-02-16
 **Git Commit**: 5fc837f
