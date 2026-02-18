@@ -157,6 +157,25 @@
 - [x] Test: "Work on stuff" task shows 4 specific issues
 **Completed**: 2026-02-18
 
+#### [x] Add `octie wire` Command for Insert-Between Operation
+**Type**: Feature
+**Description**: Add a new CLI command `octie wire` that inserts an existing task between two connected tasks on a blocker chain. Uses existing blocker manipulation patterns and twin validation system.
+**Blockers**: None
+**Related Files**: octie/src/cli/commands/wire.ts, octie/src/cli/index.ts, octie/tests/unit/cli/commands/wire.test.ts
+**C7 MCP Verified**: N/A (follows existing patterns from update.ts)
+**Deliverables**:
+- [x] New file: wire.ts with wireCommand implementation
+- [x] Command signature: `octie wire <task-id> --after <A> --before <C> --dep-on-after "..." --dep-on-before "..."`
+- [x] Twin validation: --dep-on-after and --dep-on-before both required
+- [x] Validates edge A→C exists before operation
+- [x] Validates C has A as blocker before operation
+- [x] Adds A to B.blockers with dependencies explanation
+- [x] Transfers C's blocker from A to B with new dependencies
+- [x] Updates graph edges: removes A→C, adds A→B and B→C
+- [x] Handles edge cases: B has existing blockers, C has multiple blockers
+- [x] Register command in cli/index.ts
+- [x] Tests: Unit tests for happy path, validation errors, edge cases (15 tests passing)
+
 ---
 
 ### Second Priority (After Top Completes)

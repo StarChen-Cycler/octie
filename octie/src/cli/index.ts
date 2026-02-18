@@ -18,6 +18,7 @@ import { exportCommand } from './commands/export.js';
 import { importCommand } from './commands/import.js';
 import { serveCommand } from './commands/serve.js';
 import { findCommand } from './commands/find.js';
+import { wireCommand } from './commands/wire.js';
 // import { batchCommand } from './commands/batch.js';
 import { formatError } from './utils/helpers.js';
 
@@ -93,6 +94,7 @@ function main(): void {
   program.addCommand(importCommand);
   program.addCommand(serveCommand);
   program.addCommand(findCommand);
+  program.addCommand(wireCommand);
   // program.addCommand(batchCommand);
 
   // Parse arguments
