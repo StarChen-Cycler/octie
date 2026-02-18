@@ -72,11 +72,14 @@
   animation: spin 1s linear infinite;
 }
 
-/* Transition for theme toggle */
-* {
-  transition-property: background-color, border-color, color;
-  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-  transition-duration: 150ms;
+/* Fast transitions for interactive elements */
+button, a, input, select, textarea, [role="button"] {
+  transition: background-color 75ms ease, border-color 75ms ease, color 75ms ease;
+}
+
+/* Slower transitions for containers on theme change */
+body, main, aside, header, nav, section, div {
+  transition: background-color 150ms ease, border-color 150ms ease;
 }
 
 /* React Flow Controls - dark theme visibility */
