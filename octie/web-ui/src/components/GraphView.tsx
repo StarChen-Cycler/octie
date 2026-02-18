@@ -12,6 +12,7 @@ import {
   type ColorMode,
   useNodesState,
   useEdgesState,
+  type ReactFlowInstance,
 } from '@xyflow/react';
 import { toPng, toSvg } from 'html-to-image';
 import dagre from 'dagre';
@@ -26,8 +27,8 @@ const nodeTypes = {
 // Dagre layout constants
 const NODE_WIDTH = 280;
 const NODE_HEIGHT = 120;
-const RANK_SPACING = 100; // Vertical spacing between ranks (layers)
-const NODE_SPACING = 50;  // Horizontal spacing between nodes
+const RANK_SPACING = 80;  // Vertical spacing between ranks (layers)
+const NODE_SPACING = 30;  // Horizontal spacing between nodes (reduced for compact layout)
 
 interface GraphViewProps {
   graphData: GraphData | null;
@@ -69,6 +70,8 @@ function getLayoutedElements(
     nodesep: NODE_SPACING,
     marginx: 50,
     marginy: 50,
+    align: 'UL',           // Align nodes to upper-left for more compact layout
+    ranker: 'tight-tree',  // Use tight-tree algorithm for compact layout
   });
 
   // Add nodes to dagre graph
@@ -140,6 +143,7 @@ function filterValidEdges(nodes: Node[], edges: Edge[]): Edge[] {
 
 const GraphView = forwardRef<GraphViewRef, GraphViewProps>(({ graphData, onNodeClick, colorMode = 'dark' }, ref) => {
   const reactFlowWrapper = useRef<HTMLDivElement>(null);
+  const reactFlowInstance = useRef<ReactFlowInstance | null>(null);
 
   // Convert graph data to ReactFlow nodes and edges with layout
   const { initialNodes, initialEdges } = useMemo(() => {
@@ -250,6 +254,11 @@ const GraphView = forwardRef<GraphViewRef, GraphViewProps>(({ graphData, onNodeC
 
       setNodes(layouted.nodes);
       setEdges(layouted.edges);
+
+      // Fit view after layout is applied
+      requestAnimationFrame(() => {
+        reactFlowInstance.current?.fitView({ padding: 0.2, duration: 200 });
+      });
     }
   }, [graphData, setNodes, setEdges]);
 
@@ -389,6 +398,9 @@ const GraphView = forwardRef<GraphViewRef, GraphViewProps>(({ graphData, onNodeC
           animated: true,
         }}
         style={{ background: 'var(--surface-base)' }}
+        onInit={(instance) => {
+          reactFlowInstance.current = instance;
+        }}
       >
         <Background style={{ background: 'var(--surface-base)' }} />
         <Controls />

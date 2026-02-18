@@ -42,9 +42,15 @@ function FilterPanel({
             (Ctrl+K)
           </span>
         </label>
-        <div className="relative flex items-center">
+        <div
+          className="flex items-center gap-2 px-3 py-2 rounded-lg"
+          style={{
+            background: 'var(--surface-elevated)',
+            border: '1px solid var(--border-default)',
+          }}
+        >
           <svg
-            className="absolute left-3 pointer-events-none"
+            className="flex-shrink-0"
             width="14"
             height="14"
             viewBox="0 0 24 24"
@@ -61,12 +67,8 @@ function FilterPanel({
             value={searchQuery}
             onChange={(e) => onSearchChange(e.target.value)}
             placeholder="Search tasks..."
-            className="w-full pl-9 pr-3 py-2 text-sm rounded-lg focus-ring"
-            style={{
-              background: 'var(--surface-elevated)',
-              border: '1px solid var(--border-default)',
-              color: 'var(--text-primary)',
-            }}
+            className="flex-1 bg-transparent border-none outline-none text-sm"
+            style={{ color: 'var(--text-primary)' }}
           />
         </div>
       </div>

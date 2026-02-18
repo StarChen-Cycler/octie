@@ -49,7 +49,16 @@ function App() {
   const [view, setView] = useState<'list' | 'graph'>('list')
   const [filterStatus, setFilterStatus] = useState<TaskStatus | 'all'>('all')
   const [filterPriority, setFilterPriority] = useState<TaskPriority | 'all'>('all')
+  const [searchInput, setSearchInput] = useState('')
   const [searchQuery, setSearchQuery] = useState('')
+
+  // Debounce search input - update filter after 500ms of no typing
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setSearchQuery(searchInput)
+    }, 500)
+    return () => clearTimeout(timer)
+  }, [searchInput])
 
   // Client-side filtering of tasks
   const filteredTasks = useMemo(() => {
@@ -123,12 +132,8 @@ function App() {
   }, [queryOptions, setQueryOptions])
 
   const handleSearchChange = useCallback((query: string) => {
-    setSearchQuery(query)
-    setQueryOptions({
-      ...queryOptions,
-      search: query || undefined,
-    })
-  }, [queryOptions, setQueryOptions])
+    setSearchInput(query)
+  }, [])
 
   const handleExportPNG = useCallback(() => {
     graphViewRef.current?.exportAsPNG()
@@ -202,7 +207,7 @@ function App() {
 
   return (
     <div
-      className="min-h-screen flex flex-col"
+      className="h-screen flex flex-col overflow-hidden"
       style={{ background: 'var(--surface-base)' }}
     >
       {/* Header */}
@@ -308,7 +313,7 @@ function App() {
                       <FilterPanel
                         selectedStatus={filterStatus}
                         selectedPriority={filterPriority}
-                        searchQuery={searchQuery}
+                        searchQuery={searchInput}
                         onStatusChange={handleStatusChange}
                         onPriorityChange={handlePriorityChange}
                         onSearchChange={handleSearchChange}

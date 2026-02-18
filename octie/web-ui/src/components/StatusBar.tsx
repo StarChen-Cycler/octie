@@ -72,7 +72,7 @@ function StatusBar({ stats, loading }: StatusBarProps) {
 
         {/* Status breakdown */}
         <div className="flex items-center gap-3">
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1" title="Completed">
             <div
               className="w-2 h-2 rounded-full"
               style={{ background: 'var(--status-completed)', boxShadow: '0 0 4px rgba(16, 185, 129, 0.4)' }}
@@ -80,8 +80,9 @@ function StatusBar({ stats, loading }: StatusBarProps) {
             <span className="tabular-nums" style={{ color: 'var(--status-completed)', fontFamily: 'var(--font-mono)' }}>
               {tasks.statusCounts.completed}
             </span>
+            <span style={{ color: 'var(--text-muted)', fontSize: '10px' }}>done</span>
           </div>
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1" title="In Progress">
             <div
               className="w-2 h-2 rounded-full"
               style={{ background: 'var(--status-in-progress)', boxShadow: '0 0 4px rgba(0, 212, 255, 0.4)' }}
@@ -89,8 +90,19 @@ function StatusBar({ stats, loading }: StatusBarProps) {
             <span className="tabular-nums" style={{ color: 'var(--status-in-progress)', fontFamily: 'var(--font-mono)' }}>
               {tasks.statusCounts.in_progress}
             </span>
+            <span style={{ color: 'var(--text-muted)', fontSize: '10px' }}>prog</span>
           </div>
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1" title="Pending">
+            <div
+              className="w-2 h-2 rounded-full"
+              style={{ background: 'var(--status-pending)', boxShadow: '0 0 4px rgba(255, 159, 28, 0.4)' }}
+            />
+            <span className="tabular-nums" style={{ color: 'var(--status-pending)', fontFamily: 'var(--font-mono)' }}>
+              {tasks.statusCounts.pending}
+            </span>
+            <span style={{ color: 'var(--text-muted)', fontSize: '10px' }}>pend</span>
+          </div>
+          <div className="flex items-center gap-1" title="Blocked">
             <div
               className="w-2 h-2 rounded-full"
               style={{ background: 'var(--status-blocked)', boxShadow: '0 0 4px rgba(244, 63, 94, 0.4)' }}
@@ -98,6 +110,17 @@ function StatusBar({ stats, loading }: StatusBarProps) {
             <span className="tabular-nums" style={{ color: 'var(--status-blocked)', fontFamily: 'var(--font-mono)' }}>
               {tasks.statusCounts.blocked}
             </span>
+            <span style={{ color: 'var(--text-muted)', fontSize: '10px' }}>block</span>
+          </div>
+          <div className="flex items-center gap-1" title="Not Started">
+            <div
+              className="w-2 h-2 rounded-full"
+              style={{ background: 'var(--status-not-started)', boxShadow: '0 0 4px rgba(110, 118, 129, 0.4)' }}
+            />
+            <span className="tabular-nums" style={{ color: 'var(--status-not-started)', fontFamily: 'var(--font-mono)' }}>
+              {tasks.statusCounts.not_started}
+            </span>
+            <span style={{ color: 'var(--text-muted)', fontSize: '10px' }}>new</span>
           </div>
         </div>
       </div>
