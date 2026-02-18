@@ -42,9 +42,9 @@ function FilterPanel({
             (Ctrl+K)
           </span>
         </label>
-        <div className="relative">
+        <div className="relative flex items-center">
           <svg
-            className="absolute left-3 top-1/2 -translate-y-1/2"
+            className="absolute left-3 pointer-events-none"
             width="14"
             height="14"
             viewBox="0 0 24 24"
