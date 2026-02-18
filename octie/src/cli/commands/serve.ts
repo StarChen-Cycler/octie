@@ -3,9 +3,11 @@
  */
 
 import { Command } from 'commander';
+import chalk from 'chalk';
 import { getProjectPath, info, error } from '../utils/helpers.js';
-import { createServer } from '../../web/server.js';
+import { createServer, WebServer } from '../../web/server.js';
 import type { ServerOptions } from '../../web/server.js';
+import { registerProject, isValidOctieProject } from '../../core/registry/index.js';
 
 /**
  * Create the serve command
@@ -24,6 +26,11 @@ export const serveCommand = new Command('serve')
 
       info(`Starting web server for project at ${projectPath}`);
 
+      // Register project in global registry
+      if (isValidOctieProject(projectPath)) {
+        registerProject(projectPath);
+      }
+
       const serverOptions: ServerOptions = {
         port: parseInt(options.port, 10),
         host: options.host,
@@ -33,6 +40,9 @@ export const serveCommand = new Command('serve')
       };
 
       const server = await createServer(projectPath, serverOptions);
+
+      // Print enhanced URL info
+      printServerInfo(server, projectPath, serverOptions);
 
       // Keep process alive
       process.on('SIGTERM', async () => {
@@ -55,3 +65,30 @@ export const serveCommand = new Command('serve')
       process.exit(1);
     }
   });
+
+/**
+ * Print server URL information
+ */
+function printServerInfo(server: WebServer, projectPath: string, _options: ServerOptions): void {
+  const baseUrl = server.url;
+  const projectUrl = `${baseUrl}/?project=${encodeURIComponent(projectPath)}`;
+  const homeUrl = baseUrl;
+  const isDev = process.env.NODE_ENV === 'development';
+
+  console.log('');
+  console.log(chalk.green('🚀 Octie Web Server started'));
+  console.log(chalk.blue('📍 Project: ') + projectPath);
+  console.log('');
+  console.log(chalk.cyan('🔗 URLs:'));
+  console.log(`   ${chalk.dim('Project:')} ${chalk.white(projectUrl)}`);
+  console.log(`   ${chalk.dim('Home:')}    ${chalk.white(homeUrl)}`);
+
+  if (isDev) {
+    console.log(`   ${chalk.dim('API Test:')} ${chalk.white(`${baseUrl}/test`)}`);
+    console.log(`   ${chalk.dim('API Info:')} ${chalk.white(`${baseUrl}/api`)}`);
+  }
+
+  console.log('');
+  console.log(chalk.dim('Press Ctrl+C to stop'));
+  console.log('');
+}

@@ -18,6 +18,7 @@ import { TaskStorage } from '../core/storage/file-store.js';
 import type { TaskGraphStore } from '../core/graph/index.js';
 import { registerTaskRoutes } from './routes/tasks.js';
 import { registerGraphRoutes } from './routes/graph.js';
+import { registerProjectsRoutes } from './routes/projects.js';
 import { OctieError, ERROR_SUGGESTIONS } from '../types/index.js';
 import { ZodError } from 'zod';
 
@@ -283,6 +284,9 @@ export class WebServer {
       this._app,
       () => this._graph
     );
+
+    // Register projects routes (global registry)
+    registerProjectsRoutes(this._app);
 
     // 404 handler for unmatched routes
     this._app.use((req: Request, res: Response) => {
