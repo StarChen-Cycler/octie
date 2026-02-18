@@ -32,12 +32,12 @@ export interface Task extends Record<string, unknown> {
   success_criteria: SuccessCriterion[];
   deliverables: Deliverable[];
   blockers: string[];
-  dependencies: string[];
+  dependencies: string;  // Explanation text, not an array
   edges: string[];
   sub_items: string[];
   related_files: string[];
   notes: string;
-  c7_verified: C7Verification[];
+  c7_verified: string[];  // Array of library IDs (simplified)
   created_at: string;
   updated_at: string;
   completed_at: string | null;

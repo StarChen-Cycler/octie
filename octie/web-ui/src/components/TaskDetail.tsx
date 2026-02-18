@@ -1,3 +1,8 @@
+/**
+ * Task Detail - Detailed task view
+ * Design: Terminal Noir - Dark cyberpunk aesthetic
+ */
+
 import type { Task } from '../types';
 
 interface TaskDetailProps {
@@ -5,80 +10,152 @@ interface TaskDetailProps {
   loading?: boolean;
 }
 
+const statusColors: Record<string, { bg: string; color: string }> = {
+  completed: { bg: 'rgba(16, 185, 129, 0.15)', color: 'var(--status-completed)' },
+  in_progress: { bg: 'rgba(0, 212, 255, 0.15)', color: 'var(--status-in-progress)' },
+  blocked: { bg: 'rgba(244, 63, 94, 0.15)', color: 'var(--status-blocked)' },
+  pending: { bg: 'rgba(255, 159, 28, 0.15)', color: 'var(--status-pending)' },
+  not_started: { bg: 'rgba(110, 118, 129, 0.15)', color: 'var(--status-not-started)' },
+};
+
+const priorityColors: Record<string, { bg: string; color: string }> = {
+  top: { bg: 'var(--priority-top-glow)', color: 'var(--priority-top)' },
+  second: { bg: 'var(--priority-second-glow)', color: 'var(--priority-second)' },
+  later: { bg: 'var(--priority-later-glow)', color: 'var(--priority-later)' },
+};
+
 function TaskDetail({ task, loading }: TaskDetailProps) {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-8">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        <div
+          className="w-8 h-8 rounded-full animate-spin"
+          style={{
+            border: '2px solid var(--border-default)',
+            borderTopColor: 'var(--accent-cyan)',
+          }}
+        />
       </div>
     );
   }
 
   if (!task) {
     return (
-      <div className="text-center py-8 text-gray-600">
-        <p>Select a task to view details</p>
+      <div className="text-center py-8">
+        <div
+          className="w-16 h-16 mx-auto mb-4 rounded-xl flex items-center justify-center"
+          style={{ background: 'var(--surface-elevated)' }}
+        >
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="1.5">
+            <path d="M9 11l3 3L22 4" />
+            <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
+          </svg>
+        </div>
+        <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
+          Select a task to view details
+        </p>
       </div>
     );
   }
+
+  const statusStyle = statusColors[task.status] || statusColors.not_started;
+  const priorityStyle = priorityColors[task.priority] || priorityColors.later;
 
   return (
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h2 className="text-xl font-semibold text-gray-900">{task.title}</h2>
-        <div className="flex items-center gap-2 mt-2">
+        {/* Task ID */}
+        <div
+          className="text-[10px] tabular-nums mb-2"
+          style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}
+        >
+          {task.id}
+        </div>
+
+        {/* Title */}
+        <h2
+          className="text-lg font-semibold"
+          style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}
+        >
+          {task.title}
+        </h2>
+
+        {/* Status & Priority badges */}
+        <div className="flex items-center gap-2 mt-3">
           <span
-            className={`px-2 py-1 rounded-md text-xs font-medium ${
-              task.status === 'completed'
-                ? 'bg-green-100 text-green-800'
-                : task.status === 'in_progress'
-                  ? 'bg-blue-100 text-blue-800'
-                  : task.status === 'blocked'
-                    ? 'bg-red-100 text-red-800'
-                    : task.status === 'pending'
-                      ? 'bg-yellow-100 text-yellow-800'
-                      : 'bg-gray-100 text-gray-800'
-            }`}
+            className="px-2 py-1 rounded-md text-xs uppercase tracking-wide"
+            style={{
+              background: statusStyle.bg,
+              color: statusStyle.color,
+              fontFamily: 'var(--font-mono)',
+            }}
           >
             {task.status.replace('_', ' ')}
           </span>
           <span
-            className={`px-2 py-1 rounded-md text-xs font-medium ${
-              task.priority === 'top'
-                ? 'bg-red-100 text-red-800'
-                : task.priority === 'second'
-                  ? 'bg-yellow-100 text-yellow-800'
-                  : 'bg-gray-100 text-gray-800'
-            }`}
+            className="px-2 py-1 rounded-md text-xs uppercase tracking-wide"
+            style={{
+              background: priorityStyle.bg,
+              color: priorityStyle.color,
+              fontFamily: 'var(--font-mono)',
+            }}
           >
-            {task.priority} priority
+            {task.priority}
           </span>
         </div>
       </div>
 
       {/* Description */}
-      <div>
-        <h3 className="text-sm font-medium text-gray-700 mb-2">Description</h3>
-        <p className="text-sm text-gray-600 whitespace-pre-wrap">{task.description}</p>
-      </div>
+      {task.description && (
+        <div>
+          <SectionTitle>Description</SectionTitle>
+          <p
+            className="text-sm whitespace-pre-wrap"
+            style={{ color: 'var(--text-secondary)' }}
+          >
+            {task.description}
+          </p>
+        </div>
+      )}
 
       {/* Success Criteria */}
       {task.success_criteria.length > 0 && (
         <div>
-          <h3 className="text-sm font-medium text-gray-700 mb-2">
-            Success Criteria ({task.success_criteria.filter((c) => c.completed).length}/{task.success_criteria.length})
-          </h3>
-          <ul className="space-y-1">
+          <SectionTitle>
+            Success Criteria
+            <span style={{ color: 'var(--accent-cyan)' }}>
+              {' '}
+              ({task.success_criteria.filter((c) => c.completed).length}/{task.success_criteria.length})
+            </span>
+          </SectionTitle>
+          <ul className="space-y-2">
             {task.success_criteria.map((criterion) => (
-              <li key={criterion.id} className="flex items-start gap-2 text-sm">
-                <input
-                  type="checkbox"
-                  checked={criterion.completed}
-                  readOnly
-                  className="mt-0.5 rounded border-gray-300"
-                />
-                <span className={criterion.completed ? 'text-gray-500 line-through' : 'text-gray-700'}>
+              <li
+                key={criterion.id}
+                className="flex items-start gap-3 text-sm"
+              >
+                <div
+                  className="w-4 h-4 rounded flex items-center justify-center flex-shrink-0 mt-0.5"
+                  style={{
+                    background: criterion.completed
+                      ? 'var(--status-completed)'
+                      : 'var(--surface-elevated)',
+                    border: criterion.completed
+                      ? 'none'
+                      : '1px solid var(--border-default)',
+                  }}
+                >
+                  {criterion.completed && (
+                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3">
+                      <polyline points="20 6 9 17 4 12" />
+                    </svg>
+                  )}
+                </div>
+                <span
+                  className={criterion.completed ? 'line-through' : ''}
+                  style={{ color: criterion.completed ? 'var(--text-muted)' : 'var(--text-secondary)' }}
+                >
                   {criterion.text}
                 </span>
               </li>
@@ -90,61 +167,153 @@ function TaskDetail({ task, loading }: TaskDetailProps) {
       {/* Deliverables */}
       {task.deliverables.length > 0 && (
         <div>
-          <h3 className="text-sm font-medium text-gray-700 mb-2">
-            Deliverables ({task.deliverables.filter((d) => d.completed).length}/{task.deliverables.length})
-          </h3>
-          <ul className="space-y-1">
+          <SectionTitle>
+            Deliverables
+            <span style={{ color: 'var(--accent-amber)' }}>
+              {' '}
+              ({task.deliverables.filter((d) => d.completed).length}/{task.deliverables.length})
+            </span>
+          </SectionTitle>
+          <ul className="space-y-2">
             {task.deliverables.map((deliverable) => (
-              <li key={deliverable.id} className="flex items-start gap-2 text-sm">
-                <input
-                  type="checkbox"
-                  checked={deliverable.completed}
-                  readOnly
-                  className="mt-0.5 rounded border-gray-300"
-                />
-                <span className={deliverable.completed ? 'text-gray-500 line-through' : 'text-gray-700'}>
-                  {deliverable.text}
-                </span>
-                {deliverable.file_path && (
-                  <code className="text-xs bg-gray-100 px-1 py-0.5 rounded text-gray-600">
-                    {deliverable.file_path}
-                  </code>
-                )}
+              <li
+                key={deliverable.id}
+                className="flex items-start gap-3 text-sm"
+              >
+                <div
+                  className="w-4 h-4 rounded flex items-center justify-center flex-shrink-0 mt-0.5"
+                  style={{
+                    background: deliverable.completed
+                      ? 'var(--status-completed)'
+                      : 'var(--surface-elevated)',
+                    border: deliverable.completed
+                      ? 'none'
+                      : '1px solid var(--border-default)',
+                  }}
+                >
+                  {deliverable.completed && (
+                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3">
+                      <polyline points="20 6 9 17 4 12" />
+                    </svg>
+                  )}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <span
+                    className={deliverable.completed ? 'line-through' : ''}
+                    style={{ color: deliverable.completed ? 'var(--text-muted)' : 'var(--text-secondary)' }}
+                  >
+                    {deliverable.text}
+                  </span>
+                  {deliverable.file_path && (
+                    <code
+                      className="block mt-1 text-xs px-2 py-1 rounded"
+                      style={{
+                        background: 'var(--surface-elevated)',
+                        color: 'var(--text-muted)',
+                        fontFamily: 'var(--font-mono)',
+                      }}
+                    >
+                      {deliverable.file_path}
+                    </code>
+                  )}
+                </div>
               </li>
             ))}
           </ul>
         </div>
       )}
 
-      {/* Metadata */}
-      <div className="pt-4 border-t border-gray-200">
-        <div className="grid grid-cols-2 gap-4 text-xs text-gray-500">
-          <div>
-            <span className="font-medium">Created:</span>{' '}
-            {new Date(task.created_at).toLocaleString()}
-          </div>
-          <div>
-            <span className="font-medium">Updated:</span>{' '}
-            {new Date(task.updated_at).toLocaleString()}
-          </div>
-          {task.completed_at && (
-            <div>
-              <span className="font-medium">Completed:</span>{' '}
-              {new Date(task.completed_at).toLocaleString()}
-            </div>
-          )}
-        </div>
-      </div>
-
       {/* Related Files */}
-      {task.related_files.length > 0 && (
+      {task.related_files && task.related_files.length > 0 && (
         <div>
-          <h3 className="text-sm font-medium text-gray-700 mb-2">Related Files</h3>
+          <SectionTitle>Related Files</SectionTitle>
           <ul className="space-y-1">
             {task.related_files.map((file, idx) => (
               <li key={idx}>
-                <code className="text-xs bg-gray-100 px-2 py-1 rounded text-gray-700">
+                <code
+                  className="text-xs px-2 py-1 rounded inline-block"
+                  style={{
+                    background: 'var(--surface-elevated)',
+                    color: 'var(--text-secondary)',
+                    fontFamily: 'var(--font-mono)',
+                  }}
+                >
                   {file}
+                </code>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {/* Blockers */}
+      {task.blockers && task.blockers.length > 0 && (
+        <div>
+          <SectionTitle>
+            Blocked By
+            <span style={{ color: 'var(--status-blocked)' }}>
+              {' '}({task.blockers.length})
+            </span>
+          </SectionTitle>
+          <ul className="space-y-1">
+            {task.blockers.map((blockerId, idx) => (
+              <li key={idx}>
+                <code
+                  className="text-xs px-2 py-1 rounded inline-block"
+                  style={{
+                    background: 'rgba(244, 63, 94, 0.1)',
+                    color: 'var(--status-blocked)',
+                    fontFamily: 'var(--font-mono)',
+                    border: '1px solid rgba(244, 63, 94, 0.3)',
+                  }}
+                >
+                  {blockerId}
+                </code>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {/* Dependencies */}
+      {task.dependencies && (
+        <div>
+          <SectionTitle>Dependencies</SectionTitle>
+          <div
+            className="p-3 rounded-lg text-sm"
+            style={{
+              background: 'var(--surface-elevated)',
+              color: 'var(--text-secondary)',
+              borderLeft: '3px solid var(--accent-amber)',
+            }}
+          >
+            {task.dependencies}
+          </div>
+        </div>
+      )}
+
+      {/* C7 Verified */}
+      {task.c7_verified && task.c7_verified.length > 0 && (
+        <div>
+          <SectionTitle>
+            C7 Verified
+            <span style={{ color: 'var(--accent-cyan)' }}>
+              {' '}({task.c7_verified.length})
+            </span>
+          </SectionTitle>
+          <ul className="space-y-1">
+            {task.c7_verified.map((lib, idx) => (
+              <li key={idx}>
+                <code
+                  className="text-xs px-2 py-1 rounded inline-block"
+                  style={{
+                    background: 'rgba(0, 212, 255, 0.1)',
+                    color: 'var(--accent-cyan)',
+                    fontFamily: 'var(--font-mono)',
+                    border: '1px solid rgba(0, 212, 255, 0.3)',
+                  }}
+                >
+                  {lib}
                 </code>
               </li>
             ))}
@@ -155,11 +324,69 @@ function TaskDetail({ task, loading }: TaskDetailProps) {
       {/* Notes */}
       {task.notes && (
         <div>
-          <h3 className="text-sm font-medium text-gray-700 mb-2">Notes</h3>
-          <p className="text-sm text-gray-600 whitespace-pre-wrap">{task.notes}</p>
+          <SectionTitle>Notes</SectionTitle>
+          <div
+            className="p-3 rounded-lg text-sm whitespace-pre-wrap"
+            style={{
+              background: 'var(--surface-elevated)',
+              color: 'var(--text-secondary)',
+              borderLeft: '3px solid var(--accent-violet)',
+            }}
+          >
+            {task.notes}
+          </div>
         </div>
       )}
+
+      {/* Metadata */}
+      <div
+        className="pt-4"
+        style={{ borderTop: '1px solid var(--border-muted)' }}
+      >
+        <div className="grid grid-cols-2 gap-3 text-xs">
+          <div>
+            <span style={{ color: 'var(--text-muted)' }}>Created:</span>
+            <div
+              className="mt-0.5"
+              style={{ color: 'var(--text-secondary)', fontFamily: 'var(--font-mono)' }}
+            >
+              {new Date(task.created_at).toLocaleString()}
+            </div>
+          </div>
+          <div>
+            <span style={{ color: 'var(--text-muted)' }}>Updated:</span>
+            <div
+              className="mt-0.5"
+              style={{ color: 'var(--text-secondary)', fontFamily: 'var(--font-mono)' }}
+            >
+              {new Date(task.updated_at).toLocaleString()}
+            </div>
+          </div>
+          {task.completed_at && (
+            <div className="col-span-2">
+              <span style={{ color: 'var(--text-muted)' }}>Completed:</span>
+              <div
+                className="mt-0.5"
+                style={{ color: 'var(--status-completed)', fontFamily: 'var(--font-mono)' }}
+              >
+                {new Date(task.completed_at).toLocaleString()}
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
     </div>
+  );
+}
+
+function SectionTitle({ children }: { children: React.ReactNode }) {
+  return (
+    <h3
+      className="text-xs font-medium uppercase tracking-wide mb-2"
+      style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}
+    >
+      {children}
+    </h3>
   );
 }
 

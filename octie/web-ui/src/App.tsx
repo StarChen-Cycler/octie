@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback, useRef } from 'react'
+import { useEffect, useState, useCallback, useRef, useMemo } from 'react'
 import './App.css'
 import { useTaskStore } from './store/taskStore'
 import { useProjectStore } from './store/projectStore'
@@ -34,9 +34,8 @@ function App() {
     fetchStats,
     setQueryOptions,
     setSelectedTask,
+    setCurrentProjectPath,
     clearError,
-    startPolling,
-    stopPolling,
   } = useTaskStore()
 
   const {
@@ -52,6 +51,33 @@ function App() {
   const [filterPriority, setFilterPriority] = useState<TaskPriority | 'all'>('all')
   const [searchQuery, setSearchQuery] = useState('')
 
+  // Client-side filtering of tasks
+  const filteredTasks = useMemo(() => {
+    let result = tasks;
+
+    // Filter by status
+    if (filterStatus !== 'all') {
+      result = result.filter(task => task.status === filterStatus);
+    }
+
+    // Filter by priority
+    if (filterPriority !== 'all') {
+      result = result.filter(task => task.priority === filterPriority);
+    }
+
+    // Filter by search query
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase().trim();
+      result = result.filter(task =>
+        task.title.toLowerCase().includes(query) ||
+        task.description?.toLowerCase().includes(query) ||
+        task.notes?.toLowerCase().includes(query)
+      );
+    }
+
+    return result;
+  }, [tasks, filterStatus, filterPriority, searchQuery]);
+
   // Initialize project from URL on mount
   useEffect(() => {
     const projectFromUrl = getProjectFromUrl()
@@ -60,18 +86,19 @@ function App() {
     }
   }, [getProjectFromUrl, setCurrentProject])
 
+  // Sync project path to task store when it changes
+  useEffect(() => {
+    setCurrentProjectPath(currentProjectPath)
+  }, [currentProjectPath, setCurrentProjectPath])
+
   // Fetch data when project changes
   useEffect(() => {
     if (currentProjectPath) {
       fetchTasks()
       fetchGraph()
       fetchStats()
-      startPolling()
     }
-    return () => {
-      stopPolling()
-    }
-  }, [currentProjectPath, fetchTasks, fetchGraph, fetchStats, startPolling, stopPolling])
+  }, [currentProjectPath, fetchTasks, fetchGraph, fetchStats])
 
   const handleRefresh = useCallback(() => {
     fetchTasks()
@@ -241,125 +268,132 @@ function App() {
               </div>
             )}
 
-            {/* Toolbar */}
-            <Toolbar
-              view={view}
-              onViewChange={setView}
-              onRefresh={handleRefresh}
-              loading={loading}
-              onExportPNG={handleExportPNG}
-              onExportSVG={handleExportSVG}
-              onThemeToggle={toggleTheme}
-              theme={theme}
-            />
+            {/* Main Content Area */}
+            <main className="flex-1 flex flex-col overflow-hidden min-w-0">
+              {/* Toolbar */}
+              <Toolbar
+                view={view}
+                onViewChange={setView}
+                onRefresh={handleRefresh}
+                loading={loading}
+                onExportPNG={handleExportPNG}
+                onExportSVG={handleExportSVG}
+                onThemeToggle={toggleTheme}
+                theme={theme}
+              />
 
-            {/* Main Content */}
-            <main className="flex-1 flex overflow-hidden min-w-0">
-              {/* Sidebar - Filters and Task List */}
-              {view === 'list' && (
-                <div
-                  className="w-[360px] min-w-[340px] overflow-y-auto hidden md:flex md:flex-col"
-                  style={{
-                    background: 'var(--surface-abyss)',
-                    borderRight: '1px solid var(--border-default)',
-                  }}
-                >
-                  {/* Filters */}
-                  <div
-                    className="p-4 flex-shrink-0"
-                    style={{ borderBottom: '1px solid var(--border-muted)' }}
+              {/* Status Bar - below toolbar, above content */}
+              <StatusBar stats={projectStats} loading={loading} />
+
+              {/* Content Area - Three-column layout */}
+              <div className="flex-1 flex overflow-hidden min-w-0 min-h-0">
+                {/* Left Sidebar - Filters and Task List (List view only) */}
+                {view === 'list' && (
+                  <aside
+                    className="w-80 flex-shrink-0 overflow-y-auto hidden md:flex md:flex-col"
+                    style={{
+                      background: 'var(--surface-abyss)',
+                      borderRight: '1px solid var(--border-default)',
+                    }}
                   >
-                    <h2
-                      className="text-xs font-medium uppercase tracking-wide mb-3"
-                      style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}
+                    {/* Filters */}
+                    <div
+                      className="p-4 flex-shrink-0"
+                      style={{ borderBottom: '1px solid var(--border-muted)' }}
                     >
-                      Filters
-                    </h2>
-                    <FilterPanel
-                      selectedStatus={filterStatus}
-                      selectedPriority={filterPriority}
-                      searchQuery={searchQuery}
-                      onStatusChange={handleStatusChange}
-                      onPriorityChange={handlePriorityChange}
-                      onSearchChange={handleSearchChange}
+                      <h2
+                        className="text-xs font-medium uppercase tracking-wide mb-3"
+                        style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}
+                      >
+                        Filters
+                      </h2>
+                      <FilterPanel
+                        selectedStatus={filterStatus}
+                        selectedPriority={filterPriority}
+                        searchQuery={searchQuery}
+                        onStatusChange={handleStatusChange}
+                        onPriorityChange={handlePriorityChange}
+                        onSearchChange={handleSearchChange}
+                      />
+                    </div>
+
+                    {/* Task List */}
+                    <div className="flex-1 overflow-y-auto min-h-0">
+                      <div className="p-4">
+                        <h2
+                          className="text-xs font-medium uppercase tracking-wide mb-3 flex items-center gap-2"
+                          style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}
+                        >
+                          Tasks
+                          <span
+                            className="tabular-nums"
+                            style={{ color: 'var(--accent-cyan)' }}
+                          >
+                            {filteredTasks.length}
+                            {filteredTasks.length !== tasks.length && (
+                              <span style={{ color: 'var(--text-muted)' }}>/{tasks.length}</span>
+                            )}
+                          </span>
+                        </h2>
+                        <TaskList
+                          tasks={filteredTasks}
+                          selectedTaskId={selectedTaskId}
+                          onTaskClick={setSelectedTask}
+                          loading={loading}
+                        />
+                      </div>
+                    </div>
+                  </aside>
+                )}
+
+                {/* Center Content - Graph View or Empty State */}
+                {view === 'graph' && (
+                  <div className="flex-1 min-w-0 min-h-0 overflow-hidden">
+                    <GraphView
+                      ref={graphViewRef}
+                      graphData={graphData}
+                      onNodeClick={setSelectedTask}
                     />
                   </div>
+                )}
 
-                  {/* Task List */}
-                  <div className="p-4 flex-1 overflow-y-auto min-h-0">
-                    <h2
-                      className="text-xs font-medium uppercase tracking-wide mb-3 flex items-center gap-2"
-                      style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}
+                {/* Right Panel - Task Detail */}
+                <aside
+                  className={`
+                    w-80 flex-shrink-0 overflow-hidden hidden md:flex md:flex-col
+                    ${selectedTaskId ? 'fixed inset-0 z-50 md:relative md:z-auto md:flex' : ''}
+                  `}
+                  style={{
+                    background: 'var(--surface-abyss)',
+                    borderLeft: '1px solid var(--border-default)',
+                  }}
+                >
+                  {/* Mobile close button */}
+                  {selectedTaskId && (
+                    <button
+                      onClick={() => setSelectedTask(null)}
+                      className="md:hidden absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-lg z-10"
+                      style={{
+                        background: 'var(--surface-raised)',
+                        border: '1px solid var(--border-default)',
+                        color: 'var(--text-secondary)',
+                      }}
                     >
-                      Tasks
-                      <span
-                        className="tabular-nums"
-                        style={{ color: 'var(--accent-cyan)' }}
-                      >
-                        {tasks.length}
-                      </span>
-                    </h2>
-                    <TaskList
-                      tasks={tasks}
-                      selectedTaskId={selectedTaskId}
-                      onTaskClick={setSelectedTask}
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <line x1="18" y1="6" x2="6" y2="18" />
+                        <line x1="6" y1="6" x2="18" y2="18" />
+                      </svg>
+                    </button>
+                  )}
+                  <div className="flex-1 overflow-y-auto p-4 min-h-0">
+                    <TaskDetail
+                      task={tasks.find(t => t.id === selectedTaskId) || null}
                       loading={loading}
                     />
                   </div>
-                </div>
-              )}
-
-              {/* Graph View */}
-              {view === 'graph' && (
-                <div className="flex-1 min-w-0 h-full">
-                  <GraphView
-                    ref={graphViewRef}
-                    graphData={graphData}
-                    onNodeClick={setSelectedTask}
-                  />
-                </div>
-              )}
-
-              {/* Task Detail Panel - Responsive slide-over on mobile, fixed width on desktop */}
-              <div
-                className={`
-                  overflow-y-auto
-                  hidden md:block md:w-[400px] md:min-w-[380px] md:flex-shrink-0
-                  ${selectedTaskId ? 'fixed inset-0 z-50 md:relative md:z-auto md:block' : ''}
-                `}
-                style={{
-                  background: 'var(--surface-abyss)',
-                  borderLeft: view === 'list' ? '1px solid var(--border-default)' : 'none',
-                }}
-              >
-                {/* Mobile close button */}
-                {selectedTaskId && (
-                  <button
-                    onClick={() => setSelectedTask(null)}
-                    className="md:hidden absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-lg z-10"
-                    style={{
-                      background: 'var(--surface-raised)',
-                      border: '1px solid var(--border-default)',
-                      color: 'var(--text-secondary)',
-                    }}
-                  >
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <line x1="18" y1="6" x2="6" y2="18" />
-                      <line x1="6" y1="6" x2="18" y2="18" />
-                    </svg>
-                  </button>
-                )}
-                <div className="p-4 h-full overflow-y-auto">
-                  <TaskDetail
-                    task={tasks.find(t => t.id === selectedTaskId) || null}
-                    loading={loading}
-                  />
-                </div>
+                </aside>
               </div>
             </main>
-
-            {/* Status Bar */}
-            <StatusBar stats={projectStats} loading={loading} />
           </>
         )}
       </div>

@@ -11,6 +11,7 @@ import type { Request, Response, Router } from 'express';
 import type { TaskGraphStore } from '../../core/graph/index.js';
 import { topologicalSort, findCriticalPath, isValidDAG } from '../../core/graph/sort.js';
 import { detectCycle, hasCycle, getCycleStatistics } from '../../core/graph/cycle.js';
+import { TaskStorage } from '../../core/storage/file-store.js';
 import { ERROR_SUGGESTIONS } from '../../types/index.js';
 import type { ApiResponse } from '../server.js';
 
@@ -67,14 +68,51 @@ export function registerGraphRoutes(
   router: Router,
   getGraph: () => TaskGraphStore | null
 ): void {
+  // Cache for loaded project graphs
+  const graphCache = new Map<string, TaskGraphStore>();
+
+  /**
+   * Get graph for a specific project path, using cache when possible
+   */
+  async function getProjectGraph(projectPath: string | undefined): Promise<TaskGraphStore | null> {
+    if (!projectPath) {
+      return getGraph();
+    }
+
+    // Check cache first
+    const cached = graphCache.get(projectPath);
+    if (cached) {
+      return cached;
+    }
+
+    // Load the project
+    try {
+      const storage = new TaskStorage({ projectDir: projectPath });
+      const graph = await storage.load();
+      graphCache.set(projectPath, graph);
+      return graph;
+    } catch {
+      return null;
+    }
+  }
+
+  /**
+   * Extract project path from query params
+   */
+  function getProjectPath(req: Request): string | undefined {
+    const project = req.query.project;
+    return typeof project === 'string' ? project : undefined;
+  }
+
   /**
    * GET /api/graph
    * Get full graph structure including all tasks and edges
    */
-  router.get('/api/graph', asyncHandler(async (_req: Request, res: Response) => {
-    const graph = getGraph();
+  router.get('/api/graph', asyncHandler(async (req: Request, res: Response) => {
+    const projectPath = getProjectPath(req);
+    const graph = await getProjectGraph(projectPath);
     if (!graph) {
-      return sendError(res, 'GRAPH_NOT_LOADED', 'Graph not loaded', 500);
+      return sendError(res, 'GRAPH_NOT_LOADED', projectPath ? `Project not found: ${projectPath}` : 'Graph not loaded', 500);
     }
 
     // Serialize graph to JSON format
@@ -83,11 +121,33 @@ export function registerGraphRoutes(
     // Convert nodes from object (keyed by ID) to array for frontend
     const nodesArray = Object.values(graphData.nodes);
 
+    // Get valid node IDs
+    const validNodeIds = new Set(nodesArray.map(n => n.id));
+
+    // Filter edges to only include valid node references
+    const filterEdges = (edges: Record<string, string[]>): Record<string, string[]> => {
+      const filtered: Record<string, string[]> = {};
+      for (const [sourceId, targetIds] of Object.entries(edges)) {
+        // Skip if source is invalid
+        if (!sourceId || sourceId === 'null' || sourceId === 'undefined' || !validNodeIds.has(sourceId)) {
+          continue;
+        }
+        // Filter targets to only valid nodes
+        const validTargets = (targetIds || []).filter(
+          targetId => targetId && targetId !== 'null' && targetId !== 'undefined' && validNodeIds.has(targetId)
+        );
+        if (validTargets.length > 0) {
+          filtered[sourceId] = validTargets;
+        }
+      }
+      return filtered;
+    };
+
     return sendSuccess(res, {
       metadata: graphData.metadata,
       nodes: nodesArray,
-      outgoingEdges: graphData.outgoingEdges,
-      incomingEdges: graphData.incomingEdges,
+      outgoingEdges: filterEdges(graphData.outgoingEdges),
+      incomingEdges: filterEdges(graphData.incomingEdges),
     });
   }));
 
@@ -95,10 +155,11 @@ export function registerGraphRoutes(
    * GET /api/graph/topology
    * Get topological order of tasks
    */
-  router.get('/api/graph/topology', asyncHandler(async (_req: Request, res: Response) => {
-    const graph = getGraph();
+  router.get('/api/graph/topology', asyncHandler(async (req: Request, res: Response) => {
+    const projectPath = getProjectPath(req);
+    const graph = await getProjectGraph(projectPath);
     if (!graph) {
-      return sendError(res, 'GRAPH_NOT_LOADED', 'Graph not loaded', 500);
+      return sendError(res, 'GRAPH_NOT_LOADED', projectPath ? `Project not found: ${projectPath}` : 'Graph not loaded', 500);
     }
 
     const result = topologicalSort(graph);
@@ -122,10 +183,11 @@ export function registerGraphRoutes(
    * POST /api/graph/validate
    * Validate graph structure and check for cycles
    */
-  router.post('/api/graph/validate', asyncHandler(async (_req: Request, res: Response) => {
-    const graph = getGraph();
+  router.post('/api/graph/validate', asyncHandler(async (req: Request, res: Response) => {
+    const projectPath = getProjectPath(req);
+    const graph = await getProjectGraph(projectPath);
     if (!graph) {
-      return sendError(res, 'GRAPH_NOT_LOADED', 'Graph not loaded', 500);
+      return sendError(res, 'GRAPH_NOT_LOADED', projectPath ? `Project not found: ${projectPath}` : 'Graph not loaded', 500);
     }
 
     // Check if graph is valid (acyclic)
@@ -151,10 +213,11 @@ export function registerGraphRoutes(
    * GET /api/graph/cycles
    * Detect and return all cycles in the graph
    */
-  router.get('/api/graph/cycles', asyncHandler(async (_req: Request, res: Response) => {
-    const graph = getGraph();
+  router.get('/api/graph/cycles', asyncHandler(async (req: Request, res: Response) => {
+    const projectPath = getProjectPath(req);
+    const graph = await getProjectGraph(projectPath);
     if (!graph) {
-      return sendError(res, 'GRAPH_NOT_LOADED', 'Graph not loaded', 500);
+      return sendError(res, 'GRAPH_NOT_LOADED', projectPath ? `Project not found: ${projectPath}` : 'Graph not loaded', 500);
     }
 
     const result = detectCycle(graph);
@@ -179,10 +242,11 @@ export function registerGraphRoutes(
    * GET /api/graph/critical-path
    * Get the critical path (longest path) through the graph
    */
-  router.get('/api/graph/critical-path', asyncHandler(async (_req: Request, res: Response) => {
-    const graph = getGraph();
+  router.get('/api/graph/critical-path', asyncHandler(async (req: Request, res: Response) => {
+    const projectPath = getProjectPath(req);
+    const graph = await getProjectGraph(projectPath);
     if (!graph) {
-      return sendError(res, 'GRAPH_NOT_LOADED', 'Graph not loaded', 500);
+      return sendError(res, 'GRAPH_NOT_LOADED', projectPath ? `Project not found: ${projectPath}` : 'Graph not loaded', 500);
     }
 
     // First check if graph has cycles
@@ -203,10 +267,11 @@ export function registerGraphRoutes(
    * GET /api/stats
    * Get project statistics
    */
-  router.get('/api/stats', asyncHandler(async (_req: Request, res: Response) => {
-    const graph = getGraph();
+  router.get('/api/stats', asyncHandler(async (req: Request, res: Response) => {
+    const projectPath = getProjectPath(req);
+    const graph = await getProjectGraph(projectPath);
     if (!graph) {
-      return sendError(res, 'GRAPH_NOT_LOADED', 'Graph not loaded', 500);
+      return sendError(res, 'GRAPH_NOT_LOADED', projectPath ? `Project not found: ${projectPath}` : 'Graph not loaded', 500);
     }
 
     // Get basic graph stats

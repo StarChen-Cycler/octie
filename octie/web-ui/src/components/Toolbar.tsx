@@ -1,3 +1,8 @@
+/**
+ * Toolbar - View controls and actions
+ * Design: Terminal Noir - Dark cyberpunk aesthetic
+ */
+
 interface ToolbarProps {
   view: 'list' | 'graph';
   onViewChange: (view: 'list' | 'graph') => void;
@@ -9,57 +14,133 @@ interface ToolbarProps {
   theme?: 'light' | 'dark';
 }
 
-function Toolbar({ view, onViewChange, onRefresh, loading, onExportPNG, onExportSVG, onThemeToggle, theme = 'light' }: ToolbarProps) {
+function Toolbar({
+  view,
+  onViewChange,
+  onRefresh,
+  loading,
+  onExportPNG,
+  onExportSVG,
+  onThemeToggle,
+  theme = 'dark',
+}: ToolbarProps) {
   return (
-    <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-4 py-3">
+    <div
+      className="px-4 py-3"
+      style={{
+        background: 'var(--surface-abyss)',
+        borderBottom: '1px solid var(--border-default)',
+      }}
+    >
       <div className="flex items-center justify-between">
+        {/* Left - View Toggle */}
         <div className="flex items-center gap-2">
-          {/* View Toggle */}
-          <div className="inline-flex rounded-md shadow-sm" role="group">
+          <div className="flex rounded-lg overflow-hidden" style={{ border: '1px solid var(--border-default)' }}>
             <button
               type="button"
               onClick={() => onViewChange('list')}
-              className={`px-3 py-2 text-sm font-medium rounded-l-lg border ${
-                view === 'list'
-                  ? 'bg-blue-50 dark:bg-blue-900 text-blue-700 dark:text-blue-300 border-blue-600 dark:border-blue-500 z-10'
-                  : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'
-              }`}
+              className="flex items-center gap-2 px-3 py-2 text-sm transition-all duration-200"
+              style={{
+                background: view === 'list'
+                  ? 'linear-gradient(135deg, rgba(0, 212, 255, 0.15), rgba(167, 139, 250, 0.15))'
+                  : 'var(--surface-raised)',
+                color: view === 'list' ? 'var(--accent-cyan)' : 'var(--text-secondary)',
+                borderRight: '1px solid var(--border-default)',
+              }}
             >
-              List <span className="text-xs opacity-50 ml-1">(L)</span>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <line x1="8" y1="6" x2="21" y2="6" />
+                <line x1="8" y1="12" x2="21" y2="12" />
+                <line x1="8" y1="18" x2="21" y2="18" />
+                <line x1="3" y1="6" x2="3.01" y2="6" />
+                <line x1="3" y1="12" x2="3.01" y2="12" />
+                <line x1="3" y1="18" x2="3.01" y2="18" />
+              </svg>
+              List
+              <kbd
+                className="text-[10px] px-1 rounded"
+                style={{
+                  background: view === 'list' ? 'var(--surface-elevated)' : 'var(--surface-base)',
+                  color: 'var(--text-muted)',
+                  fontFamily: 'var(--font-mono)',
+                }}
+              >
+                L
+              </kbd>
             </button>
             <button
               type="button"
               onClick={() => onViewChange('graph')}
-              className={`px-3 py-2 text-sm font-medium rounded-r-lg border -ml-px ${
-                view === 'graph'
-                  ? 'bg-blue-50 dark:bg-blue-900 text-blue-700 dark:text-blue-300 border-blue-600 dark:border-blue-500 z-10'
-                  : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'
-              }`}
+              className="flex items-center gap-2 px-3 py-2 text-sm transition-all duration-200"
+              style={{
+                background: view === 'graph'
+                  ? 'linear-gradient(135deg, rgba(0, 212, 255, 0.15), rgba(167, 139, 250, 0.15))'
+                  : 'var(--surface-raised)',
+                color: view === 'graph' ? 'var(--accent-cyan)' : 'var(--text-secondary)',
+              }}
             >
-              Graph <span className="text-xs opacity-50 ml-1">(G)</span>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <circle cx="5" cy="6" r="3" />
+                <circle cx="19" cy="6" r="3" />
+                <circle cx="12" cy="18" r="3" />
+                <line x1="7" y1="8" x2="10" y2="16" />
+                <line x1="17" y1="8" x2="14" y2="16" />
+              </svg>
+              Graph
+              <kbd
+                className="text-[10px] px-1 rounded"
+                style={{
+                  background: view === 'graph' ? 'var(--surface-elevated)' : 'var(--surface-base)',
+                  color: 'var(--text-muted)',
+                  fontFamily: 'var(--font-mono)',
+                }}
+              >
+                G
+              </kbd>
             </button>
           </div>
         </div>
 
+        {/* Right - Actions */}
         <div className="flex items-center gap-2">
-          {/* Export Buttons (only show in graph view) */}
+          {/* Export Buttons (only in graph view) */}
           {view === 'graph' && (
             <>
               <button
                 type="button"
                 onClick={onExportPNG}
-                className="px-3 py-2 text-sm font-medium rounded-md border bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700"
+                className="flex items-center gap-2 px-3 py-2 text-sm rounded-lg transition-colors"
+                style={{
+                  background: 'var(--surface-raised)',
+                  border: '1px solid var(--border-default)',
+                  color: 'var(--text-secondary)',
+                }}
                 title="Export as PNG"
               >
-                📷 PNG
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+                  <circle cx="8.5" cy="8.5" r="1.5" />
+                  <polyline points="21 15 16 10 5 21" />
+                </svg>
+                PNG
               </button>
               <button
                 type="button"
                 onClick={onExportSVG}
-                className="px-3 py-2 text-sm font-medium rounded-md border bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700"
+                className="flex items-center gap-2 px-3 py-2 text-sm rounded-lg transition-colors"
+                style={{
+                  background: 'var(--surface-raised)',
+                  border: '1px solid var(--border-default)',
+                  color: 'var(--text-secondary)',
+                }}
                 title="Export as SVG"
               >
-                📐 SVG
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <polygon points="12 2 2 7 12 12 22 7 12 2" />
+                  <polyline points="2 17 12 22 22 17" />
+                  <polyline points="2 12 12 17 22 12" />
+                </svg>
+                SVG
               </button>
             </>
           )}
@@ -68,10 +149,31 @@ function Toolbar({ view, onViewChange, onRefresh, loading, onExportPNG, onExport
           <button
             type="button"
             onClick={onThemeToggle}
-            className="px-3 py-2 text-sm font-medium rounded-md border bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700"
+            className="w-9 h-9 flex items-center justify-center rounded-lg transition-colors"
+            style={{
+              background: 'var(--surface-raised)',
+              border: '1px solid var(--border-default)',
+              color: 'var(--text-secondary)',
+            }}
             title={`Switch to ${theme === 'light' ? 'dark' : 'light'} theme (T)`}
           >
-            {theme === 'light' ? '🌙' : '☀️'}
+            {theme === 'dark' ? (
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <circle cx="12" cy="12" r="5" />
+                <line x1="12" y1="1" x2="12" y2="3" />
+                <line x1="12" y1="21" x2="12" y2="23" />
+                <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+                <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+                <line x1="1" y1="12" x2="3" y2="12" />
+                <line x1="21" y1="12" x2="23" y2="12" />
+                <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+                <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+              </svg>
+            ) : (
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+              </svg>
+            )}
           </button>
 
           {/* Refresh Button */}
@@ -79,20 +181,35 @@ function Toolbar({ view, onViewChange, onRefresh, loading, onExportPNG, onExport
             type="button"
             onClick={onRefresh}
             disabled={loading}
-            className={`px-3 py-2 text-sm font-medium rounded-md border ${
-              loading
-                ? 'bg-gray-100 dark:bg-gray-700 text-gray-400 dark:text-gray-500 border-gray-300 dark:border-gray-600 cursor-not-allowed'
-                : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'
-            }`}
+            className="flex items-center gap-2 px-3 py-2 text-sm rounded-lg transition-colors"
+            style={{
+              background: loading ? 'var(--surface-base)' : 'var(--accent-cyan)',
+              border: 'none',
+              color: loading ? 'var(--text-muted)' : 'white',
+              opacity: loading ? 0.7 : 1,
+              cursor: loading ? 'not-allowed' : 'pointer',
+            }}
             title="Refresh (Ctrl+R)"
           >
             {loading ? (
-              <span className="flex items-center gap-2">
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-400 dark:border-gray-500"></div>
-                Refreshing...
-              </span>
+              <>
+                <div
+                  className="w-4 h-4 rounded-full animate-spin"
+                  style={{
+                    border: '2px solid var(--text-muted)',
+                    borderTopColor: 'transparent',
+                  }}
+                />
+                <span>Refreshing...</span>
+              </>
             ) : (
-              'Refresh'
+              <>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <polyline points="23 4 23 10 17 10" />
+                  <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" />
+                </svg>
+                Refresh
+              </>
             )}
           </button>
         </div>

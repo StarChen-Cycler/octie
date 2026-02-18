@@ -16,20 +16,16 @@ interface TaskState {
   loading: boolean;
   error: string | null;
   queryOptions: TaskQueryOptions;
+  currentProjectPath: string | null;
 
   // Graph state
   graphData: GraphData | null;
   projectStats: ProjectStats | null;
 
-  // Real-time updates
-  pollingEnabled: boolean;
-  pollingInterval: number;
-  startPolling: () => void;
-  stopPolling: () => void;
-
   // Actions
   setQueryOptions: (options: TaskQueryOptions) => void;
   setSelectedTask: (taskId: string | null) => void;
+  setCurrentProjectPath: (path: string | null) => void;
   clearError: () => void;
 
   // API actions
@@ -46,11 +42,20 @@ interface TaskState {
 }
 
 const API_BASE = '/api';
-const DEFAULT_POLLING_INTERVAL = 30000; // 30 seconds
+
+/**
+ * Build URL with project path query parameter
+ */
+function buildUrl(endpoint: string, projectPath: string | null, additionalParams?: URLSearchParams): string {
+  const params = additionalParams || new URLSearchParams();
+  if (projectPath) {
+    params.set('project', projectPath);
+  }
+  const queryString = params.toString();
+  return `${API_BASE}${endpoint}${queryString ? `?${queryString}` : ''}`;
+}
 
 export const useTaskStore = create<TaskState>()((set, get) => {
-  let pollingTimer: ReturnType<typeof setInterval> | null = null;
-
   return {
   // Initial state
   tasks: [],
@@ -58,33 +63,9 @@ export const useTaskStore = create<TaskState>()((set, get) => {
   loading: false,
   error: null,
   queryOptions: {},
+  currentProjectPath: null,
   graphData: null,
   projectStats: null,
-  pollingEnabled: false,
-  pollingInterval: DEFAULT_POLLING_INTERVAL,
-
-  // Real-time polling
-  startPolling: () => {
-    const { pollingEnabled, pollingInterval } = get();
-    if (pollingEnabled || pollingTimer) return;
-
-    set({ pollingEnabled: true });
-
-    pollingTimer = setInterval(() => {
-      const { fetchTasks, fetchGraph, fetchStats } = get();
-      fetchTasks();
-      fetchGraph();
-      fetchStats();
-    }, pollingInterval);
-  },
-
-  stopPolling: () => {
-    if (pollingTimer) {
-      clearInterval(pollingTimer);
-      pollingTimer = null;
-    }
-    set({ pollingEnabled: false });
-  },
 
   // Actions
   setQueryOptions: (options) => {
@@ -96,6 +77,10 @@ export const useTaskStore = create<TaskState>()((set, get) => {
     set({ selectedTaskId: taskId });
   },
 
+  setCurrentProjectPath: (path) => {
+    set({ currentProjectPath: path });
+  },
+
   clearError: () => {
     set({ error: null });
   },
@@ -104,7 +89,7 @@ export const useTaskStore = create<TaskState>()((set, get) => {
   fetchTasks: async () => {
     set({ loading: true, error: null });
     try {
-      const { queryOptions } = get();
+      const { queryOptions, currentProjectPath } = get();
       const params = new URLSearchParams();
       if (queryOptions.status) params.append('status', queryOptions.status);
       if (queryOptions.priority) params.append('priority', queryOptions.priority);
@@ -112,7 +97,7 @@ export const useTaskStore = create<TaskState>()((set, get) => {
       if (queryOptions.limit) params.append('limit', queryOptions.limit.toString());
       if (queryOptions.offset) params.append('offset', queryOptions.offset.toString());
 
-      const url = `${API_BASE}/tasks${params.toString() ? `?${params}` : ''}`;
+      const url = buildUrl('/tasks', currentProjectPath, params);
       const response = await fetch(url);
       const result: ApiResponse<{ tasks: Task[]; total: number }> = await response.json();
 
@@ -130,7 +115,8 @@ export const useTaskStore = create<TaskState>()((set, get) => {
   },
 
   fetchTask: async (id) => {
-    const response = await fetch(`${API_BASE}/tasks/${id}`);
+    const { currentProjectPath } = get();
+    const response = await fetch(buildUrl(`/tasks/${id}`, currentProjectPath));
     const result: ApiResponse<Task> = await response.json();
 
     if (!response.ok || !result.success) {
@@ -143,7 +129,8 @@ export const useTaskStore = create<TaskState>()((set, get) => {
   createTask: async (input) => {
     set({ loading: true, error: null });
     try {
-      const response = await fetch(`${API_BASE}/tasks`, {
+      const { currentProjectPath } = get();
+      const response = await fetch(buildUrl('/tasks', currentProjectPath), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(input),
@@ -172,7 +159,8 @@ export const useTaskStore = create<TaskState>()((set, get) => {
   updateTask: async (id, input) => {
     set({ loading: true, error: null });
     try {
-      const response = await fetch(`${API_BASE}/tasks/${id}`, {
+      const { currentProjectPath } = get();
+      const response = await fetch(buildUrl(`/tasks/${id}`, currentProjectPath), {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(input),
@@ -201,8 +189,10 @@ export const useTaskStore = create<TaskState>()((set, get) => {
   deleteTask: async (id, reconnect = true) => {
     set({ loading: true, error: null });
     try {
-      const params = reconnect ? '?reconnect=true' : '';
-      const response = await fetch(`${API_BASE}/tasks/${id}${params}`, {
+      const { currentProjectPath } = get();
+      const params = new URLSearchParams();
+      if (reconnect) params.set('reconnect', 'true');
+      const response = await fetch(buildUrl(`/tasks/${id}`, currentProjectPath, params), {
         method: 'DELETE',
       });
 
@@ -229,7 +219,8 @@ export const useTaskStore = create<TaskState>()((set, get) => {
   fetchGraph: async () => {
     set({ loading: true, error: null });
     try {
-      const response = await fetch(`${API_BASE}/graph`);
+      const { currentProjectPath } = get();
+      const response = await fetch(buildUrl('/graph', currentProjectPath));
       const result: ApiResponse<GraphData> = await response.json();
 
       if (!response.ok || !result.success) {
@@ -248,7 +239,8 @@ export const useTaskStore = create<TaskState>()((set, get) => {
   fetchStats: async () => {
     set({ loading: true, error: null });
     try {
-      const response = await fetch(`${API_BASE}/stats`);
+      const { currentProjectPath } = get();
+      const response = await fetch(buildUrl('/stats', currentProjectPath));
       const result: ApiResponse<ProjectStats> = await response.json();
 
       if (!response.ok || !result.success) {
@@ -265,7 +257,8 @@ export const useTaskStore = create<TaskState>()((set, get) => {
   },
 
   validateGraph: async () => {
-    const response = await fetch(`${API_BASE}/graph/validate`, {
+    const { currentProjectPath } = get();
+    const response = await fetch(buildUrl('/graph/validate', currentProjectPath), {
       method: 'POST',
     });
     const result: ApiResponse<{ isValid: boolean; hasCycle: boolean; cycleStats?: unknown }> =

@@ -12,6 +12,7 @@ import { z } from 'zod';
 import type { TaskGraphStore } from '../../core/graph/index.js';
 import { TaskNotFoundError, CircularDependencyError, ValidationError, AtomicTaskViolationError, AmbiguousIdError, ERROR_SUGGESTIONS } from '../../types/index.js';
 import { TaskNode } from '../../core/models/task-node.js';
+import { TaskStorage } from '../../core/storage/file-store.js';
 import { v4 as uuidv4 } from 'uuid';
 import type { ApiResponse } from '../server.js';
 
@@ -152,14 +153,51 @@ export function registerTaskRoutes(
   router: Router,
   getGraph: () => TaskGraphStore | null
 ): void {
+  // Cache for loaded project graphs
+  const graphCache = new Map<string, TaskGraphStore>();
+
+  /**
+   * Get graph for a specific project path, using cache when possible
+   */
+  async function getProjectGraph(projectPath: string | undefined): Promise<TaskGraphStore | null> {
+    if (!projectPath) {
+      return getGraph();
+    }
+
+    // Check cache first
+    const cached = graphCache.get(projectPath);
+    if (cached) {
+      return cached;
+    }
+
+    // Load the project
+    try {
+      const storage = new TaskStorage({ projectDir: projectPath });
+      const graph = await storage.load();
+      graphCache.set(projectPath, graph);
+      return graph;
+    } catch {
+      return null;
+    }
+  }
+
+  /**
+   * Extract project path from query params
+   */
+  function getProjectPath(req: Request): string | undefined {
+    const project = req.query.project;
+    return typeof project === 'string' ? project : undefined;
+  }
+
   /**
    * GET /api/tasks
    * List all tasks with optional filtering
    */
   router.get('/api/tasks', asyncHandler(async (req: Request, res: Response) => {
-    const graph = getGraph();
+    const projectPath = getProjectPath(req);
+    const graph = await getProjectGraph(projectPath);
     if (!graph) {
-      return sendError(res, 'GRAPH_NOT_LOADED', 'Graph not loaded', 500);
+      return sendError(res, 'GRAPH_NOT_LOADED', projectPath ? `Project not found: ${projectPath}` : 'Graph not loaded', 500);
     }
 
     // Validate query parameters
@@ -212,9 +250,10 @@ export function registerTaskRoutes(
    * Get a specific task by ID
    */
   router.get('/api/tasks/:id', asyncHandler(async (req: Request, res: Response) => {
-    const graph = getGraph();
+    const projectPath = getProjectPath(req);
+    const graph = await getProjectGraph(projectPath);
     if (!graph) {
-      return sendError(res, 'GRAPH_NOT_LOADED', 'Graph not loaded', 500);
+      return sendError(res, 'GRAPH_NOT_LOADED', projectPath ? `Project not found: ${projectPath}` : 'Graph not loaded', 500);
     }
 
     const { id } = req.params;
@@ -244,9 +283,10 @@ export function registerTaskRoutes(
    * Create a new task
    */
   router.post('/api/tasks', asyncHandler(async (req: Request, res: Response) => {
-    const graph = getGraph();
+    const projectPath = getProjectPath(req);
+    const graph = await getProjectGraph(projectPath);
     if (!graph) {
-      return sendError(res, 'GRAPH_NOT_LOADED', 'Graph not loaded', 500);
+      return sendError(res, 'GRAPH_NOT_LOADED', projectPath ? `Project not found: ${projectPath}` : 'Graph not loaded', 500);
     }
 
     // Validate request body
@@ -338,9 +378,10 @@ export function registerTaskRoutes(
    * Update an existing task
    */
   router.put('/api/tasks/:id', asyncHandler(async (req: Request, res: Response) => {
-    const graph = getGraph();
+    const projectPath = getProjectPath(req);
+    const graph = await getProjectGraph(projectPath);
     if (!graph) {
-      return sendError(res, 'GRAPH_NOT_LOADED', 'Graph not loaded', 500);
+      return sendError(res, 'GRAPH_NOT_LOADED', projectPath ? `Project not found: ${projectPath}` : 'Graph not loaded', 500);
     }
 
     const { id } = req.params;
@@ -461,9 +502,10 @@ export function registerTaskRoutes(
    * Delete a task
    */
   router.delete('/api/tasks/:id', asyncHandler(async (req: Request, res: Response) => {
-    const graph = getGraph();
+    const projectPath = getProjectPath(req);
+    const graph = await getProjectGraph(projectPath);
     if (!graph) {
-      return sendError(res, 'GRAPH_NOT_LOADED', 'Graph not loaded', 500);
+      return sendError(res, 'GRAPH_NOT_LOADED', projectPath ? `Project not found: ${projectPath}` : 'Graph not loaded', 500);
     }
 
     const { id } = req.params;
@@ -525,9 +567,10 @@ export function registerTaskRoutes(
    * Merge this task into another task
    */
   router.post('/api/tasks/:id/merge', asyncHandler(async (req: Request, res: Response) => {
-    const graph = getGraph();
+    const projectPath = getProjectPath(req);
+    const graph = await getProjectGraph(projectPath);
     if (!graph) {
-      return sendError(res, 'GRAPH_NOT_LOADED', 'Graph not loaded', 500);
+      return sendError(res, 'GRAPH_NOT_LOADED', projectPath ? `Project not found: ${projectPath}` : 'Graph not loaded', 500);
     }
 
     const { id } = req.params;

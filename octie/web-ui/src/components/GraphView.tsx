@@ -5,12 +5,14 @@ import {
   Controls,
   MiniMap,
   addEdge,
+  Position,
   type Connection,
   type Edge,
   type Node,
   useNodesState,
   useEdgesState,
 } from '@xyflow/react';
+import dagre from 'dagre';
 import '@xyflow/react/dist/style.css';
 import type { GraphData, Task } from '../types';
 import TaskNode from './TaskNode';
@@ -18,6 +20,12 @@ import TaskNode from './TaskNode';
 const nodeTypes = {
   taskNode: TaskNode,
 };
+
+// Dagre layout constants
+const NODE_WIDTH = 280;
+const NODE_HEIGHT = 120;
+const RANK_SPACING = 100; // Vertical spacing between ranks (layers)
+const NODE_SPACING = 50;  // Horizontal spacing between nodes
 
 interface GraphViewProps {
   graphData: GraphData | null;
@@ -38,42 +46,156 @@ function ensureNodesArray(nodes: Task[] | Record<string, Task>): Task[] {
   return Object.values(nodes);
 }
 
+/**
+ * Apply dagre layout to position nodes in a hierarchical structure
+ * Direction: TB (Top-Bottom) for dependency graphs
+ */
+function getLayoutedElements(
+  nodes: Node[],
+  edges: Edge[],
+  direction: 'TB' | 'LR' = 'TB'
+): { nodes: Node[]; edges: Edge[] } {
+  // Create a new dagre graph
+  const dagreGraph = new dagre.graphlib.Graph();
+  dagreGraph.setDefaultEdgeLabel(() => ({}));
+
+  // Configure graph layout
+  dagreGraph.setGraph({
+    rankdir: direction,
+    ranksep: RANK_SPACING,
+    nodesep: NODE_SPACING,
+    marginx: 50,
+    marginy: 50,
+  });
+
+  // Add nodes to dagre graph
+  nodes.forEach((node) => {
+    dagreGraph.setNode(node.id, {
+      width: NODE_WIDTH,
+      height: NODE_HEIGHT,
+    });
+  });
+
+  // Add edges to dagre graph
+  edges.forEach((edge) => {
+    dagreGraph.setEdge(edge.source, edge.target);
+  });
+
+  // Run dagre layout
+  dagre.layout(dagreGraph);
+
+  // Apply positions to nodes
+  const layoutedNodes = nodes.map((node) => {
+    const nodeWithPosition = dagreGraph.node(node.id);
+
+    // Set handle positions based on direction
+    return {
+      ...node,
+      targetPosition: direction === 'TB' ? Position.Top : Position.Left,
+      sourcePosition: direction === 'TB' ? Position.Bottom : Position.Right,
+      position: {
+        x: nodeWithPosition.x - NODE_WIDTH / 2,
+        y: nodeWithPosition.y - NODE_HEIGHT / 2,
+      },
+    };
+  });
+
+  return {
+    nodes: layoutedNodes,
+    edges,
+  };
+}
+
+/**
+ * Filter edges to only include those where both source and target nodes exist
+ * and are valid (not null, undefined, or empty strings)
+ */
+function filterValidEdges(nodes: Node[], edges: Edge[]): Edge[] {
+  const nodeIds = new Set(nodes.map(n => n.id));
+
+  return edges.filter(edge => {
+    // Check for null/undefined/empty source or target
+    if (!edge.source || !edge.target ||
+        edge.source === 'null' || edge.target === 'null' ||
+        edge.source === 'undefined' || edge.target === 'undefined') {
+      console.warn(`[GraphView] Filtering edge with invalid IDs:`, edge);
+      return false;
+    }
+
+    // Check if nodes exist
+    const sourceExists = nodeIds.has(edge.source);
+    const targetExists = nodeIds.has(edge.target);
+
+    if (!sourceExists || !targetExists) {
+      console.warn(`[GraphView] Filtering edge with missing nodes: ${edge.source} -> ${edge.target}`);
+      return false;
+    }
+
+    return true;
+  });
+}
+
 const GraphView = forwardRef<GraphViewRef, GraphViewProps>(({ graphData, onNodeClick }, ref) => {
   const reactFlowWrapper = useRef<HTMLDivElement>(null);
 
-  // Convert graph data to ReactFlow nodes and edges
-  const initialNodes = useMemo(() => {
-    if (!graphData) return [];
+  // Convert graph data to ReactFlow nodes and edges with layout
+  const { initialNodes, initialEdges } = useMemo(() => {
+    if (!graphData) {
+      return { initialNodes: [], initialEdges: [] };
+    }
+
+    // Debug: Log raw graph data
+    console.log('[GraphView] Raw graphData:', {
+      nodeCount: graphData.nodes ? (Array.isArray(graphData.nodes) ? graphData.nodes.length : Object.keys(graphData.nodes).length) : 0,
+      outgoingEdgesKeys: graphData.outgoingEdges ? Object.keys(graphData.outgoingEdges) : [],
+    });
 
     // Handle both array and object formats for nodes
     const nodesArray = ensureNodesArray(graphData.nodes as Task[] | Record<string, Task>);
 
-    return nodesArray.map(
-      (task): Node => ({
-        id: task.id,
-        type: 'taskNode',
-        position: { x: 0, y: 0 }, // Will be auto-layouted by fitView
-        data: task,
-      })
-    );
-  }, [graphData]);
+    // Create nodes with placeholder positions
+    const nodes: Node[] = nodesArray.map((task): Node => ({
+      id: task.id,
+      type: 'taskNode',
+      position: { x: 0, y: 0 },
+      data: task,
+    }));
 
-  const initialEdges = useMemo(() => {
-    if (!graphData) return [];
-
+    // Create edges from outgoingEdges, filtering out invalid entries
     const edges: Edge[] = [];
     Object.entries(graphData.outgoingEdges || {}).forEach(([fromId, toIds]) => {
+      // Skip if source is null/undefined/empty
+      if (!fromId || fromId === 'null' || fromId === 'undefined') {
+        return;
+      }
+
       (toIds || []).forEach((toId) => {
+        // Skip if target is null/undefined/empty
+        if (!toId || toId === 'null' || toId === 'undefined') {
+          return;
+        }
+
         edges.push({
           id: `${fromId}-${toId}`,
           source: fromId,
           target: toId,
           type: 'smoothstep',
           animated: true,
+          style: { stroke: 'var(--accent-cyan)', strokeWidth: 2 },
         });
       });
     });
-    return edges;
+
+    // Filter out invalid edges (edges referencing non-existent nodes)
+    const validEdges = filterValidEdges(nodes, edges);
+
+    // Apply dagre layout
+    const layouted = getLayoutedElements(nodes, validEdges, 'TB');
+
+    return {
+      initialNodes: layouted.nodes,
+      initialEdges: layouted.edges,
+    };
   }, [graphData]);
 
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
@@ -83,30 +205,48 @@ const GraphView = forwardRef<GraphViewRef, GraphViewProps>(({ graphData, onNodeC
   useEffect(() => {
     if (graphData) {
       const nodesArray = ensureNodesArray(graphData.nodes as Task[] | Record<string, Task>);
-      const newNodes = nodesArray.map(
-        (task): Node => ({
-          id: task.id,
-          type: 'taskNode',
-          position: { x: 0, y: 0 },
-          data: task,
-        })
-      );
 
-      const newEdges: Edge[] = [];
+      // Create nodes
+      const nodes: Node[] = nodesArray.map((task): Node => ({
+        id: task.id,
+        type: 'taskNode',
+        position: { x: 0, y: 0 },
+        data: task,
+      }));
+
+      // Create edges, filtering out invalid entries
+      const edges: Edge[] = [];
       Object.entries(graphData.outgoingEdges || {}).forEach(([fromId, toIds]) => {
+        // Skip if source is null/undefined/empty
+        if (!fromId || fromId === 'null' || fromId === 'undefined') {
+          return;
+        }
+
         (toIds || []).forEach((toId) => {
-          newEdges.push({
+          // Skip if target is null/undefined/empty
+          if (!toId || toId === 'null' || toId === 'undefined') {
+            return;
+          }
+
+          edges.push({
             id: `${fromId}-${toId}`,
             source: fromId,
             target: toId,
             type: 'smoothstep',
             animated: true,
+            style: { stroke: 'var(--accent-cyan)', strokeWidth: 2 },
           });
         });
       });
 
-      setNodes(newNodes);
-      setEdges(newEdges);
+      // Filter invalid edges
+      const validEdges = filterValidEdges(nodes, edges);
+
+      // Apply layout
+      const layouted = getLayoutedElements(nodes, validEdges, 'TB');
+
+      setNodes(layouted.nodes);
+      setEdges(layouted.edges);
     }
   }, [graphData, setNodes, setEdges]);
 
@@ -244,6 +384,13 @@ const GraphView = forwardRef<GraphViewRef, GraphViewProps>(({ graphData, onNodeC
         onNodeClick={onNodeClickHandler as any}
         nodeTypes={nodeTypes as any}
         fitView
+        fitViewOptions={{ padding: 0.2 }}
+        minZoom={0.1}
+        maxZoom={2}
+        defaultEdgeOptions={{
+          type: 'smoothstep',
+          animated: true,
+        }}
         style={{ background: 'var(--surface-base)' }}
       >
         <Background style={{ background: 'var(--surface-base)' }} />

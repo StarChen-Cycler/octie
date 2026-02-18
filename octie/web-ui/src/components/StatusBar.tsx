@@ -1,3 +1,8 @@
+/**
+ * Status Bar - Project statistics display
+ * Design: Terminal Noir - Dark cyberpunk aesthetic
+ */
+
 import type { ProjectStats } from '../types';
 
 interface StatusBarProps {
@@ -8,11 +13,22 @@ interface StatusBarProps {
 function StatusBar({ stats, loading }: StatusBarProps) {
   if (loading) {
     return (
-      <div className="bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 px-4 py-2">
-        <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-400"></div>
-          <span>Loading stats...</span>
-        </div>
+      <div
+        className="px-4 py-2 flex items-center gap-2 text-xs"
+        style={{
+          background: 'var(--surface-abyss)',
+          borderTop: '1px solid var(--border-default)',
+          color: 'var(--text-muted)',
+        }}
+      >
+        <div
+          className="w-3 h-3 rounded-full animate-spin"
+          style={{
+            border: '2px solid var(--border-default)',
+            borderTopColor: 'var(--accent-cyan)',
+          }}
+        />
+        <span>Loading stats...</span>
       </div>
     );
   }
@@ -24,46 +40,131 @@ function StatusBar({ stats, loading }: StatusBarProps) {
   const { tasks } = stats;
 
   return (
-    <div className="bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 px-4 py-2">
-      <div className="flex items-center justify-between text-sm">
-        <div className="flex items-center gap-6">
-          <span className="text-gray-600 dark:text-gray-400">
-            <span className="font-medium text-gray-900 dark:text-gray-100">{tasks.total}</span> tasks
+    <div
+      className="px-4 py-2 flex items-center justify-between"
+      style={{
+        background: 'var(--surface-abyss)',
+        borderBottom: '1px solid var(--border-default)',
+      }}
+    >
+      {/* Left side - Status counts */}
+      <div className="flex items-center gap-4 text-xs">
+        {/* Total tasks */}
+        <div className="flex items-center gap-1.5">
+          <svg
+            width="12"
+            height="12"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="var(--text-muted)"
+            strokeWidth="2"
+          >
+            <path d="M9 11l3 3L22 4" />
+            <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
+          </svg>
+          <span className="tabular-nums font-semibold" style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-mono)' }}>
+            {tasks.total}
           </span>
-          <div className="flex items-center gap-3">
-            <span className="text-gray-600 dark:text-gray-400">
-              <span className="font-medium text-green-600">{tasks.statusCounts.completed}</span> done
+          <span style={{ color: 'var(--text-muted)' }}>tasks</span>
+        </div>
+
+        <div style={{ width: '1px', height: '12px', background: 'var(--border-default)' }} />
+
+        {/* Status breakdown */}
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-1">
+            <div
+              className="w-2 h-2 rounded-full"
+              style={{ background: 'var(--status-completed)', boxShadow: '0 0 4px rgba(16, 185, 129, 0.4)' }}
+            />
+            <span className="tabular-nums" style={{ color: 'var(--status-completed)', fontFamily: 'var(--font-mono)' }}>
+              {tasks.statusCounts.completed}
             </span>
-            <span className="text-gray-600 dark:text-gray-400">
-              <span className="font-medium text-blue-600">{tasks.statusCounts.in_progress}</span> in
-              progress
+          </div>
+          <div className="flex items-center gap-1">
+            <div
+              className="w-2 h-2 rounded-full"
+              style={{ background: 'var(--status-in-progress)', boxShadow: '0 0 4px rgba(0, 212, 255, 0.4)' }}
+            />
+            <span className="tabular-nums" style={{ color: 'var(--status-in-progress)', fontFamily: 'var(--font-mono)' }}>
+              {tasks.statusCounts.in_progress}
             </span>
-            <span className="text-gray-600 dark:text-gray-400">
-              <span className="font-medium text-red-600">{tasks.statusCounts.blocked}</span>{' '}
-              blocked
+          </div>
+          <div className="flex items-center gap-1">
+            <div
+              className="w-2 h-2 rounded-full"
+              style={{ background: 'var(--status-blocked)', boxShadow: '0 0 4px rgba(244, 63, 94, 0.4)' }}
+            />
+            <span className="tabular-nums" style={{ color: 'var(--status-blocked)', fontFamily: 'var(--font-mono)' }}>
+              {tasks.statusCounts.blocked}
             </span>
           </div>
         </div>
-        <div className="flex items-center gap-3 text-gray-600 dark:text-gray-400">
-          <span>
-            <span className="font-medium text-red-600">{tasks.priorityCounts.top}</span> top
+      </div>
+
+      {/* Right side - Priority counts */}
+      <div className="flex items-center gap-3 text-xs">
+        <div className="flex items-center gap-1.5">
+          <div
+            className="w-2 h-2 rounded-full"
+            style={{ background: 'var(--priority-top)', boxShadow: '0 0 4px rgba(244, 63, 94, 0.4)' }}
+          />
+          <span className="tabular-nums" style={{ color: 'var(--priority-top)', fontFamily: 'var(--font-mono)' }}>
+            {tasks.priorityCounts.top}
           </span>
-          <span>
-            <span className="font-medium text-yellow-600">{tasks.priorityCounts.second}</span>{' '}
-            second
-          </span>
-          {tasks.root > 0 && (
-            <span>
-              <span className="font-medium">{tasks.root}</span> root
-            </span>
-          )}
-          {tasks.orphan > 0 && (
-            <span>
-              <span className="font-medium text-orange-600">{tasks.orphan}</span>{' '}
-              orphan
-            </span>
-          )}
+          <span style={{ color: 'var(--text-muted)' }}>top</span>
         </div>
+
+        <div className="flex items-center gap-1.5">
+          <div
+            className="w-2 h-2 rounded-full"
+            style={{ background: 'var(--priority-second)', boxShadow: '0 0 4px rgba(255, 159, 28, 0.4)' }}
+          />
+          <span className="tabular-nums" style={{ color: 'var(--priority-second)', fontFamily: 'var(--font-mono)' }}>
+            {tasks.priorityCounts.second}
+          </span>
+          <span style={{ color: 'var(--text-muted)' }}>second</span>
+        </div>
+
+        {tasks.root > 0 && (
+          <div className="flex items-center gap-1.5">
+            <svg
+              width="10"
+              height="10"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="var(--text-muted)"
+              strokeWidth="2"
+            >
+              <circle cx="12" cy="12" r="3" />
+            </svg>
+            <span className="tabular-nums" style={{ color: 'var(--text-secondary)', fontFamily: 'var(--font-mono)' }}>
+              {tasks.root}
+            </span>
+            <span style={{ color: 'var(--text-muted)' }}>root</span>
+          </div>
+        )}
+
+        {tasks.orphan > 0 && (
+          <div className="flex items-center gap-1.5">
+            <svg
+              width="10"
+              height="10"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="var(--accent-amber)"
+              strokeWidth="2"
+            >
+              <circle cx="12" cy="12" r="10" />
+              <line x1="12" y1="8" x2="12" y2="12" />
+              <line x1="12" y1="16" x2="12.01" y2="16" />
+            </svg>
+            <span className="tabular-nums" style={{ color: 'var(--accent-amber)', fontFamily: 'var(--font-mono)' }}>
+              {tasks.orphan}
+            </span>
+            <span style={{ color: 'var(--text-muted)' }}>orphan</span>
+          </div>
+        )}
       </div>
     </div>
   );
