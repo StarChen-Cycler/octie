@@ -200,6 +200,42 @@
 **Completed**: 2026-02-18
 **Git Commit**: ca26eb0
 
+#### [x] Web UI Modern Frontend Design Refactor
+**Type**: Feature
+**Description**: Refactor web-ui frontend using /frontend-design skill for distinctive, production-grade aesthetics. Created "Terminal Noir" design system with dark cyberpunk aesthetic, neon accents, glassmorphism, and consistent styling across all components.
+**Blockers**: None
+**Related Files**: octie/web-ui/src/design-tokens.css, octie/web-ui/src/pages/HomePage.tsx, octie/web-ui/src/components/ProjectSidebar.tsx, octie/web-ui/src/components/AppHeader.tsx, octie/web-ui/src/components/TaskList.tsx, octie/web-ui/src/components/TaskDetail.tsx, octie/web-ui/src/components/StatusBar.tsx, octie/web-ui/src/components/FilterPanel.tsx, octie/web-ui/src/components/Toolbar.tsx, octie/web-ui/src/index.css, octie/web-ui/src/App.tsx
+**C7 MCP Verified**: /tailwindlabs/tailwindcss (design tokens, dark mode), /vercel/next.js (animation patterns)
+**Deliverables**:
+- [x] Create CSS design tokens file with custom properties (colors, spacing, typography)
+- [x] Refactor HomePage with hero section, modern project cards, quick start guide
+- [x] Refactor ProjectSidebar with smooth collapse animation, visual hierarchy, task badges
+- [x] Update all components to use design tokens (no hardcoded colors)
+- [x] Consistent dark mode handling across all components
+- [x] Test all API endpoints with wechat-miniapp project data
+- [x] Visual regression verification on all pages
+**Completed**: 2026-02-18
+
+#### [x] Fix Web UI Layout Overflow and Theme Issues
+**Type**: Bug Fix
+**Description**: Fix multiple UI issues in the web-ui: (1) Layout overflow/overlap problems where TaskDetail panel overlaps content due to fixed positioning, (2) Light/dark theme toggle not working because ThemeContext uses `.dark` class but design-tokens.css expects `[data-theme]` attribute, (3) Graph view only showing one task/node instead of full graph due to nodes object vs array handling.
+**Blockers**: None
+**Related Files**: octie/web-ui/src/App.tsx, octie/web-ui/src/contexts/ThemeContext.tsx, octie/web-ui/src/components/GraphView.tsx, octie/web-ui/src/components/ProjectSidebar.tsx, octie/web-ui/src/index.css
+**C7 MCP Verified**: /tailwindlabs/tailwindcss.com (responsive grid layout, overflow handling)
+**Deliverables**:
+- [x] Fix TaskDetail panel: Replace `fixed` positioning with proper flex/grid layout
+- [x] Fix main content layout: Use flex with min-width constraints for proper overflow handling
+- [x] Add `overflow-hidden` on parent containers and `overflow-y-auto` on scrollable sections
+- [x] Add `min-w-0` on flex children to prevent overflow
+- [x] Fix ThemeContext: Set `data-theme` attribute on document.documentElement instead of `.dark` class
+- [x] Fix GraphView: Ensure nodes object from API is converted to array for ReactFlow
+- [x] Fix Sidebar animation: Use only `width` transition, remove conflicting `transform`
+- [x] Add layout utility CSS classes for responsive grid patterns
+- [x] Add useEffect to update nodes/edges when graphData changes in GraphView
+- [x] Add empty state handling for graph with no tasks
+- [x] Build verification: TypeScript and Vite build successful
+**Completed**: 2026-02-18
+
 ---
 
 ### Second Priority (After Top Completes)

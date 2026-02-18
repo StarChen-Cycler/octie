@@ -174,7 +174,10 @@ function App() {
   const showHomePage = !currentProjectPath
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50 dark:bg-gray-900">
+    <div
+      className="min-h-screen flex flex-col"
+      style={{ background: 'var(--surface-base)' }}
+    >
       {/* Header */}
       <Header onMenuClick={toggleSidebar} />
 
@@ -192,42 +195,86 @@ function App() {
           <>
             {/* Error Display */}
             {error && (
-              <div className="mx-4 mt-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
-                <p className="text-red-800 dark:text-red-300">Error: {error}</p>
-                <p className="text-sm text-red-600 dark:text-red-400 mt-2">
-                  Make sure the Octie CLI server is running: <code className="bg-red-100 dark:bg-red-900/50 px-1 rounded">octie serve</code>
-                </p>
-                <button
-                  onClick={clearError}
-                  className="mt-3 px-3 py-1 text-sm bg-red-100 hover:bg-red-200 dark:bg-red-900/50 dark:hover:bg-red-900/70 text-red-800 dark:text-red-300 rounded transition-colors"
-                >
-                  Dismiss
-                </button>
+              <div
+                className="m-4 p-4 rounded-xl"
+                style={{
+                  background: 'rgba(244, 63, 94, 0.1)',
+                  border: '1px solid var(--accent-rose)',
+                }}
+              >
+                <div className="flex items-start gap-3">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent-rose)" strokeWidth="2">
+                    <circle cx="12" cy="12" r="10" />
+                    <line x1="12" y1="8" x2="12" y2="12" />
+                    <line x1="12" y1="16" x2="12.01" y2="16" />
+                  </svg>
+                  <div className="flex-1">
+                    <p className="text-sm font-medium" style={{ color: 'var(--accent-rose)' }}>
+                      Error: {error}
+                    </p>
+                    <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>
+                      Make sure the Octie CLI server is running:{' '}
+                      <code
+                        className="px-1.5 py-0.5 rounded text-xs"
+                        style={{
+                          background: 'var(--surface-elevated)',
+                          color: 'var(--accent-cyan)',
+                          fontFamily: 'var(--font-mono)',
+                        }}
+                      >
+                        octie serve
+                      </code>
+                    </p>
+                    <button
+                      onClick={clearError}
+                      className="mt-3 px-3 py-1.5 text-xs rounded-lg transition-colors"
+                      style={{
+                        background: 'var(--surface-elevated)',
+                        color: 'var(--text-secondary)',
+                        border: '1px solid var(--border-default)',
+                      }}
+                    >
+                      Dismiss
+                    </button>
+                  </div>
+                </div>
               </div>
             )}
 
             {/* Toolbar */}
-            <div className="border-b border-gray-200 dark:border-gray-700">
-              <Toolbar
-                view={view}
-                onViewChange={setView}
-                onRefresh={handleRefresh}
-                loading={loading}
-                onExportPNG={handleExportPNG}
-                onExportSVG={handleExportSVG}
-                onThemeToggle={toggleTheme}
-                theme={theme}
-              />
-            </div>
+            <Toolbar
+              view={view}
+              onViewChange={setView}
+              onRefresh={handleRefresh}
+              loading={loading}
+              onExportPNG={handleExportPNG}
+              onExportSVG={handleExportSVG}
+              onThemeToggle={toggleTheme}
+              theme={theme}
+            />
 
             {/* Main Content */}
-            <main className="flex-1 flex overflow-hidden">
+            <main className="flex-1 flex overflow-hidden min-w-0">
               {/* Sidebar - Filters and Task List */}
               {view === 'list' && (
-                <div className="w-80 border-r border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 overflow-y-auto hidden md:block">
+                <div
+                  className="w-80 min-w-[320px] overflow-y-auto hidden md:flex md:flex-col"
+                  style={{
+                    background: 'var(--surface-abyss)',
+                    borderRight: '1px solid var(--border-default)',
+                  }}
+                >
                   {/* Filters */}
-                  <div className="p-4 border-b border-gray-200 dark:border-gray-700">
-                    <h2 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Filters</h2>
+                  <div
+                    className="p-4 flex-shrink-0"
+                    style={{ borderBottom: '1px solid var(--border-muted)' }}
+                  >
+                    <h2
+                      className="text-xs font-medium uppercase tracking-wide mb-3"
+                      style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}
+                    >
+                      Filters
+                    </h2>
                     <FilterPanel
                       selectedStatus={filterStatus}
                       selectedPriority={filterPriority}
@@ -239,9 +286,18 @@ function App() {
                   </div>
 
                   {/* Task List */}
-                  <div className="p-4">
-                    <h2 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
-                      Tasks ({tasks.length})
+                  <div className="p-4 flex-1 overflow-y-auto min-h-0">
+                    <h2
+                      className="text-xs font-medium uppercase tracking-wide mb-3 flex items-center gap-2"
+                      style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}
+                    >
+                      Tasks
+                      <span
+                        className="tabular-nums"
+                        style={{ color: 'var(--accent-cyan)' }}
+                      >
+                        {tasks.length}
+                      </span>
                     </h2>
                     <TaskList
                       tasks={tasks}
@@ -255,7 +311,7 @@ function App() {
 
               {/* Graph View */}
               {view === 'graph' && (
-                <div className="flex-1">
+                <div className="flex-1 min-w-0 h-full">
                   <GraphView
                     ref={graphViewRef}
                     graphData={graphData}
@@ -264,19 +320,42 @@ function App() {
                 </div>
               )}
 
-              {/* Task Detail Panel */}
-              {(view === 'list' || selectedTaskId) && (
-                <div className={`border-l border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 overflow-y-auto ${
-                  selectedTaskId ? 'w-96 fixed inset-y-0 right-0 md:relative md:block' : 'hidden md:block md:w-96'
-                }`}>
-                  <div className="p-4">
-                    <TaskDetail
-                      task={tasks.find(t => t.id === selectedTaskId) || null}
-                      loading={loading}
-                    />
-                  </div>
+              {/* Task Detail Panel - Responsive slide-over on mobile, fixed width on desktop */}
+              <div
+                className={`
+                  overflow-y-auto
+                  hidden md:block md:w-96 md:min-w-[384px] md:flex-shrink-0
+                  ${selectedTaskId ? 'fixed inset-0 z-50 md:relative md:z-auto md:block' : ''}
+                `}
+                style={{
+                  background: 'var(--surface-abyss)',
+                  borderLeft: view === 'list' ? '1px solid var(--border-default)' : 'none',
+                }}
+              >
+                {/* Mobile close button */}
+                {selectedTaskId && (
+                  <button
+                    onClick={() => setSelectedTask(null)}
+                    className="md:hidden absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-lg z-10"
+                    style={{
+                      background: 'var(--surface-raised)',
+                      border: '1px solid var(--border-default)',
+                      color: 'var(--text-secondary)',
+                    }}
+                  >
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <line x1="18" y1="6" x2="6" y2="18" />
+                      <line x1="6" y1="6" x2="18" y2="18" />
+                    </svg>
+                  </button>
+                )}
+                <div className="p-4 h-full overflow-y-auto">
+                  <TaskDetail
+                    task={tasks.find(t => t.id === selectedTaskId) || null}
+                    loading={loading}
+                  />
                 </div>
-              )}
+              </div>
             </main>
 
             {/* Status Bar */}

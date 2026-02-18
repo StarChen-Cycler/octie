@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef, forwardRef, useImperativeHandle } from 'react';
+import { useCallback, useMemo, useRef, forwardRef, useImperativeHandle, useEffect } from 'react';
 import {
   ReactFlow,
   Background,
@@ -12,7 +12,7 @@ import {
   useEdgesState,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
-import type { GraphData } from '../types';
+import type { GraphData, Task } from '../types';
 import TaskNode from './TaskNode';
 
 const nodeTypes = {
@@ -29,6 +29,15 @@ export interface GraphViewRef {
   exportAsSVG: () => void;
 }
 
+// Helper to ensure nodes is always an array
+function ensureNodesArray(nodes: Task[] | Record<string, Task>): Task[] {
+  if (Array.isArray(nodes)) {
+    return nodes;
+  }
+  // If it's an object, convert to array
+  return Object.values(nodes);
+}
+
 const GraphView = forwardRef<GraphViewRef, GraphViewProps>(({ graphData, onNodeClick }, ref) => {
   const reactFlowWrapper = useRef<HTMLDivElement>(null);
 
@@ -36,11 +45,14 @@ const GraphView = forwardRef<GraphViewRef, GraphViewProps>(({ graphData, onNodeC
   const initialNodes = useMemo(() => {
     if (!graphData) return [];
 
-    return graphData.nodes.map(
+    // Handle both array and object formats for nodes
+    const nodesArray = ensureNodesArray(graphData.nodes as Task[] | Record<string, Task>);
+
+    return nodesArray.map(
       (task): Node => ({
         id: task.id,
         type: 'taskNode',
-        position: { x: 0, y: 0 }, // Will be auto-layouted
+        position: { x: 0, y: 0 }, // Will be auto-layouted by fitView
         data: task,
       })
     );
@@ -50,8 +62,8 @@ const GraphView = forwardRef<GraphViewRef, GraphViewProps>(({ graphData, onNodeC
     if (!graphData) return [];
 
     const edges: Edge[] = [];
-    Object.entries(graphData.outgoingEdges).forEach(([fromId, toIds]) => {
-      toIds.forEach((toId) => {
+    Object.entries(graphData.outgoingEdges || {}).forEach(([fromId, toIds]) => {
+      (toIds || []).forEach((toId) => {
         edges.push({
           id: `${fromId}-${toId}`,
           source: fromId,
@@ -64,8 +76,39 @@ const GraphView = forwardRef<GraphViewRef, GraphViewProps>(({ graphData, onNodeC
     return edges;
   }, [graphData]);
 
-  const [nodes, , onNodesChange] = useNodesState(initialNodes);
+  const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
+
+  // Update nodes/edges when graphData changes
+  useEffect(() => {
+    if (graphData) {
+      const nodesArray = ensureNodesArray(graphData.nodes as Task[] | Record<string, Task>);
+      const newNodes = nodesArray.map(
+        (task): Node => ({
+          id: task.id,
+          type: 'taskNode',
+          position: { x: 0, y: 0 },
+          data: task,
+        })
+      );
+
+      const newEdges: Edge[] = [];
+      Object.entries(graphData.outgoingEdges || {}).forEach(([fromId, toIds]) => {
+        (toIds || []).forEach((toId) => {
+          newEdges.push({
+            id: `${fromId}-${toId}`,
+            source: fromId,
+            target: toId,
+            type: 'smoothstep',
+            animated: true,
+          });
+        });
+      });
+
+      setNodes(newNodes);
+      setEdges(newEdges);
+    }
+  }, [graphData, setNodes, setEdges]);
 
   const onConnect = useCallback(
     (connection: Connection) => {
@@ -159,8 +202,33 @@ const GraphView = forwardRef<GraphViewRef, GraphViewProps>(({ graphData, onNodeC
 
   if (!graphData) {
     return (
-      <div className="flex items-center justify-center h-full bg-gray-50 dark:bg-gray-900">
-        <p className="text-gray-600 dark:text-gray-400">Loading graph...</p>
+      <div
+        className="flex items-center justify-center h-full"
+        style={{ background: 'var(--surface-base)' }}
+      >
+        <p style={{ color: 'var(--text-muted)' }}>Loading graph...</p>
+      </div>
+    );
+  }
+
+  if (nodes.length === 0) {
+    return (
+      <div
+        className="flex items-center justify-center h-full"
+        style={{ background: 'var(--surface-base)' }}
+      >
+        <div className="text-center">
+          <div
+            className="w-16 h-16 mx-auto mb-4 rounded-xl flex items-center justify-center"
+            style={{ background: 'var(--surface-elevated)' }}
+          >
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="1.5">
+              <circle cx="12" cy="12" r="3" />
+              <path d="M12 2v4m0 12v4M2 12h4m12 0h4" />
+            </svg>
+          </div>
+          <p style={{ color: 'var(--text-muted)' }}>No tasks to display</p>
+        </div>
       </div>
     );
   }
@@ -176,11 +244,14 @@ const GraphView = forwardRef<GraphViewRef, GraphViewProps>(({ graphData, onNodeC
         onNodeClick={onNodeClickHandler as any}
         nodeTypes={nodeTypes as any}
         fitView
-        className="dark:bg-gray-900"
+        style={{ background: 'var(--surface-base)' }}
       >
-        <Background />
+        <Background style={{ background: 'var(--surface-base)' }} />
         <Controls />
-        <MiniMap />
+        <MiniMap
+          nodeColor="var(--accent-cyan)"
+          style={{ background: 'var(--surface-elevated)' }}
+        />
       </ReactFlow>
     </div>
   );

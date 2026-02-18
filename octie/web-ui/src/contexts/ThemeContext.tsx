@@ -17,6 +17,9 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     localStorage.setItem('octie-theme', theme);
+    // Set data-theme attribute for CSS design tokens compatibility
+    document.documentElement.setAttribute('data-theme', theme);
+    // Also toggle dark class for Tailwind dark: variants
     document.documentElement.classList.toggle('dark', theme === 'dark');
   }, [theme]);
 
