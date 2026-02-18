@@ -82,10 +82,9 @@ export function registerGraphRoutes(
 
     return sendSuccess(res, {
       metadata: graphData.metadata,
-      tasks: graphData.nodes,
+      nodes: graphData.nodes,        // Frontend expects "nodes" not "tasks"
       outgoingEdges: graphData.outgoingEdges,
       incomingEdges: graphData.incomingEdges,
-      taskCount: graph.size,
     });
   }));
 

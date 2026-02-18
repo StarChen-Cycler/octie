@@ -175,11 +175,11 @@ export class WebServer {
    * Configure API routes
    */
   private _configureRoutes(): void {
-    // Serve web UI static files from html directory
+    // Serve web UI static files from web-ui directory
     // Check multiple possible locations for the web UI
     const possibleWebUiPaths = [
-      join(__dirname, '../../html'),           // dist/web/html (built)
-      join(__dirname, '../../../html'),        // from src/web location
+      join(__dirname, '../web-ui'),            // dist/web-ui (built from web-ui/)
+      join(__dirname, '../../html'),           // legacy: dist/web/html
       join(process.cwd(), 'html'),             // project root html
     ];
 
@@ -199,6 +199,19 @@ export class WebServer {
       this._app.get('/', (_req: Request, res: Response) => {
         res.redirect('/api');
       });
+    }
+
+    // Serve test coverage report at /test route
+    const possibleTestPaths = [
+      join(process.cwd(), 'html'),             // project root html (vitest output)
+      join(__dirname, '../../html'),           // from dist/web location
+    ];
+
+    for (const testPath of possibleTestPaths) {
+      if (existsSync(testPath) && existsSync(join(testPath, 'index.html'))) {
+        this._app.use('/test', express.static(testPath));
+        break;
+      }
     }
 
     // Health check endpoint
