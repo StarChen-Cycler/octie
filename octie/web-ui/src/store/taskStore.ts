@@ -114,13 +114,13 @@ export const useTaskStore = create<TaskState>()((set, get) => {
 
       const url = `${API_BASE}/tasks${params.toString() ? `?${params}` : ''}`;
       const response = await fetch(url);
-      const result: ApiResponse<Task[]> = await response.json();
+      const result: ApiResponse<{ tasks: Task[]; total: number }> = await response.json();
 
       if (!response.ok || !result.success) {
         throw new Error(result.error?.message || 'Failed to fetch tasks');
       }
 
-      set({ tasks: result.data || [], loading: false });
+      set({ tasks: result.data?.tasks || [], loading: false });
     } catch (error) {
       set({
         error: error instanceof Error ? error.message : 'Unknown error',

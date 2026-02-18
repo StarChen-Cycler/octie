@@ -62,11 +62,21 @@ export interface GraphData {
 }
 
 export interface ProjectStats {
-  totalTasks: number;
-  statusCounts: Record<TaskStatus, number>;
-  priorityCounts: Record<TaskPriority, number>;
-  rootTasks: string[];
-  orphanTasks: string[];
+  project: {
+    name: string;
+    version: string;
+    created: string;
+    updated: string;
+  };
+  tasks: {
+    total: number;
+    root: number;
+    orphan: number;
+    rootTaskIds: string[];
+    orphanTaskIds: string[];
+    statusCounts: Record<TaskStatus, number>;
+    priorityCounts: Record<TaskPriority, number>;
+  };
 }
 
 // API Response types
