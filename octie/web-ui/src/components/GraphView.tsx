@@ -12,6 +12,7 @@ import {
   useNodesState,
   useEdgesState,
 } from '@xyflow/react';
+import { toPng, toSvg } from 'html-to-image';
 import dagre from 'dagre';
 import '@xyflow/react/dist/style.css';
 import type { GraphData, Task } from '../types';
@@ -264,74 +265,67 @@ const GraphView = forwardRef<GraphViewRef, GraphViewProps>(({ graphData, onNodeC
     [onNodeClick]
   );
 
-  // Export as PNG using html-to-image library approach
-  const exportAsPNG = useCallback(() => {
+  // Export as PNG using html-to-image library
+  const exportAsPNG = useCallback(async () => {
     if (nodes.length === 0 || !reactFlowWrapper.current) return;
 
-    // Get the ReactFlow container
-    const flowElement = reactFlowWrapper.current.querySelector('.react-flow');
+    const flowElement = reactFlowWrapper.current.querySelector('.react-flow') as HTMLElement;
     if (!flowElement) return;
 
-    // Use canvas to draw the SVG
-    const svgElement = flowElement.querySelector('svg');
-    if (!svgElement) return;
+    try {
+      const dataUrl = await toPng(flowElement, {
+        backgroundColor: '#0d0d14', // var(--surface-base)
+        pixelRatio: 2, // 2x for retina
+        filter: (node) => {
+          // Filter out controls and minimap from export
+          if (
+            node.classList?.contains('react-flow__controls') ||
+            node.classList?.contains('react-flow__minimap')
+          ) {
+            return false;
+          }
+          return true;
+        },
+      });
 
-    // Get bounds
-    const bbox = flowElement.getBoundingClientRect();
-    const canvas = document.createElement('canvas');
-    canvas.width = bbox.width * 2; // 2x for retina
-    canvas.height = bbox.height * 2;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-
-    // Serialize SVG
-    const svgData = new XMLSerializer().serializeToString(svgElement);
-    const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
-    const url = URL.createObjectURL(svgBlob);
-
-    const img = new Image();
-    img.onload = () => {
-      ctx.scale(2, 2);
-      ctx.drawImage(img, 0, 0);
-      URL.revokeObjectURL(url);
-
-      // Download
       const link = document.createElement('a');
       link.download = `octie-graph-${Date.now()}.png`;
-      link.href = canvas.toDataURL('image/png');
+      link.href = dataUrl;
       link.click();
-    };
-    img.src = url;
+    } catch (error) {
+      console.error('[GraphView] Failed to export PNG:', error);
+    }
   }, [nodes]);
 
-  // Export as SVG
-  const exportAsSVG = useCallback(() => {
+  // Export as SVG using html-to-image library
+  const exportAsSVG = useCallback(async () => {
     if (nodes.length === 0 || !reactFlowWrapper.current) return;
 
-    const flowElement = reactFlowWrapper.current.querySelector('.react-flow');
+    const flowElement = reactFlowWrapper.current.querySelector('.react-flow') as HTMLElement;
     if (!flowElement) return;
 
-    const svgElement = flowElement.querySelector('svg');
-    if (!svgElement) return;
+    try {
+      const dataUrl = await toSvg(flowElement, {
+        backgroundColor: '#0d0d14', // var(--surface-base)
+        filter: (node) => {
+          // Filter out controls and minimap from export
+          if (
+            node.classList?.contains('react-flow__controls') ||
+            node.classList?.contains('react-flow__minimap')
+          ) {
+            return false;
+          }
+          return true;
+        },
+      });
 
-    // Clone and prepare SVG
-    const clone = svgElement.cloneNode(true) as SVGElement;
-    const bbox = flowElement.getBoundingClientRect();
-
-    clone.setAttribute('width', String(bbox.width));
-    clone.setAttribute('height', String(bbox.height));
-    clone.setAttribute('viewBox', `0 0 ${bbox.width} ${bbox.height}`);
-
-    // Serialize and download
-    const svgData = new XMLSerializer().serializeToString(clone);
-    const blob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-
-    const link = document.createElement('a');
-    link.download = `octie-graph-${Date.now()}.svg`;
-    link.href = url;
-    link.click();
-    URL.revokeObjectURL(url);
+      const link = document.createElement('a');
+      link.download = `octie-graph-${Date.now()}.svg`;
+      link.href = dataUrl;
+      link.click();
+    } catch (error) {
+      console.error('[GraphView] Failed to export SVG:', error);
+    }
   }, [nodes]);
 
   // Expose functions via ref
