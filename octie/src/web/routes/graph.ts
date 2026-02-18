@@ -80,9 +80,12 @@ export function registerGraphRoutes(
     // Serialize graph to JSON format
     const graphData = graph.toJSON();
 
+    // Convert nodes from object (keyed by ID) to array for frontend
+    const nodesArray = Object.values(graphData.nodes);
+
     return sendSuccess(res, {
       metadata: graphData.metadata,
-      nodes: graphData.nodes,        // Frontend expects "nodes" not "tasks"
+      nodes: nodesArray,
       outgoingEdges: graphData.outgoingEdges,
       incomingEdges: graphData.incomingEdges,
     });
