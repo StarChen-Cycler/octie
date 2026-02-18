@@ -258,7 +258,7 @@ function App() {
               {/* Sidebar - Filters and Task List */}
               {view === 'list' && (
                 <div
-                  className="w-80 min-w-[320px] overflow-y-auto hidden md:flex md:flex-col"
+                  className="w-[360px] min-w-[340px] overflow-y-auto hidden md:flex md:flex-col"
                   style={{
                     background: 'var(--surface-abyss)',
                     borderRight: '1px solid var(--border-default)',
@@ -324,7 +324,7 @@ function App() {
               <div
                 className={`
                   overflow-y-auto
-                  hidden md:block md:w-96 md:min-w-[384px] md:flex-shrink-0
+                  hidden md:block md:w-[400px] md:min-w-[380px] md:flex-shrink-0
                   ${selectedTaskId ? 'fixed inset-0 z-50 md:relative md:z-auto md:block' : ''}
                 `}
                 style={{

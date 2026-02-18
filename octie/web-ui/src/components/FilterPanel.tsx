@@ -1,3 +1,8 @@
+/**
+ * Filter Panel - Task filtering controls
+ * Design: Terminal Noir - Dark cyberpunk aesthetic
+ */
+
 import type { TaskStatus, TaskPriority } from '../types';
 
 interface FilterPanelProps {
@@ -24,55 +29,128 @@ function FilterPanel({
     <div className="space-y-4">
       {/* Search */}
       <div>
-        <label htmlFor="search" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-          Search <span className="text-xs text-gray-500 dark:text-gray-400 ml-1">(Ctrl+K)</span>
+        <label
+          htmlFor="search"
+          className="block text-xs font-medium uppercase tracking-wide mb-2"
+          style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}
+        >
+          Search
+          <span
+            className="ml-2 normal-case"
+            style={{ color: 'var(--text-tertiary)' }}
+          >
+            (Ctrl+K)
+          </span>
         </label>
-        <input
-          id="search"
-          type="text"
-          value={searchQuery}
-          onChange={(e) => onSearchChange(e.target.value)}
-          placeholder="Search tasks..."
-          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
-        />
+        <div className="relative">
+          <svg
+            className="absolute left-3 top-1/2 -translate-y-1/2"
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="var(--text-muted)"
+            strokeWidth="2"
+          >
+            <circle cx="11" cy="11" r="8" />
+            <line x1="21" y1="21" x2="16.65" y2="16.65" />
+          </svg>
+          <input
+            id="search"
+            type="text"
+            value={searchQuery}
+            onChange={(e) => onSearchChange(e.target.value)}
+            placeholder="Search tasks..."
+            className="w-full pl-9 pr-3 py-2 text-sm rounded-lg focus-ring"
+            style={{
+              background: 'var(--surface-elevated)',
+              border: '1px solid var(--border-default)',
+              color: 'var(--text-primary)',
+            }}
+          />
+        </div>
       </div>
 
       {/* Status Filter */}
       <div>
-        <label htmlFor="status" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+        <label
+          htmlFor="status"
+          className="block text-xs font-medium uppercase tracking-wide mb-2"
+          style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}
+        >
           Status
         </label>
-        <select
-          id="status"
-          value={selectedStatus}
-          onChange={(e) => onStatusChange(e.target.value as TaskStatus | 'all')}
-          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
-        >
-          {statuses.map((status) => (
-            <option key={status} value={status}>
-              {status === 'all' ? 'All Statuses' : status.replace('_', ' ')}
-            </option>
-          ))}
-        </select>
+        <div className="relative">
+          <select
+            id="status"
+            value={selectedStatus}
+            onChange={(e) => onStatusChange(e.target.value as TaskStatus | 'all')}
+            className="w-full px-3 py-2 text-sm rounded-lg focus-ring appearance-none cursor-pointer pr-8"
+            style={{
+              background: 'var(--surface-elevated)',
+              border: '1px solid var(--border-default)',
+              color: 'var(--text-primary)',
+            }}
+          >
+            {statuses.map((status) => (
+              <option key={status} value={status}>
+                {status === 'all' ? 'All Statuses' : status.replace('_', ' ')}
+              </option>
+            ))}
+          </select>
+          <svg
+            className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none"
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="var(--text-muted)"
+            strokeWidth="2"
+          >
+            <polyline points="6 9 12 15 18 9" />
+          </svg>
+        </div>
       </div>
 
       {/* Priority Filter */}
       <div>
-        <label htmlFor="priority" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+        <label
+          htmlFor="priority"
+          className="block text-xs font-medium uppercase tracking-wide mb-2"
+          style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}
+        >
           Priority
         </label>
-        <select
-          id="priority"
-          value={selectedPriority}
-          onChange={(e) => onPriorityChange(e.target.value as TaskPriority | 'all')}
-          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
-        >
-          {priorities.map((priority) => (
-            <option key={priority} value={priority}>
-              {priority === 'all' ? 'All Priorities' : priority}
-            </option>
-          ))}
-        </select>
+        <div className="relative">
+          <select
+            id="priority"
+            value={selectedPriority}
+            onChange={(e) => onPriorityChange(e.target.value as TaskPriority | 'all')}
+            className="w-full px-3 py-2 text-sm rounded-lg focus-ring appearance-none cursor-pointer pr-8"
+            style={{
+              background: 'var(--surface-elevated)',
+              border: '1px solid var(--border-default)',
+              color: 'var(--text-primary)',
+            }}
+          >
+            {priorities.map((priority) => (
+              <option key={priority} value={priority}>
+                {priority === 'all' ? 'All Priorities' : priority}
+              </option>
+            ))}
+          </select>
+          <svg
+            className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none"
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="var(--text-muted)"
+            strokeWidth="2"
+          >
+            <polyline points="6 9 12 15 18 9" />
+          </svg>
+        </div>
       </div>
 
       {/* Clear Filters */}
@@ -83,7 +161,12 @@ function FilterPanel({
             onPriorityChange('all');
             onSearchChange('');
           }}
-          className="w-full px-3 py-2 text-sm text-gray-600 dark:text-gray-400 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+          className="w-full px-3 py-2 text-xs uppercase tracking-wide rounded-lg transition-colors"
+          style={{
+            background: 'transparent',
+            border: '1px solid var(--border-default)',
+            color: 'var(--text-muted)',
+          }}
         >
           Clear Filters
         </button>
