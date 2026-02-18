@@ -176,27 +176,29 @@
 - [x] Register command in cli/index.ts
 - [x] Tests: Unit tests for happy path, validation errors, edge cases (15 tests passing)
 
-#### [ ] Multi-Project Web UI with Global Registry
+#### [x] Multi-Project Web UI with Global Registry
 **Type**: Feature
 **Description**: Reconstruct web-ui to support multi-project management with a global project registry. Auto-register projects on any octie command, show project sidebar in web-ui, support direct project URLs via query params.
 **Blockers**: None
-**Related Files**: octie/src/core/registry.ts (new), octie/src/core/root-guard.ts (new), octie/src/web/server.ts, octie/src/web/routes/projects.ts (new), octie/web-ui/src/components/Sidebar.tsx (new), octie/web-ui/src/components/Header.tsx (new), octie/web-ui/src/pages/HomePage.tsx (new), octie/web-ui/src/stores/projectStore.ts (new), octie/web-ui/src/App.tsx
-**C7 MCP Verified**: /remix-run/react-router (query param patterns pending)
+**Related Files**: octie/src/core/registry/index.ts, octie/src/core/registry/root-guard.ts, octie/src/web/server.ts, octie/src/web/routes/projects.ts, octie/web-ui/src/components/ProjectSidebar.tsx, octie/web-ui/src/components/AppHeader.tsx, octie/web-ui/src/pages/HomePage.tsx, octie/web-ui/src/store/projectStore.ts, octie/web-ui/src/App.tsx
+**C7 MCP Verified**: N/A (follows existing patterns)
 **Spec File**: .memo/memodocs/spec_multi-project-webui.md
 **Deliverables**:
-- [ ] Backend: Create `~/.octie/projects.json` registry file
-- [ ] Backend: Registry CRUD functions (load, save, register, verify)
-- [ ] Backend: Root guard that auto-registers project on any command
-- [ ] Backend: `/api/projects` endpoint to list all registered projects
-- [ ] Backend: Support `?project=<path>` query param in serve
-- [ ] Frontend: Sidebar component with project list (collapsible, responsive)
-- [ ] Frontend: Header component with home button and navigation
-- [ ] Frontend: Home page placeholder with tutorial area
-- [ ] Frontend: Query param routing for project selection
-- [ ] Frontend: Missing project warning indicator
-- [ ] Console: Show full URL with query param, home URL, API test URL (dev)
-- [ ] Tests: Unit tests for registry functions
-- [ ] Tests: Integration tests for serve command output
+- [x] Backend: Create `~/.octie/projects.json` registry file
+- [x] Backend: Registry CRUD functions (load, save, register, verify)
+- [x] Backend: Root guard that auto-registers project on any command
+- [x] Backend: `/api/projects` endpoint to list all registered projects
+- [x] Backend: Support `?project=<path>` query param in serve
+- [x] Frontend: Sidebar component with project list (collapsible, responsive)
+- [x] Frontend: Header component with home button and navigation
+- [x] Frontend: Home page placeholder with tutorial area
+- [x] Frontend: Query param routing for project selection
+- [x] Frontend: Missing project warning indicator
+- [x] Console: Show full URL with query param, home URL, API test URL (dev)
+- [ ] Tests: Unit tests for registry functions (pending)
+- [ ] Tests: Integration tests for serve command output (pending)
+**Completed**: 2026-02-18
+**Git Commit**: ca26eb0
 
 ---
 
