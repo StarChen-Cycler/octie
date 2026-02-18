@@ -8,6 +8,65 @@ import chalk from 'chalk';
 import { randomUUID } from 'node:crypto';
 import { readFileSync, existsSync } from 'node:fs';
 import { resolve } from 'node:path';
+import type { TaskNode } from '../../core/models/task-node.js';
+
+/**
+ * Resolve a short UUID to a full criterion ID within a task
+ * @param task - The task containing success criteria
+ * @param idOrPrefix - Full UUID or short prefix
+ * @returns Full UUID if found, or throws error
+ */
+function resolveCriterionId(task: TaskNode, idOrPrefix: string): string {
+  // First try exact match
+  const exactMatch = task.success_criteria.find(c => c.id === idOrPrefix);
+  if (exactMatch) return exactMatch.id;
+
+  // Try prefix match (case-insensitive)
+  const lowerPrefix = idOrPrefix.toLowerCase();
+  const matches = task.success_criteria.filter(c =>
+    c.id.toLowerCase().startsWith(lowerPrefix)
+  );
+
+  if (matches.length === 0) {
+    throw new Error(`Success criterion with ID '${idOrPrefix}' not found.`);
+  }
+
+  if (matches.length > 1) {
+    const matchIds = matches.map(c => c.id.substring(0, 8)).join(', ');
+    throw new Error(`Ambiguous criterion ID '${idOrPrefix}'. Matches: ${matchIds}`);
+  }
+
+  return matches[0]!.id;
+}
+
+/**
+ * Resolve a short UUID to a full deliverable ID within a task
+ * @param task - The task containing deliverables
+ * @param idOrPrefix - Full UUID or short prefix
+ * @returns Full UUID if found, or throws error
+ */
+function resolveDeliverableId(task: TaskNode, idOrPrefix: string): string {
+  // First try exact match
+  const exactMatch = task.deliverables.find(d => d.id === idOrPrefix);
+  if (exactMatch) return exactMatch.id;
+
+  // Try prefix match (case-insensitive)
+  const lowerPrefix = idOrPrefix.toLowerCase();
+  const matches = task.deliverables.filter(d =>
+    d.id.toLowerCase().startsWith(lowerPrefix)
+  );
+
+  if (matches.length === 0) {
+    throw new Error(`Deliverable with ID '${idOrPrefix}' not found.`);
+  }
+
+  if (matches.length > 1) {
+    const matchIds = matches.map(d => d.id.substring(0, 8)).join(', ');
+    throw new Error(`Ambiguous deliverable ID '${idOrPrefix}'. Matches: ${matchIds}`);
+  }
+
+  return matches[0]!.id;
+}
 
 /**
  * Create the update command
@@ -70,17 +129,19 @@ export const updateCommand = new Command('update')
         updated = true;
       }
 
-      // Complete deliverable(s) - now supports multiple IDs
+      // Complete deliverable(s) - now supports multiple IDs with short UUID support
       if (options.completeDeliverable && options.completeDeliverable.length > 0) {
-        for (const deliverableId of options.completeDeliverable) {
-          task.completeDeliverable(deliverableId);
+        for (const deliverableIdOrPrefix of options.completeDeliverable) {
+          const fullId = resolveDeliverableId(task, deliverableIdOrPrefix);
+          task.completeDeliverable(fullId);
         }
         updated = true;
       }
 
-      // Remove deliverable
+      // Remove deliverable (supports short UUID)
       if (options.removeDeliverable) {
-        task.removeDeliverable(options.removeDeliverable);
+        const fullId = resolveDeliverableId(task, options.removeDeliverable);
+        task.removeDeliverable(fullId);
         updated = true;
       }
 
@@ -94,17 +155,19 @@ export const updateCommand = new Command('update')
         updated = true;
       }
 
-      // Complete criterion/criteria - now supports multiple IDs
+      // Complete criterion/criteria - now supports multiple IDs with short UUID support
       if (options.completeCriterion && options.completeCriterion.length > 0) {
-        for (const criterionId of options.completeCriterion) {
-          task.completeCriterion(criterionId);
+        for (const criterionIdOrPrefix of options.completeCriterion) {
+          const fullId = resolveCriterionId(task, criterionIdOrPrefix);
+          task.completeCriterion(fullId);
         }
         updated = true;
       }
 
-      // Remove criterion
+      // Remove criterion (supports short UUID)
       if (options.removeCriterion) {
-        task.removeSuccessCriterion(options.removeCriterion);
+        const fullId = resolveCriterionId(task, options.removeCriterion);
+        task.removeSuccessCriterion(fullId);
         updated = true;
       }
 
