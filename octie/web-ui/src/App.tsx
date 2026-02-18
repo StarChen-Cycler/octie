@@ -278,8 +278,6 @@ function App() {
                 loading={loading}
                 onExportPNG={handleExportPNG}
                 onExportSVG={handleExportSVG}
-                onThemeToggle={toggleTheme}
-                theme={theme}
               />
 
               {/* Status Bar - below toolbar, above content */}
