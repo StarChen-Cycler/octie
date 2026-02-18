@@ -353,6 +353,7 @@ function App() {
                       ref={graphViewRef}
                       graphData={graphData}
                       onNodeClick={setSelectedTask}
+                      colorMode={theme}
                     />
                   </div>
                 )}

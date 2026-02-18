@@ -9,6 +9,7 @@ import {
   type Connection,
   type Edge,
   type Node,
+  type ColorMode,
   useNodesState,
   useEdgesState,
 } from '@xyflow/react';
@@ -31,6 +32,7 @@ const NODE_SPACING = 50;  // Horizontal spacing between nodes
 interface GraphViewProps {
   graphData: GraphData | null;
   onNodeClick?: (taskId: string) => void;
+  colorMode?: ColorMode;
 }
 
 export interface GraphViewRef {
@@ -136,7 +138,7 @@ function filterValidEdges(nodes: Node[], edges: Edge[]): Edge[] {
   });
 }
 
-const GraphView = forwardRef<GraphViewRef, GraphViewProps>(({ graphData, onNodeClick }, ref) => {
+const GraphView = forwardRef<GraphViewRef, GraphViewProps>(({ graphData, onNodeClick, colorMode = 'dark' }, ref) => {
   const reactFlowWrapper = useRef<HTMLDivElement>(null);
 
   // Convert graph data to ReactFlow nodes and edges with layout
@@ -377,6 +379,7 @@ const GraphView = forwardRef<GraphViewRef, GraphViewProps>(({ graphData, onNodeC
         onConnect={onConnect}
         onNodeClick={onNodeClickHandler as any}
         nodeTypes={nodeTypes as any}
+        colorMode={colorMode}
         fitView
         fitViewOptions={{ padding: 0.2 }}
         minZoom={0.1}
