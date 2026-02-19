@@ -942,7 +942,7 @@ export class TaskNode implements TaskNodeType {
       throw new ValidationError(`Success criterion with ID '${criterionId}' not found.`, 'success_criteria');
     }
     // Immutability check: cannot remove completed items
-    const criterion = this.success_criteria[index];
+    const criterion = this.success_criteria[index]!;
     if (criterion.completed) {
       throw new ImmutabilityViolationError(
         `Cannot remove completed success criterion '${criterion.text.substring(0, 50)}...'. Completed items are immutable.`,
@@ -973,7 +973,7 @@ export class TaskNode implements TaskNodeType {
       throw new ValidationError(`Deliverable with ID '${deliverableId}' not found.`, 'deliverables');
     }
     // Immutability check: cannot remove completed items
-    const deliverable = this.deliverables[index];
+    const deliverable = this.deliverables[index]!;
     if (deliverable.completed) {
       throw new ImmutabilityViolationError(
         `Cannot remove completed deliverable '${deliverable.text.substring(0, 50)}...'. Completed items are immutable.`,

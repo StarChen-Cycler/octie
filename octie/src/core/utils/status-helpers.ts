@@ -7,7 +7,6 @@
  */
 
 import type { TaskGraphStore } from '../graph/index.js';
-import type { TaskStorage } from '../storage/file-store.js';
 
 /**
  * Recalculate status of all tasks that depend on a blocker
@@ -20,19 +19,17 @@ import type { TaskStorage } from '../storage/file-store.js';
  *
  * @param blockerId - The ID of the task whose status changed
  * @param graph - The task graph containing all tasks
- * @param storage - Optional storage to save changes (if not provided, changes remain in memory)
  * @returns Array of task IDs that had their status recalculated
  */
 export function recalculateDependentStatuses(
   blockerId: string,
-  graph: TaskGraphStore,
-  storage?: TaskStorage
+  graph: TaskGraphStore
 ): string[] {
   const updatedTaskIds: string[] = [];
 
   // Find all tasks that have this blocker in their blockers array
   // Note: TaskGraphStore doesn't have a direct method for this, so we iterate
-  for (const task of graph.getAllNodes()) {
+  for (const task of graph.getAllTasks()) {
     if (task.blockers.includes(blockerId)) {
       // Recalculate status - this will handle the "all blockers resolved" case
       const oldStatus = task.status;
@@ -125,7 +122,7 @@ export function getTasksBlockedBy(
 ): Array<{ id: string; title: string; status: string }> {
   const blockedTasks: Array<{ id: string; title: string; status: string }> = [];
 
-  for (const task of graph.getAllNodes()) {
+  for (const task of graph.getAllTasks()) {
     if (task.blockers.includes(taskId)) {
       blockedTasks.push({
         id: task.id,

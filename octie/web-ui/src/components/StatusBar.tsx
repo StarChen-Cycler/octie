@@ -92,15 +92,25 @@ function StatusBar({ stats, loading }: StatusBarProps) {
             </span>
             <span style={{ color: 'var(--text-muted)', fontSize: '10px' }}>prog</span>
           </div>
-          <div className="flex items-center gap-1" title="Pending">
+          <div className="flex items-center gap-1" title="Ready">
             <div
               className="w-2 h-2 rounded-full"
-              style={{ background: 'var(--status-pending)', boxShadow: '0 0 4px rgba(255, 159, 28, 0.4)' }}
+              style={{ background: 'var(--text-muted)', boxShadow: '0 0 4px rgba(110, 118, 129, 0.4)' }}
             />
-            <span className="tabular-nums" style={{ color: 'var(--status-pending)', fontFamily: 'var(--font-mono)' }}>
-              {tasks.statusCounts.pending}
+            <span className="tabular-nums" style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
+              {tasks.statusCounts.ready}
             </span>
-            <span style={{ color: 'var(--text-muted)', fontSize: '10px' }}>pend</span>
+            <span style={{ color: 'var(--text-muted)', fontSize: '10px' }}>ready</span>
+          </div>
+          <div className="flex items-center gap-1" title="In Review">
+            <div
+              className="w-2 h-2 rounded-full"
+              style={{ background: 'var(--accent-violet)', boxShadow: '0 0 4px rgba(167, 139, 250, 0.4)' }}
+            />
+            <span className="tabular-nums" style={{ color: 'var(--accent-violet)', fontFamily: 'var(--font-mono)' }}>
+              {tasks.statusCounts.in_review}
+            </span>
+            <span style={{ color: 'var(--text-muted)', fontSize: '10px' }}>revw</span>
           </div>
           <div className="flex items-center gap-1" title="Blocked">
             <div
@@ -111,16 +121,6 @@ function StatusBar({ stats, loading }: StatusBarProps) {
               {tasks.statusCounts.blocked}
             </span>
             <span style={{ color: 'var(--text-muted)', fontSize: '10px' }}>block</span>
-          </div>
-          <div className="flex items-center gap-1" title="Not Started">
-            <div
-              className="w-2 h-2 rounded-full"
-              style={{ background: 'var(--status-not-started)', boxShadow: '0 0 4px rgba(110, 118, 129, 0.4)' }}
-            />
-            <span className="tabular-nums" style={{ color: 'var(--status-not-started)', fontFamily: 'var(--font-mono)' }}>
-              {tasks.statusCounts.not_started}
-            </span>
-            <span style={{ color: 'var(--text-muted)', fontSize: '10px' }}>new</span>
           </div>
         </div>
       </div>
