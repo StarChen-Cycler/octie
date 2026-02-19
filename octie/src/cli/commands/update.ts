@@ -69,6 +69,35 @@ function resolveDeliverableId(task: TaskNode, idOrPrefix: string): string {
 }
 
 /**
+ * Resolve a short UUID to a full need_fix ID within a task
+ * @param task - The task containing need_fix items
+ * @param idOrPrefix - Full UUID or short prefix
+ * @returns Full UUID if found, or throws error
+ */
+function resolveNeedFixId(task: TaskNode, idOrPrefix: string): string {
+  // First try exact match
+  const exactMatch = task.need_fix.find(f => f.id === idOrPrefix);
+  if (exactMatch) return exactMatch.id;
+
+  // Try prefix match (case-insensitive)
+  const lowerPrefix = idOrPrefix.toLowerCase();
+  const matches = task.need_fix.filter(f =>
+    f.id.toLowerCase().startsWith(lowerPrefix)
+  );
+
+  if (matches.length === 0) {
+    throw new Error(`Need_fix item with ID '${idOrPrefix}' not found.`);
+  }
+
+  if (matches.length > 1) {
+    const matchIds = matches.map(f => f.id.substring(0, 8)).join(', ');
+    throw new Error(`Ambiguous need_fix ID '${idOrPrefix}'. Matches: ${matchIds}`);
+  }
+
+  return matches[0]!.id;
+}
+
+/**
  * Create the update command
  */
 export const updateCommand = new Command('update')
@@ -90,6 +119,10 @@ export const updateCommand = new Command('update')
   .option('--remove-related-file <path>', 'Remove a related file path')
   .option('--verify-c7 <library:notes>', 'Add C7 library verification (format: library-id or library-id:notes)')
   .option('--remove-c7-verified <library>', 'Remove a C7 verification by library ID')
+  .option('--add-need-fix <text>', 'Add a need_fix item (blocking issue). Use --need-fix-source to specify source.')
+  .option('--need-fix-source <source>', 'Source of need_fix: review, runtime, or regression (default: review)')
+  .option('--need-fix-file <path>', 'Optional file path for need_fix item')
+  .option('--complete-need-fix <id>', 'Mark need_fix item as resolved (supports short UUID)')
   .option('--notes <text>', 'Append to notes')
   .option('--notes-file <path>', 'Read notes from file and append (multi-line notes support)')
   .action(async (id, options, command) => {
@@ -168,6 +201,27 @@ export const updateCommand = new Command('update')
       if (options.removeCriterion) {
         const fullId = resolveCriterionId(task, options.removeCriterion);
         task.removeSuccessCriterion(fullId);
+        updated = true;
+      }
+
+      // Add need_fix item (blocking issue)
+      if (options.addNeedFix) {
+        const source = options.needFixSource || 'review';
+        if (!['review', 'runtime', 'regression'].includes(source)) {
+          error(`Invalid --need-fix-source: '${source}'. Must be one of: review, runtime, regression`);
+          process.exit(1);
+        }
+        task.addNeedFix(options.addNeedFix, {
+          file_path: options.needFixFile,
+          source: source as 'review' | 'runtime' | 'regression',
+        });
+        updated = true;
+      }
+
+      // Complete need_fix item (supports short UUID)
+      if (options.completeNeedFix) {
+        const fullId = resolveNeedFixId(task, options.completeNeedFix);
+        task.completeNeedFix(fullId);
         updated = true;
       }
 

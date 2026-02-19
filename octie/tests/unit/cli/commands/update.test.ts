@@ -923,4 +923,199 @@ describe('update command', () => {
       expect(errorMsg).toContain('invalid1');
     });
   });
+
+  describe('need_fix operations', () => {
+    it('should add a need_fix item with default source (review)', async () => {
+      const output = execSync(
+        `node ${cliPath} --project "${tempDir}" update ${testTaskId} ` +
+        `--add-need-fix "Found null pointer in edge case"`,
+        { encoding: 'utf-8' }
+      );
+
+      expect(output).toContain('Task updated');
+
+      const graph = await storage.load();
+      const task = graph.getNode(testTaskId);
+      expect(task?.need_fix).toHaveLength(1);
+      expect(task?.need_fix[0].text).toBe('Found null pointer in edge case');
+      expect(task?.need_fix[0].source).toBe('review');
+      expect(task?.need_fix[0].completed).toBe(false);
+    });
+
+    it('should add a need_fix item with explicit source', async () => {
+      const output = execSync(
+        `node ${cliPath} --project "${tempDir}" update ${testTaskId} ` +
+        `--add-need-fix "Runtime error on null input" ` +
+        `--need-fix-source runtime`,
+        { encoding: 'utf-8' }
+      );
+
+      expect(output).toContain('Task updated');
+
+      const graph = await storage.load();
+      const task = graph.getNode(testTaskId);
+      expect(task?.need_fix).toHaveLength(1);
+      expect(task?.need_fix[0].source).toBe('runtime');
+    });
+
+    it('should add a need_fix item with file path', async () => {
+      const output = execSync(
+        `node ${cliPath} --project "${tempDir}" update ${testTaskId} ` +
+        `--add-need-fix "Type error in login.ts" ` +
+        `--need-fix-source review ` +
+        `--need-fix-file "src/api/auth/login.ts"`,
+        { encoding: 'utf-8' }
+      );
+
+      expect(output).toContain('Task updated');
+
+      const graph = await storage.load();
+      const task = graph.getNode(testTaskId);
+      expect(task?.need_fix).toHaveLength(1);
+      expect(task?.need_fix[0].file_path).toBe('src/api/auth/login.ts');
+    });
+
+    it('should add regression need_fix item', async () => {
+      const output = execSync(
+        `node ${cliPath} --project "${tempDir}" update ${testTaskId} ` +
+        `--add-need-fix "Feature broke after recent changes" ` +
+        `--need-fix-source regression`,
+        { encoding: 'utf-8' }
+      );
+
+      expect(output).toContain('Task updated');
+
+      const graph = await storage.load();
+      const task = graph.getNode(testTaskId);
+      expect(task?.need_fix).toHaveLength(1);
+      expect(task?.need_fix[0].source).toBe('regression');
+    });
+
+    it('should reject invalid need_fix source', () => {
+      let errorMsg = '';
+      try {
+        execSync(
+          `node ${cliPath} --project "${tempDir}" update ${testTaskId} ` +
+          `--add-need-fix "Test issue" ` +
+          `--need-fix-source invalid`,
+          { encoding: 'utf-8', stdio: 'pipe' }
+        );
+      } catch (err: any) {
+        errorMsg = err.stderr?.toString() || err.stdout?.toString() || '';
+      }
+
+      expect(errorMsg).toContain('Invalid --need-fix-source');
+      expect(errorMsg).toContain('invalid');
+    });
+
+    it('should complete a need_fix item', async () => {
+      // First add a need_fix item
+      execSync(
+        `node ${cliPath} --project "${tempDir}" update ${testTaskId} ` +
+        `--add-need-fix "Issue to resolve"`,
+        { encoding: 'utf-8' }
+      );
+
+      let graph = await storage.load();
+      let task = graph.getNode(testTaskId);
+      const needFixId = task?.need_fix[0].id;
+
+      // Now complete it
+      const output = execSync(
+        `node ${cliPath} --project "${tempDir}" update ${testTaskId} ` +
+        `--complete-need-fix "${needFixId}"`,
+        { encoding: 'utf-8' }
+      );
+
+      expect(output).toContain('Task updated');
+
+      graph = await storage.load();
+      task = graph.getNode(testTaskId);
+      expect(task?.need_fix[0].completed).toBe(true);
+    });
+
+    it('should complete need_fix item using short UUID', async () => {
+      // First add a need_fix item
+      execSync(
+        `node ${cliPath} --project "${tempDir}" update ${testTaskId} ` +
+        `--add-need-fix "Issue with short UUID test"`,
+        { encoding: 'utf-8' }
+      );
+
+      let graph = await storage.load();
+      let task = graph.getNode(testTaskId);
+      const needFixId = task?.need_fix[0].id;
+      const shortId = needFixId?.substring(0, 8);
+
+      // Complete using short UUID
+      const output = execSync(
+        `node ${cliPath} --project "${tempDir}" update ${testTaskId} ` +
+        `--complete-need-fix "${shortId}"`,
+        { encoding: 'utf-8' }
+      );
+
+      expect(output).toContain('Task updated');
+
+      graph = await storage.load();
+      task = graph.getNode(testTaskId);
+      expect(task?.need_fix[0].completed).toBe(true);
+    });
+
+    it('should reject completing non-existent need_fix item', () => {
+      const fakeId = uuidv4();
+      let errorMsg = '';
+      try {
+        execSync(
+          `node ${cliPath} --project "${tempDir}" update ${testTaskId} ` +
+          `--complete-need-fix "${fakeId}"`,
+          { encoding: 'utf-8', stdio: 'pipe' }
+        );
+      } catch (err: any) {
+        errorMsg = err.stderr?.toString() || err.stdout?.toString() || '';
+      }
+
+      expect(errorMsg).toContain('not found');
+    });
+
+    it('should add multiple need_fix items', async () => {
+      // Add first need_fix
+      execSync(
+        `node ${cliPath} --project "${tempDir}" update ${testTaskId} ` +
+        `--add-need-fix "First issue"`,
+        { encoding: 'utf-8' }
+      );
+
+      // Add second need_fix
+      const output = execSync(
+        `node ${cliPath} --project "${tempDir}" update ${testTaskId} ` +
+        `--add-need-fix "Second issue"`,
+        { encoding: 'utf-8' }
+      );
+
+      expect(output).toContain('Task updated');
+
+      const graph = await storage.load();
+      const task = graph.getNode(testTaskId);
+      expect(task?.need_fix).toHaveLength(2);
+    });
+
+    it('should change task status to in_progress when need_fix is added to ready task', async () => {
+      // Task starts as ready
+      let graph = await storage.load();
+      let task = graph.getNode(testTaskId);
+      expect(task?.status).toBe('ready');
+
+      // Add need_fix item
+      execSync(
+        `node ${cliPath} --project "${tempDir}" update ${testTaskId} ` +
+        `--add-need-fix "Found an issue"`,
+        { encoding: 'utf-8' }
+      );
+
+      // Verify status changed to in_progress
+      graph = await storage.load();
+      task = graph.getNode(testTaskId);
+      expect(task?.status).toBe('in_progress');
+    });
+  });
 });
