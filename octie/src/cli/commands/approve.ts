@@ -95,7 +95,7 @@ export async function approveCommand(
  */
 export function registerApproveCommand(program: Command): void {
   program
-    .command('approve <task-id>')
+    .command('approve')
     .description(
       'Approve a task in review (in_review → completed). This is the only manual status transition.'
     )
@@ -107,13 +107,17 @@ Status System:
   All other status transitions happen automatically based on task state.
 
   Automatic Transitions:
-    ready → in_progress    When any criterion/deliverable is checked
+    ready → in_progress      When any criterion/deliverable is checked
     in_progress → in_review  When all items are complete
-    any → blocked          When a blocker is added
-    blocked → ready        When all blockers are completed
+    any → blocked            When a blocker is added
+    blocked → in_progress    When all blockers completed AND items already checked
+    blocked → ready          When all blockers completed AND no items checked yet
 
   Manual Transition (this command):
-    in_review → completed  Approve after review
+    in_review → completed    Approve after review
+
+  Note: blocked → in_progress (not ready) when items are already checked.
+  This preserves work state and is the intended behavior.
 
 Prerequisites for Approval:
   • Task must be in 'in_review' status
@@ -123,7 +127,7 @@ Prerequisites for Approval:
 
 Side Effects:
   • Tasks blocked by this task will have their status recalculated
-  • If all blockers for a task are now complete, it transitions to 'ready'
+  • Unblocked tasks transition based on their item state (not forced to ready)
 
 Examples:
   $ octie approve abc12345

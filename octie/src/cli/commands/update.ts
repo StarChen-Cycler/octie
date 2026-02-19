@@ -421,7 +421,7 @@ updateCommand.on('--help', () => {
   console.log('    • Any item checked → in_progress');
   console.log('    • All items complete → in_review');
   console.log('    • Blocker added → blocked');
-  console.log('    • All blockers completed → ready');
+  console.log('    • All blockers completed → in_progress (if items checked) or ready (if not)');
   console.log('');
   console.log(chalk.cyan('  Manual Transition (via \'octie approve\' command only):'));
   console.log('    • in_review → completed');
