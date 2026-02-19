@@ -839,5 +839,88 @@ describe('update command', () => {
       expect(errorMsg).toContain('dependency-explanation');
       expect(errorMsg).toContain('required');
     });
+
+    it('should add blocker using short UUID prefix', async () => {
+      // Use first 8 characters of blocker task ID
+      const shortId = blockerTaskId.substring(0, 8);
+
+      const output = execSync(
+        `node ${cliPath} --project "${tempDir}" update ${testTaskId} ` +
+        `--block "${shortId}" ` +
+        `--dependency-explanation "Needs blocker output to proceed"`,
+        { encoding: 'utf-8' }
+      );
+
+      expect(output).toContain('Task updated');
+
+      const graph = await storage.load();
+      const task = graph.getNode(testTaskId);
+      // Should contain the FULL UUID, not the short one
+      expect(task?.blockers).toContain(blockerTaskId);
+    });
+
+    it('should unblock using short UUID prefix', async () => {
+      // First add a blocker with dependency-explanation using short UUID
+      const shortId = blockerTaskId.substring(0, 8);
+      execSync(
+        `node ${cliPath} --project "${tempDir}" update ${testTaskId} ` +
+        `--block "${shortId}" ` +
+        `--dependency-explanation "Initial dependency explanation"`,
+        { encoding: 'utf-8' }
+      );
+
+      // Verify blocker was added
+      let graph = await storage.load();
+      let task = graph.getNode(testTaskId);
+      expect(task?.blockers).toContain(blockerTaskId);
+
+      // Now remove using short UUID
+      const output = execSync(
+        `node ${cliPath} --project "${tempDir}" update ${testTaskId} ` +
+        `--unblock "${shortId}"`,
+        { encoding: 'utf-8' }
+      );
+
+      expect(output).toContain('Task updated');
+      expect(output).toContain('dependencies explanation cleared');
+
+      graph = await storage.load();
+      task = graph.getNode(testTaskId);
+      expect(task?.blockers).not.toContain(blockerTaskId);
+      expect(task?.dependencies).toBe('');
+    });
+
+    it('should reject --block with invalid short UUID', () => {
+      let errorMsg = '';
+      try {
+        execSync(
+          `node ${cliPath} --project "${tempDir}" update ${testTaskId} ` +
+          `--block "invalid1" ` +
+          `--dependency-explanation "Test"`,
+          { encoding: 'utf-8', stdio: 'pipe' }
+        );
+      } catch (err: any) {
+        errorMsg = err.stderr?.toString() || err.stdout?.toString() || '';
+      }
+
+      expect(errorMsg).toContain('not found');
+      expect(errorMsg).toContain('invalid1');
+    });
+
+    it('should reject --unblock with invalid short UUID', () => {
+      let errorMsg = '';
+      try {
+        execSync(
+          `node ${cliPath} --project "${tempDir}" update ${testTaskId} ` +
+          `--unblock "invalid1"`,
+          { encoding: 'utf-8', stdio: 'pipe' }
+        );
+      } catch (err: any) {
+        errorMsg = err.stderr?.toString() || err.stdout?.toString() || '';
+      }
+
+      expect(errorMsg).toContain('not found');
+      expect(errorMsg).toContain('invalid1');
+    });
   });
 });

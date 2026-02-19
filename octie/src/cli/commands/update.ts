@@ -179,8 +179,14 @@ export const updateCommand = new Command('update')
           info('Example: --block abc123 --dependency-explanation "Needs API spec from abc123"');
           process.exit(1);
         }
-        task.addBlocker(options.block);
-        graph.addEdge(options.block, id);
+        // Resolve short UUID to full UUID
+        const blockerTask = graph.getNodeByIdOrPrefix(options.block);
+        if (!blockerTask) {
+          error(`Task with ID '${options.block}' not found`);
+          process.exit(1);
+        }
+        task.addBlocker(blockerTask.id);
+        graph.addEdge(blockerTask.id, task.id);
         // Update dependencies explanation (append to existing)
         const existingDeps = task.dependencies || '';
         task.setDependencies(existingDeps ? `${existingDeps}\n${options.dependencyExplanation}` : options.dependencyExplanation);
@@ -189,8 +195,14 @@ export const updateCommand = new Command('update')
 
       // Remove blocker
       if (options.unblock) {
-        task.removeBlocker(options.unblock);
-        graph.removeEdge(options.unblock, id);
+        // Resolve short UUID to full UUID
+        const unblockTask = graph.getNodeByIdOrPrefix(options.unblock);
+        if (!unblockTask) {
+          error(`Task with ID '${options.unblock}' not found`);
+          process.exit(1);
+        }
+        task.removeBlocker(unblockTask.id);
+        graph.removeEdge(unblockTask.id, task.id);
         // If no more blockers, clear dependencies automatically
         if (task.blockers.length === 0) {
           task.clearDependencies();
