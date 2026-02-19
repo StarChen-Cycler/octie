@@ -9,6 +9,7 @@ build/
 # Octie project data
 .octie/
 *.octie
+tasks.json
 
 # Editor files
 .vscode/
@@ -24,6 +25,7 @@ Thumbs.db
 # Test coverage
 coverage/
 .nyc_output/
+html/
 
 # Temporary files
 tmp/
