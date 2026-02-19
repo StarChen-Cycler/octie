@@ -252,9 +252,36 @@ export function unregisterProject(projectPath: string): boolean {
 
 /**
  * Get all registered projects
- * @returns Array of registry projects
+ * Automatically filters out stale projects (where .octie folder no longer exists)
+ * @returns Array of valid registry projects
  */
 export function getAllProjects(): RegistryProject[] {
+  const registry = loadRegistry();
+  const validProjects: Record<string, RegistryProject> = {};
+  let hasStale = false;
+
+  for (const [key, project] of Object.entries(registry.projects)) {
+    if (isValidOctieProject(project.path)) {
+      validProjects[key] = project;
+    } else {
+      hasStale = true;
+    }
+  }
+
+  // Auto-cleanup: remove stale entries from registry
+  if (hasStale) {
+    registry.projects = validProjects;
+    saveRegistry(registry);
+  }
+
+  return Object.values(registry.projects);
+}
+
+/**
+ * Get all registered projects WITHOUT auto-cleanup (for debugging)
+ * @returns Array of all registry projects including stale ones
+ */
+export function getAllProjectsRaw(): RegistryProject[] {
   const registry = loadRegistry();
   return Object.values(registry.projects);
 }
