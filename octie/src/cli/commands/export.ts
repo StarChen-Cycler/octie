@@ -17,6 +17,13 @@ export const exportCommand = new Command('export')
   .description('Export project data to file')
   .option('-t, --type <format>', 'Export format: json, md (default: "json")')
   .option('-o, --output <path>', 'Output file path')
+  .addHelpText('after', `
+Examples:
+  $ octie export -o backup.json
+  $ octie export --type md -o tasks.md
+
+Default: Writes to tasks.json (or tasks.md) if no -o specified
+`)
   .action(async (options, command) => {
     try {
       // Get global options

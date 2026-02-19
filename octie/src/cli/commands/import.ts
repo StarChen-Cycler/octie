@@ -757,6 +757,15 @@ export const importCommand = new Command('import')
   .argument('<file>', 'File path to import')
   .option('--format <format>', 'Import format: json | md (auto-detect from extension if not specified)')
   .option('--merge', 'Merge with existing tasks instead of replacing')
+  .addHelpText('after', `
+Examples:
+  $ octie import tasks.json
+  $ octie import tasks.md --merge
+
+File Formats:
+  JSON - Full project export format
+  MD   - Markdown with task details
+`)
   .action(async (file, options, command) => {
     try {
       // Get global options
