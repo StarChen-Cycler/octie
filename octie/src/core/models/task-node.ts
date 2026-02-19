@@ -653,6 +653,12 @@ export class TaskNode implements TaskNodeType {
     this._updated_at = now; // Initially same as created_at
     this._completed_at = null; // Will be set by _checkCompletion()
 
+    // Calculate status based on blockers and work state (if not explicitly provided)
+    // This ensures tasks created with blockers get 'blocked' status
+    if (!data.status) {
+      this.status = this.calculateStatus();
+    }
+
     // Check if task is already complete (for loaded tasks)
     this._checkCompletion();
   }

@@ -56,6 +56,19 @@ export function formatTaskMarkdown(task: TaskNode): string {
     lines.push('');
   }
 
+  // Need Fix Items (blocking issues)
+  if (task.need_fix.length > 0) {
+    lines.push('### Need Fix');
+    for (const nf of task.need_fix) {
+      const nfCheckbox = nf.completed ? '[x]' : '[ ]';
+      const idDisplay = `\`${nf.id}\``;
+      const sourceDisplay = nf.source ? ` [${nf.source}]` : '';
+      const fileRef = nf.file_path ? ` → \`${nf.file_path}\`` : '';
+      lines.push(`- ${nfCheckbox} ${nf.text}${sourceDisplay}${fileRef} ${idDisplay}`);
+    }
+    lines.push('');
+  }
+
   // Blockers (with #task-id format)
   if (task.blockers.length > 0) {
     lines.push('### Blockers');

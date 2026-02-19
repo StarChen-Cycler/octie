@@ -297,14 +297,20 @@ describe('find command', () => {
 
   describe('--status and --priority filters', () => {
     it('should filter by status', () => {
+      // Task status after status refactor:
+      // - Auth: in_progress (has completed items but not all)
+      // - API: blocked (has blockers)
+      // - DB: in_review (all items complete)
+      // - Orphan: ready (nothing complete)
       const output = execSync(
         `node "${cliPath}" find --status ready --project "${tempDir}" --format json`,
         { encoding: 'utf-8' }
       );
 
       const tasks = JSON.parse(output);
-      // All tasks are ready by default
-      expect(tasks.length).toBe(4);
+      // Only Orphan task is ready
+      expect(tasks.length).toBe(1);
+      expect(tasks[0].title).toBe('Write documentation');
     });
 
     it('should filter by priority', () => {

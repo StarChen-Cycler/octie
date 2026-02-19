@@ -158,6 +158,19 @@ export function formatTaskDetailTable(task: TaskNode): string {
     lines.push('');
   }
 
+  // Need Fix Items (blocking issues)
+  if (task.need_fix.length > 0) {
+    lines.push(chalk.bold('Need Fix:'));
+    for (const nf of task.need_fix) {
+      const symbol = nf.completed ? chalk.green('✓') : chalk.red('!');
+      const sourceDisplay = nf.source ? chalk.yellow(` [${nf.source}]`) : '';
+      const fileRef = nf.file_path ? chalk.gray(` (${nf.file_path})`) : '';
+      const idDisplay = chalk.gray(`(${nf.id.substring(0, 8)})`);
+      lines.push(`  ${symbol} ${nf.text}${sourceDisplay}${fileRef} ${idDisplay}`);
+    }
+    lines.push('');
+  }
+
   // Relationships
   if (task.blockers.length > 0) {
     lines.push(chalk.bold('Blocked by:'), chalk.cyan(task.blockers.join(', ')));
