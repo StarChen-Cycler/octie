@@ -1,5 +1,5 @@
 // Task types matching the backend API
-export type TaskStatus = 'not_started' | 'pending' | 'in_progress' | 'completed' | 'blocked';
+export type TaskStatus = 'ready' | 'in_progress' | 'in_review' | 'completed' | 'blocked';
 export type TaskPriority = 'top' | 'second' | 'later';
 export type EdgeType = 'blocks' | 'depends_on' | 'parent_of' | 'related_to';
 
@@ -17,6 +17,15 @@ export interface Deliverable {
   file_path?: string;
 }
 
+export interface FixItem {
+  id: string;
+  text: string;
+  completed: boolean;
+  file_path?: string;
+  added_at: string;
+  source?: 'review' | 'runtime' | 'regression';
+}
+
 export interface C7Verification {
   library_id: string;
   verified_at: string;
@@ -31,6 +40,8 @@ export interface Task extends Record<string, unknown> {
   priority: TaskPriority;
   success_criteria: SuccessCriterion[];
   deliverables: Deliverable[];
+  need_fix: FixItem[];
+  assignee: string | null;
   blockers: string[];
   dependencies: string;  // Explanation text, not an array
   edges: string[];

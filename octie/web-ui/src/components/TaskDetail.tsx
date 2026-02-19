@@ -13,9 +13,9 @@ interface TaskDetailProps {
 const statusColors: Record<string, { bg: string; color: string }> = {
   completed: { bg: 'rgba(16, 185, 129, 0.15)', color: 'var(--status-completed)' },
   in_progress: { bg: 'rgba(0, 212, 255, 0.15)', color: 'var(--status-in-progress)' },
+  in_review: { bg: 'rgba(167, 139, 250, 0.15)', color: 'var(--accent-violet)' },
+  ready: { bg: 'rgba(110, 118, 129, 0.15)', color: 'var(--text-muted)' },
   blocked: { bg: 'rgba(244, 63, 94, 0.15)', color: 'var(--status-blocked)' },
-  pending: { bg: 'rgba(255, 159, 28, 0.15)', color: 'var(--status-pending)' },
-  not_started: { bg: 'rgba(110, 118, 129, 0.15)', color: 'var(--status-not-started)' },
 };
 
 const priorityColors: Record<string, { bg: string; color: string }> = {
@@ -58,7 +58,7 @@ function TaskDetail({ task, loading }: TaskDetailProps) {
     );
   }
 
-  const statusStyle = statusColors[task.status] || statusColors.not_started;
+  const statusStyle = statusColors[task.status] || statusColors.ready;
   const priorityStyle = priorityColors[task.priority] || priorityColors.later;
 
   return (
@@ -215,6 +215,77 @@ function TaskDetail({ task, loading }: TaskDetailProps) {
                     >
                       {deliverable.file_path}
                     </code>
+                  )}
+                </div>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {/* Need Fix */}
+      {task.need_fix && task.need_fix.length > 0 && (
+        <div>
+          <SectionTitle>
+            Need Fix
+            <span style={{ color: 'var(--status-blocked)' }}>
+              {' '}
+              ({task.need_fix.filter((f) => f.completed).length}/{task.need_fix.length})
+            </span>
+          </SectionTitle>
+          <ul className="space-y-2">
+            {task.need_fix.map((fix) => (
+              <li
+                key={fix.id}
+                className="flex items-start gap-3 text-sm"
+              >
+                <div
+                  className="w-4 h-4 rounded flex items-center justify-center flex-shrink-0 mt-0.5"
+                  style={{
+                    background: fix.completed
+                      ? 'var(--status-completed)'
+                      : 'rgba(244, 63, 94, 0.3)',
+                    border: fix.completed
+                      ? 'none'
+                      : '1px solid rgba(244, 63, 94, 0.5)',
+                  }}
+                >
+                  {fix.completed && (
+                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3">
+                      <polyline points="20 6 9 17 4 12" />
+                    </svg>
+                  )}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <span
+                    className={fix.completed ? 'line-through' : ''}
+                    style={{ color: fix.completed ? 'var(--text-muted)' : 'var(--text-secondary)' }}
+                  >
+                    {fix.text}
+                  </span>
+                  {fix.file_path && (
+                    <code
+                      className="block mt-1 text-xs px-2 py-1 rounded"
+                      style={{
+                        background: 'var(--surface-elevated)',
+                        color: 'var(--text-muted)',
+                        fontFamily: 'var(--font-mono)',
+                      }}
+                    >
+                      {fix.file_path}
+                    </code>
+                  )}
+                  {fix.source && (
+                    <span
+                      className="inline-block mt-1 text-[10px] px-1.5 py-0.5 rounded uppercase"
+                      style={{
+                        background: 'rgba(244, 63, 94, 0.1)',
+                        color: 'var(--status-blocked)',
+                        fontFamily: 'var(--font-mono)',
+                      }}
+                    >
+                      {fix.source}
+                    </span>
                   )}
                 </div>
               </li>

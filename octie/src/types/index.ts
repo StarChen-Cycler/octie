@@ -421,6 +421,29 @@ export class StorageError extends OctieError {
 }
 
 /**
+ * Immutability violation error
+ * Thrown when attempting to modify completed items that are immutable
+ *
+ * Per the status refactor spec:
+ * - success_criteria items: Cannot be unchecked or deleted once completed
+ * - deliverables items: Cannot be unchecked or deleted once completed
+ * - need_fix items: Cannot be deleted or unmarked once completed
+ */
+export class ImmutabilityViolationError extends ValidationError {
+  /** ID of the item that cannot be modified */
+  readonly itemId: string;
+  /** Type of the item (success_criterion, deliverable, need_fix) */
+  readonly itemType: string;
+
+  constructor(message: string, itemId: string, itemType: string) {
+    super(message, itemType);
+    this.name = 'ImmutabilityViolationError';
+    this.itemId = itemId;
+    this.itemType = itemType;
+  }
+}
+
+/**
  * Topological sort result
  * Returned by graph topological sort operations
  */

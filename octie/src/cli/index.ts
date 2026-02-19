@@ -19,6 +19,7 @@ import { importCommand } from './commands/import.js';
 import { serveCommand } from './commands/serve.js';
 import { findCommand } from './commands/find.js';
 import { wireCommand } from './commands/wire.js';
+import { registerApproveCommand } from './commands/approve.js';
 // import { batchCommand } from './commands/batch.js';
 import { formatError } from './utils/helpers.js';
 import { verifyAndRegisterProject } from '../core/registry/root-guard.js';
@@ -99,6 +100,7 @@ function main(): void {
   program.addCommand(serveCommand);
   program.addCommand(findCommand);
   program.addCommand(wireCommand);
+  registerApproveCommand(program);
   // program.addCommand(batchCommand);
 
   // Parse arguments

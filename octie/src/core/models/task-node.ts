@@ -24,6 +24,7 @@ import type {
 import {
   ValidationError,
   AtomicTaskViolationError,
+  ImmutabilityViolationError,
 } from '../../types/index.js';
 
 /**
@@ -759,16 +760,26 @@ export class TaskNode implements TaskNodeType {
     criterion.completed_at = new Date().toISOString();
     this._touch();
     this._checkCompletion();
+    this.recalculateStatus(); // Auto-transition status based on state
   }
 
   /**
    * Unmark a success criterion as complete
    * @param criterionId - ID of the criterion to unmark
+   * @throws {ImmutabilityViolationError} If criterion is already completed (immutable)
    */
   uncompleteCriterion(criterionId: string): void {
     const criterion = this.success_criteria.find(c => c.id === criterionId);
     if (!criterion) {
       throw new ValidationError(`Success criterion with ID '${criterionId}' not found.`, 'success_criteria');
+    }
+    // Immutability check: cannot uncheck completed items
+    if (criterion.completed) {
+      throw new ImmutabilityViolationError(
+        `Cannot uncheck completed success criterion '${criterion.text.substring(0, 50)}...'. Completed items are immutable.`,
+        criterionId,
+        'success_criterion'
+      );
     }
     criterion.completed = false;
     delete criterion.completed_at;
@@ -804,16 +815,26 @@ export class TaskNode implements TaskNodeType {
     deliverable.completed = true;
     this._touch();
     this._checkCompletion();
+    this.recalculateStatus(); // Auto-transition status based on state
   }
 
   /**
    * Unmark a deliverable as complete
    * @param deliverableId - ID of the deliverable to unmark
+   * @throws {ImmutabilityViolationError} If deliverable is already completed (immutable)
    */
   uncompleteDeliverable(deliverableId: string): void {
     const deliverable = this.deliverables.find(d => d.id === deliverableId);
     if (!deliverable) {
       throw new ValidationError(`Deliverable with ID '${deliverableId}' not found.`, 'deliverables');
+    }
+    // Immutability check: cannot uncheck completed items
+    if (deliverable.completed) {
+      throw new ImmutabilityViolationError(
+        `Cannot uncheck completed deliverable '${deliverable.text.substring(0, 50)}...'. Completed items are immutable.`,
+        deliverableId,
+        'deliverable'
+      );
     }
     deliverable.completed = false;
     this._touch();
@@ -838,6 +859,7 @@ export class TaskNode implements TaskNodeType {
     this.need_fix.push(fixItem);
     this._touch();
     this._checkCompletion();
+    this.recalculateStatus(); // Auto-transition status based on state
   }
 
   /**
@@ -852,6 +874,7 @@ export class TaskNode implements TaskNodeType {
     fixItem.completed = true;
     this._touch();
     this._checkCompletion();
+    this.recalculateStatus(); // Auto-transition status based on state
   }
 
   /**
@@ -872,6 +895,7 @@ export class TaskNode implements TaskNodeType {
     if (!this.blockers.includes(blockerId)) {
       this.blockers.push(blockerId);
       this._touch();
+      this.recalculateStatus(); // Auto-transition to blocked (Rule 4)
     }
   }
 
@@ -884,6 +908,7 @@ export class TaskNode implements TaskNodeType {
     if (index > -1) {
       this.blockers.splice(index, 1);
       this._touch();
+      this.recalculateStatus(); // Auto-transition when all blockers resolved (Rule 5)
     }
   }
 
@@ -909,11 +934,21 @@ export class TaskNode implements TaskNodeType {
    * Remove a success criterion
    * @param criterionId - ID of the criterion to remove
    * @throws {ValidationError} If criterion not found or removal would leave no criteria
+   * @throws {ImmutabilityViolationError} If criterion is completed (immutable)
    */
   removeSuccessCriterion(criterionId: string): void {
     const index = this.success_criteria.findIndex(c => c.id === criterionId);
     if (index === -1) {
       throw new ValidationError(`Success criterion with ID '${criterionId}' not found.`, 'success_criteria');
+    }
+    // Immutability check: cannot remove completed items
+    const criterion = this.success_criteria[index];
+    if (criterion.completed) {
+      throw new ImmutabilityViolationError(
+        `Cannot remove completed success criterion '${criterion.text.substring(0, 50)}...'. Completed items are immutable.`,
+        criterionId,
+        'success_criterion'
+      );
     }
     if (this.success_criteria.length <= 1) {
       throw new ValidationError(
@@ -930,11 +965,21 @@ export class TaskNode implements TaskNodeType {
    * Remove a deliverable
    * @param deliverableId - ID of the deliverable to remove
    * @throws {ValidationError} If deliverable not found or removal would leave no deliverables
+   * @throws {ImmutabilityViolationError} If deliverable is completed (immutable)
    */
   removeDeliverable(deliverableId: string): void {
     const index = this.deliverables.findIndex(d => d.id === deliverableId);
     if (index === -1) {
       throw new ValidationError(`Deliverable with ID '${deliverableId}' not found.`, 'deliverables');
+    }
+    // Immutability check: cannot remove completed items
+    const deliverable = this.deliverables[index];
+    if (deliverable.completed) {
+      throw new ImmutabilityViolationError(
+        `Cannot remove completed deliverable '${deliverable.text.substring(0, 50)}...'. Completed items are immutable.`,
+        deliverableId,
+        'deliverable'
+      );
     }
     if (this.deliverables.length <= 1) {
       throw new ValidationError(
@@ -1148,20 +1193,28 @@ export class TaskNode implements TaskNodeType {
    * Recalculate and update status based on task state
    * This is the main method to call when task state changes
    *
-   * NOTE: This will NOT change status from 'completed' (the only manual transition)
-   * Use approve() method to transition from in_review to completed
+   * Special cases:
+   * - completed tasks with new need_fix items → in_progress (regression)
+   * - completed tasks with new blockers → blocked (regression)
+   * - Otherwise, completed status is preserved (requires manual approve())
    *
    * @returns The new status (may be same as current)
    */
   recalculateStatus(): TaskStatus {
-    // Don't auto-change from 'completed' - that requires manual approval
+    const newStatus = this.calculateStatus();
+
+    // Special handling for completed tasks
     if (this.status === 'completed') {
+      // Regression: need_fix added or blocker added → leave completed state
+      if (newStatus === 'in_progress' || newStatus === 'blocked') {
+        this.status = newStatus;
+        this._touch();
+      }
+      // Otherwise stay completed (no change)
       return this.status;
     }
 
-    const newStatus = this.calculateStatus();
-
-    // Only update if status actually changed
+    // For non-completed tasks, always update to calculated status
     if (newStatus !== this.status) {
       this.status = newStatus;
       this._touch();

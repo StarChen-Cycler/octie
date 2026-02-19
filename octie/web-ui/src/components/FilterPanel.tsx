@@ -22,7 +22,7 @@ function FilterPanel({
   onPriorityChange,
   onSearchChange,
 }: FilterPanelProps) {
-  const statuses: (TaskStatus | 'all')[] = ['all', 'not_started', 'pending', 'in_progress', 'completed', 'blocked'];
+  const statuses: (TaskStatus | 'all')[] = ['all', 'ready', 'in_progress', 'in_review', 'completed', 'blocked'];
   const priorities: (TaskPriority | 'all')[] = ['all', 'top', 'second', 'later'];
 
   return (

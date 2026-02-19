@@ -13,6 +13,7 @@
 import { describe, it, expect } from 'vitest';
 import { v4 as uuidv4 } from 'uuid';
 import { TaskNode, validateAtomicTask } from '../../../../src/core/models/task-node.js';
+import { ValidationError, AtomicTaskViolationError, ImmutabilityViolationError } from '../../../../src/types/index.js';
 import {
   ValidationError,
   AtomicTaskViolationError,
@@ -433,7 +434,7 @@ describe('TaskNode', () => {
       expect(task.completed_at > task.created_at).toBe(true);
     });
 
-    it('should clear completed_at when criterion is uncompleted', async () => {
+    it('should throw ImmutabilityViolationError when trying to uncomplete a criterion', async () => {
       const task = new TaskNode({
         title: 'Implement login endpoint',
         description: 'Create POST /auth/login endpoint that validates credentials and returns JWT token. The endpoint should use bcrypt for password hashing and return a 200 status with valid JWT on correct credentials.',
@@ -450,14 +451,16 @@ describe('TaskNode', () => {
       task.completeDeliverable(task.deliverables[0].id);
       expect(task.completed_at).not.toBeNull();
 
-      // Uncomplete a criterion
-      await new Promise(resolve => setTimeout(resolve, 10)); // Small delay
-      task.uncompleteCriterion(task.success_criteria[0].id);
+      // Attempting to uncomplete should throw ImmutabilityViolationError
+      expect(() => {
+        task.uncompleteCriterion(task.success_criteria[0].id);
+      }).toThrow(ImmutabilityViolationError);
 
-      expect(task.completed_at).toBeNull();
+      // completed_at should remain set (item is still complete)
+      expect(task.completed_at).not.toBeNull();
     });
 
-    it('should clear completed_at when deliverable is uncompleted', async () => {
+    it('should throw ImmutabilityViolationError when trying to uncomplete a deliverable', async () => {
       const task = new TaskNode({
         title: 'Implement login endpoint',
         description: 'Create POST /auth/login endpoint that validates credentials and returns JWT token. The endpoint should use bcrypt for password hashing and return a 200 status with valid JWT on correct credentials.',
@@ -474,11 +477,13 @@ describe('TaskNode', () => {
       task.completeDeliverable(task.deliverables[0].id);
       expect(task.completed_at).not.toBeNull();
 
-      // Uncomplete a deliverable
-      await new Promise(resolve => setTimeout(resolve, 10)); // Small delay
-      task.uncompleteDeliverable(task.deliverables[0].id);
+      // Attempting to uncomplete should throw ImmutabilityViolationError
+      expect(() => {
+        task.uncompleteDeliverable(task.deliverables[0].id);
+      }).toThrow(ImmutabilityViolationError);
 
-      expect(task.completed_at).toBeNull();
+      // completed_at should remain set (item is still complete)
+      expect(task.completed_at).not.toBeNull();
     });
 
     it('should clear completed_at when adding new incomplete criterion', async () => {
@@ -565,16 +570,16 @@ describe('TaskNode', () => {
         task.setStatus('completed');
       }).toThrow(ValidationError);
 
-      // Complete everything - this should NOT auto-change status, only set completed_at
+      // Complete everything - this should AUTO-TRANSITION to in_review (new spec)
       task.completeCriterion(task.success_criteria[0].id);
       task.completeDeliverable(task.deliverables[0].id);
 
-      // Status should still be in_progress (we don't auto-transition status)
-      expect(task.status).toBe('in_progress');
+      // Status should auto-transition to in_review when all items complete
+      expect(task.status).toBe('in_review');
       expect(task.completed_at).not.toBeNull();
 
-      // Now should allow completed status
-      task.setStatus('completed');
+      // Now can use approve() to transition to completed
+      task.approve();
       expect(task.status).toBe('completed');
     });
   });
@@ -1148,7 +1153,7 @@ describe('TaskNode', () => {
       expect(task.status).toBe('in_progress');
     });
 
-    it('should not change status when uncompleting criterion on non-completed task', () => {
+    it('should throw ImmutabilityViolationError when trying to remove completed criterion', () => {
       const task = new TaskNode({
         title: 'Implement login endpoint',
         description: 'Create POST /auth/login endpoint that validates credentials and returns JWT token. The endpoint should use bcrypt for password hashing and return a 200 status with valid JWT on correct credentials.',
@@ -1162,10 +1167,30 @@ describe('TaskNode', () => {
         status: 'ready',
       });
 
-      // Uncomplete a criterion - status should remain pending (not auto-changed)
-      task.uncompleteCriterion(task.success_criteria[0].id);
+      // Attempting to remove completed criterion should throw
+      expect(() => {
+        task.removeSuccessCriterion(task.success_criteria[0].id);
+      }).toThrow(ImmutabilityViolationError);
+    });
 
-      expect(task.status).toBe('ready');
+    it('should throw ImmutabilityViolationError when trying to remove completed deliverable', () => {
+      const task = new TaskNode({
+        title: 'Implement login endpoint',
+        description: 'Create POST /auth/login endpoint that validates credentials and returns JWT token. The endpoint should use bcrypt for password hashing and return a 200 status with valid JWT on correct credentials.',
+        success_criteria: [
+          { id: uuidv4(), text: 'Endpoint returns 200', completed: false },
+          { id: uuidv4(), text: 'Unit tests pass', completed: false },
+        ],
+        deliverables: [
+          { id: uuidv4(), text: 'src/api/auth/login.ts', completed: true },
+          { id: uuidv4(), text: 'src/api/auth/test.ts', completed: false },
+        ],
+      });
+
+      // Attempting to remove completed deliverable should throw
+      expect(() => {
+        task.removeDeliverable(task.deliverables[0].id);
+      }).toThrow(ImmutabilityViolationError);
     });
   });
 });
