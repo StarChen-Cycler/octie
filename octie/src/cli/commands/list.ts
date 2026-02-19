@@ -2,7 +2,7 @@
  * List command - List tasks with filtering options
  */
 
-import { Command } from 'commander';
+import { Command, Option } from 'commander';
 import Table from 'cli-table3';
 import type { TaskGraphStore } from '../../core/graph/index.js';
 import { TaskNode } from '../../core/models/task-node.js';
@@ -71,11 +71,37 @@ function buildAndRenderTree(graph: TaskGraphStore, rootTasks: string[]): string 
  */
 export const listCommand = new Command('list')
   .description('List tasks with filtering options')
-  .option('-s, --status <status>', 'Filter by status')
-  .option('-p, --priority <priority>', 'Filter by priority')
+  .addOption(
+    new Option('-s, --status <status>', 'Filter by status')
+      .choices(['ready', 'in_progress', 'in_review', 'completed', 'blocked'])
+  )
+  .addOption(
+    new Option('-p, --priority <priority>', 'Filter by priority')
+      .choices(['top', 'second', 'later'])
+  )
   .option('--graph', 'Show graph structure')
   .option('--tree', 'Show tree view')
-  .addHelpText('after', '\nTip: The IDs shown in the list can be used with `get`, `update`, and `delete` commands.\n')
+  .addHelpText('after', `
+Status Values:
+  ready       - Task has no blockers and no work started
+  in_progress - Work has begun (criteria/deliverables checked, or need_fix added)
+  in_review   - All criteria, deliverables, and need_fix items complete
+  completed   - Task approved (use 'octie approve <id>')
+  blocked     - Task has unresolved blockers
+
+Priority Values:
+  top         - Highest priority, work on next
+  second      - Normal priority (default)
+  later       - Low priority, future work
+
+Examples:
+  $ octie list                              List all tasks
+  $ octie list --status in_progress         List tasks in progress
+  $ octie list --priority top               List top priority tasks
+  $ octie list --graph                      Show graph relationships
+  $ octie list --tree                       Show tree view
+  $ octie list --format json                Output as JSON
+`)
   .action(async (options, command) => {
     try {
       // Get global options

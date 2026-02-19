@@ -99,6 +99,39 @@ export function registerApproveCommand(program: Command): void {
     .description(
       'Approve a task in review (in_review → completed). This is the only manual status transition.'
     )
+    .argument('<task-id>', 'Task ID (full UUID or first 7-8 characters)')
     .option('-p, --project <path>', 'Project directory path')
+    .addHelpText('after', `
+Status System:
+  This is the ONLY manual status transition in the automatic status system.
+  All other status transitions happen automatically based on task state.
+
+  Automatic Transitions:
+    ready → in_progress    When any criterion/deliverable is checked
+    in_progress → in_review  When all items are complete
+    any → blocked          When a blocker is added
+    blocked → ready        When all blockers are completed
+
+  Manual Transition (this command):
+    in_review → completed  Approve after review
+
+Prerequisites for Approval:
+  • Task must be in 'in_review' status
+  • All success criteria must be complete
+  • All deliverables must be complete
+  • All need_fix items must be resolved
+
+Side Effects:
+  • Tasks blocked by this task will have their status recalculated
+  • If all blockers for a task are now complete, it transitions to 'ready'
+
+Examples:
+  $ octie approve abc12345
+  $ octie approve abc12345 --project /path/to/project
+
+Error Cases:
+  • Task not found → Error
+  • Task not in 'in_review' status → Error with guidance
+`)
     .action(approveCommand);
 }

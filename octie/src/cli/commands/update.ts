@@ -104,17 +104,16 @@ function resolveNeedFixId(task: TaskNode, idOrPrefix: string): string {
 export const updateCommand = new Command('update')
   .description('Update an existing task')
   .argument('<id>', 'Task ID to update (full UUID or first 7-8 characters)')
-  .option('--status <status>', 'Task status')
   .addOption(
     new Option('--priority <priority>', 'Task priority')
       .choices(['top', 'second', 'later'])
   )
   .option('--add-deliverable <text>', 'Add a deliverable')
   .option('--complete-deliverable <id>', 'Mark deliverable(s) as complete (supports: id, id1,id2, or "id1","id2")', parseMultipleIds, [])
-  .option('--remove-deliverable <id>', 'Remove a deliverable by ID')
+  .option('--remove-deliverable <id>', 'Remove a deliverable by ID (NOTE: cannot remove completed items)')
   .option('--add-success-criterion <text>', 'Add a success criterion')
   .option('--complete-criterion <id>', 'Mark success criterion(s) as complete (supports: id, id1,id2, or "id1","id2")', parseMultipleIds, [])
-  .option('--remove-criterion <id>', 'Remove a success criterion by ID')
+  .option('--remove-criterion <id>', 'Remove a success criterion by ID (NOTE: cannot remove completed items)')
   .option('--block <id>', 'Add a blocker (requires --dependency-explanation)')
   .option('--unblock <id>', 'Remove a blocker (removes graph edge)')
   .option('--dependency-explanation <text>', 'Set/update dependencies explanation (required with --block)')
@@ -124,7 +123,11 @@ export const updateCommand = new Command('update')
   .option('--verify-c7 <library:notes>', 'Add C7 library verification (format: library-id or library-id:notes)')
   .option('--remove-c7-verified <library>', 'Remove a C7 verification by library ID')
   .option('--add-need-fix <text>', 'Add a need_fix item (blocking issue). Use --need-fix-source to specify source.')
-  .option('--need-fix-source <source>', 'Source of need_fix: review, runtime, or regression (default: review)')
+  .addOption(
+    new Option('--need-fix-source <source>', 'Source of need_fix')
+      .choices(['review', 'runtime', 'regression'])
+      .default('review')
+  )
   .option('--need-fix-file <path>', 'Optional file path for need_fix item')
   .option('--complete-need-fix <id>', 'Mark need_fix item as resolved (supports short UUID)')
   .addOption(
@@ -150,12 +153,6 @@ export const updateCommand = new Command('update')
       }
 
       let updated = false;
-
-      // Update status
-      if (options.status) {
-        task.setStatus(options.status);
-        updated = true;
-      }
 
       // Update priority
       if (options.priority) {
@@ -416,9 +413,35 @@ export const updateCommand = new Command('update')
 // Add help text to explain blockers vs dependencies
 updateCommand.on('--help', () => {
   console.log('');
+  console.log(chalk.bold('Status System:'));
+  console.log('  Status is AUTOMATICALLY calculated from task state.');
+  console.log('  Use \'octie approve <id>\' to transition from in_review to completed.');
+  console.log('');
+  console.log(chalk.cyan('  Automatic Transitions:'));
+  console.log('    • Any item checked → in_progress');
+  console.log('    • All items complete → in_review');
+  console.log('    • Blocker added → blocked');
+  console.log('    • All blockers completed → ready');
+  console.log('');
+  console.log(chalk.cyan('  Manual Transition (via \'octie approve\' command only):'));
+  console.log('    • in_review → completed');
+  console.log('');
+  console.log(chalk.bold('Need Fix Items (Blocking Issues):'));
+  console.log(chalk.cyan('  --add-need-fix <text>') + ': Add a blocking issue found during work.');
+  console.log('    Sources: review (code review), runtime (testing), regression (after completion).');
+  console.log('    Status automatically changes to in_progress when need_fix is added.');
+  console.log('');
+  console.log(chalk.cyan('  --complete-need-fix <id>') + ': Mark issue as resolved.');
+  console.log('    Supports short UUID (first 7-8 chars).');
+  console.log('');
+  console.log(chalk.yellow('  Example:'));
+  console.log('    octie update abc --add-need-fix "Null pointer in edge case" \\');
+  console.log('      --need-fix-source review --need-fix-file "src/auth.ts"');
+  console.log('');
   console.log(chalk.bold('Blockers & Dependencies (Twin Feature):'));
   console.log(chalk.cyan('  --block <id>') + ': Add a blocker (creates graph edge).');
   console.log('                REQUIRES --dependency-explanation (twin validation).');
+  console.log('                Prevents self-blocking and cycle creation.');
   console.log('');
   console.log(chalk.cyan('  --unblock <id>') + ': Remove a blocker (removes graph edge).');
   console.log('                  If last blocker removed, dependencies auto-cleared.');
@@ -438,6 +461,13 @@ updateCommand.on('--help', () => {
   console.log('    Remove blocker (auto-clears if last one):');
   console.log('      octie update abc --unblock xyz');
   console.log('');
-  console.log(chalk.red('  Error if twin missing:'));
+  console.log(chalk.red('  Error Conditions:'));
   console.log('    --block without --dependency-explanation → Error');
+  console.log('    Self-blocking (task blocks itself) → Error');
+  console.log('    Would create cycle → Error');
+  console.log('    Cannot uncomplete/remove completed items → Error');
+  console.log('');
+  console.log(chalk.bold('Short UUID Support:'));
+  console.log('  All ID parameters support short UUIDs (first 7-8 characters).');
+  console.log('  Example: octie update abc1234 --complete-criterion xyz5678');
 });

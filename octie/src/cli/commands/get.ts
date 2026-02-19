@@ -15,6 +15,25 @@ import chalk from 'chalk';
 export const getCommand = new Command('get')
   .description('Get task details')
   .argument('<id>', 'Task ID (full UUID or first 7-8 characters)')
+  .addHelpText('after', `
+Task ID Format:
+  • Full UUID:  12345678-1234-1234-1234-123456789012
+  • Short UUID: First 7-8 characters (e.g., 12345678)
+
+Output Formats (use global --format option):
+  table   - Formatted table view (default)
+  json    - Full JSON representation
+  md      - Markdown format for documentation
+
+Examples:
+  $ octie get abc12345
+  $ octie get abc12345 --format json
+  $ octie get abc12345 --format md
+
+Global Options:
+  --format <format>   Output format: table, json, md
+  --project <path>    Project directory path
+`)
   .action(async (id, _options, command) => {
     try {
       // Get global options

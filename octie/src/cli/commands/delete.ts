@@ -14,8 +14,38 @@ export const deleteCommand = new Command('delete')
   .description('Delete a task from the project')
   .argument('<id>', 'Task ID to delete (full UUID or first 7-8 characters)')
   .option('--reconnect', 'Reconnect edges after deletion (A→B→C → A→C)')
-  .option('--cascade', 'Delete all dependent tasks')
+  .option('--cascade', 'Delete all dependent tasks (tasks that this task blocks)')
   .option('--force', 'Skip confirmation prompt')
+  .addHelpText('after', `
+Deletion Modes:
+
+  Default (simple delete):
+    Removes the task and its edges.
+    Dependent tasks have this task removed from their blockers.
+    Status of dependent tasks is recalculated.
+
+  --reconnect (splice into chain):
+    Before: A → B → C (A blocks B, B blocks C)
+    After:  A → C     (A blocks C directly)
+    Useful when removing an intermediate task in a chain.
+
+  --cascade (delete dependents):
+    Deletes this task AND all tasks that depend on it.
+    Warning: Can delete many tasks at once!
+
+Task ID:
+  Supports full UUID or first 7-8 characters (short UUID).
+
+Confirmation:
+  Prompts for confirmation unless --force is used.
+  Shows impact (how many tasks are affected) before deletion.
+
+Examples:
+  $ octie delete abc12345              Delete task with confirmation
+  $ octie delete abc12345 --force      Delete without confirmation
+  $ octie delete abc12345 --reconnect  Reconnect chain after deletion
+  $ octie delete abc12345 --cascade    Delete task and all dependents
+`)
   .action(async (id, options, command) => {
     try {
       // Get global options

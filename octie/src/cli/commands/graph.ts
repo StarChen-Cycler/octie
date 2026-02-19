@@ -14,6 +14,16 @@ import { getConnectedComponents } from '../../core/graph/traversal.js';
  */
 export const graphCommand = new Command('graph')
   .description('Graph analysis and validation operations')
+  .addHelpText('after', `
+Subcommands:
+  validate    Check graph integrity (cycles, orphan references)
+  cycles      Detect and display all cycles in the graph
+
+Examples:
+  $ octie graph                    Show graph statistics
+  $ octie graph validate           Validate graph has no cycles or broken refs
+  $ octie graph cycles             Show all cycles with task titles
+`)
   .action(async (_options, command) => {
     try {
       // Get global options - traverse up to main program
@@ -71,7 +81,20 @@ export const graphCommand = new Command('graph')
 // Add subcommands
 graphCommand
   .command('validate')
-  .description('Validate graph structure')
+  .description('Validate graph structure (checks for cycles and orphan references)')
+  .addHelpText('after', `
+Validation Checks:
+  1. Cycle Detection - Ensures graph is a valid DAG (no circular dependencies)
+  2. Reference Integrity - Ensures all blocker references point to existing tasks
+
+Exit Codes:
+  0 - Graph is valid
+  1 - Validation failed (cycles or broken references found)
+
+Example:
+  $ octie graph validate
+  ✓ Graph validation passed: No cycles detected, all blocker references valid
+`)
   .action(async (_options, command) => {
     try {
       // Get global options - traverse up to main program (parent.parent)
@@ -113,6 +136,35 @@ graphCommand
 graphCommand
   .command('cycles')
   .description('Detect and display cycles in the graph')
+  .addHelpText('after', `
+Output Format:
+  Each cycle is shown as a chain of task IDs with task titles:
+
+  ⚠️  Found 2 cycle(s):
+
+  1. abc12345 → def67890 → abc12345
+     - Task A title
+     - Task B title
+     - Task A title
+
+  2. xyz11111 → yyy22222 → zzz33333 → xyz11111
+     - Task X title
+     - Task Y title
+     - Task Z title
+     - Task X title
+
+Exit Codes:
+  0 - No cycles found
+  1 - Cycles detected
+
+How to Fix:
+  Use 'octie update <id> --unblock <blocker-id>' to break the cycle.
+
+Example:
+  $ octie graph cycles
+  ⚠️  Found 1 cycle(s):
+  1. abc12345 → def67890 → abc12345
+`)
   .action(async (_options, command) => {
     try {
       // Get global options - traverse up to main program (parent.parent)

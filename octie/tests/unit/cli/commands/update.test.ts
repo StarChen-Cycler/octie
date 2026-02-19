@@ -75,76 +75,6 @@ describe('update command', () => {
     }
   });
 
-  describe('status updates', () => {
-    it('should update task status to in_progress', async () => {
-      const output = execSync(
-        `node ${cliPath} --project "${tempDir}" update ${testTaskId} --status in_progress`,
-        { encoding: 'utf-8' }
-      );
-
-      expect(output).toContain('Task updated');
-
-      const graph = await storage.load();
-      const task = graph.getNode(testTaskId);
-      expect(task?.status).toBe('in_progress');
-    });
-
-    it('should update task status to completed when criteria are met', async () => {
-      // First set to in_progress
-      execSync(
-        `node ${cliPath} --project "${tempDir}" update ${testTaskId} --status in_progress`,
-        { encoding: 'utf-8' }
-      );
-
-      // Complete the success criterion
-      execSync(
-        `node ${cliPath} --project "${tempDir}" update ${testTaskId} --complete-criterion "${criterionId}"`,
-        { encoding: 'utf-8' }
-      );
-
-      // Complete the deliverable
-      execSync(
-        `node ${cliPath} --project "${tempDir}" update ${testTaskId} --complete-deliverable "${deliverableId}"`,
-        { encoding: 'utf-8' }
-      );
-
-      // Then set to completed
-      const output = execSync(
-        `node ${cliPath} --project "${tempDir}" update ${testTaskId} --status completed`,
-        { encoding: 'utf-8' }
-      );
-
-      expect(output).toContain('Task updated');
-
-      const graph = await storage.load();
-      const task = graph.getNode(testTaskId);
-      expect(task?.status).toBe('completed');
-    });
-
-    it('should update task status to blocked', async () => {
-      const output = execSync(
-        `node ${cliPath} --project "${tempDir}" update ${testTaskId} --status blocked`,
-        { encoding: 'utf-8' }
-      );
-
-      expect(output).toContain('Task updated');
-
-      const graph = await storage.load();
-      const task = graph.getNode(testTaskId);
-      expect(task?.status).toBe('blocked');
-    });
-
-    it('should reject invalid status transition from not_started to completed', () => {
-      // Try to set from not_started directly to completed (should be rejected)
-      expect(() => {
-        execSync(
-          `node ${cliPath} --project "${tempDir}" update ${testTaskId} --status completed`,
-          { encoding: 'utf-8', stdio: 'pipe' }
-        );
-      }).toThrow();
-    });
-  });
-
   describe('priority updates', () => {
     it('should update task priority to top', async () => {
       const output = execSync(
@@ -534,19 +464,25 @@ describe('update command', () => {
 
       expect(() => {
         execSync(
-          `node ${cliPath} --project "${tempDir}" update ${fakeId} --status in_progress`,
+          `node ${cliPath} --project "${tempDir}" update ${fakeId} --priority top`,
           { encoding: 'utf-8', stdio: 'pipe' }
         );
       }).toThrow();
     });
 
-    it('should reject invalid status value', () => {
-      expect(() => {
+    it('should reject invalid priority value', () => {
+      let errorMsg = '';
+      try {
         execSync(
-          `node ${cliPath} --project "${tempDir}" update ${testTaskId} --status invalid_status`,
+          `node ${cliPath} --project "${tempDir}" update ${testTaskId} --priority urgent`,
           { encoding: 'utf-8', stdio: 'pipe' }
         );
-      }).toThrow();
+      } catch (err: any) {
+        errorMsg = err.stderr?.toString() || err.stdout?.toString() || '';
+      }
+
+      expect(errorMsg).toContain('invalid');
+      expect(errorMsg).toContain('top, second, later');
     });
 
     it('should accept valid priority value "second"', async () => {
@@ -660,8 +596,9 @@ describe('update command', () => {
       });
 
       expect(output).toContain('Update an existing task');
-      expect(output).toContain('--status');
       expect(output).toContain('--priority');
+      expect(output).toContain('--add-deliverable');
+      expect(output).toContain('--complete-criterion');
     });
   });
 
@@ -1123,8 +1060,8 @@ describe('update command', () => {
         errorMsg = err.stderr?.toString() || err.stdout?.toString() || '';
       }
 
-      expect(errorMsg).toContain('Invalid --need-fix-source');
       expect(errorMsg).toContain('invalid');
+      expect(errorMsg).toContain('review, runtime, regression');
     });
 
     it('should complete a need_fix item', async () => {

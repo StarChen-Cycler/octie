@@ -12,9 +12,36 @@ import { mergeTasks } from '../../core/graph/operations.js';
  */
 export const mergeCommand = new Command('merge')
   .description('Merge two tasks into one')
-  .argument('<sourceId>', 'Source task ID (will be deleted)')
+  .argument('<sourceId>', 'Source task ID (will be deleted after merge)')
   .argument('<targetId>', 'Target task ID (will receive merged content)')
   .option('--force', 'Skip confirmation prompt')
+  .addHelpText('after', `
+Merge Behavior:
+  • Source task is DELETED after merge
+  • Target task receives:
+    - All success criteria from source (appended)
+    - All deliverables from source (appended)
+    - Notes from source (appended)
+    - Related files from source (appended)
+  • Blockers are transferred from source to target
+
+Task ID Format:
+  Supports full UUID or first 7-8 characters (short UUID).
+
+Confirmation:
+  Prompts for confirmation unless --force is used.
+  Shows preview of combined criteria/deliverables counts.
+
+Examples:
+  $ octie merge abc12345 def67890
+  $ octie merge abc12345 def67890 --force
+
+Use Case:
+  Merge duplicate tasks or combine related tasks that should be one.
+
+Warning:
+  Cannot undo! A backup is created automatically before merge.
+`)
   .action(async (sourceId, targetId, options, command) => {
     try {
       // Get global options
