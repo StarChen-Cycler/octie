@@ -90,7 +90,7 @@ const TaskMergeSchema = z.object({
  * Zod schema for query parameter validation
  */
 const TaskQuerySchema = z.object({
-  status: z.enum(['not_started', 'pending', 'in_progress', 'completed', 'blocked']).optional(),
+  status: z.enum(['ready', 'in_progress', 'in_review', 'completed', 'blocked']).optional(),
   priority: z.enum(['top', 'second', 'later']).optional(),
   search: z.string().optional(),
   limit: z.string().transform(val => val ? parseInt(val, 10) : undefined).pipe(

@@ -262,7 +262,7 @@ export const findCommand = new Command('find')
   .option('--without-blockers', 'Show tasks with no blockers (ready to start)')
   .option('--orphans', 'Show tasks with no relationships (no edges)')
   .option('--leaves', 'Show tasks with no outgoing edges (end tasks)')
-  .option('--status <status>', 'Filter by status (not_started|pending|in_progress|completed|blocked)')
+  .option('--status <status>', 'Filter by status (ready|in_progress|in_review|completed|blocked)')
   .option('-p, --priority <priority>', 'Filter by priority (top|second|later)')
   .addHelpText('after', `
 Examples:
@@ -272,7 +272,7 @@ Examples:
   $ octie find --verified "/express"           Find tasks verified against Express docs
   $ octie find --without-blockers              Find tasks ready to start
   $ octie find --orphans                       Find disconnected tasks
-  $ octie find --leaves --status pending       Find pending end tasks
+  $ octie find --leaves --status ready         Find ready end tasks
   $ octie find --title "API" --priority top    Combine multiple filters
 
 Output formats:

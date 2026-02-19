@@ -248,9 +248,9 @@ export class TaskStorage {
    */
   private async _buildIndexes(graph: TaskGraphStore): Promise<ProjectIndexes> {
     const byStatus: Record<string, string[]> = {
-      not_started: [],
-      pending: [],
+      ready: [],
       in_progress: [],
+      in_review: [],
       completed: [],
       blocked: [],
     };

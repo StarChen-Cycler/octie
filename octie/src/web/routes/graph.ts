@@ -281,9 +281,9 @@ export function registerGraphRoutes(
 
     // Calculate status and priority counts by iterating through tasks
     const statusCounts = new Map<string, number>();
-    statusCounts.set('not_started', 0);
-    statusCounts.set('pending', 0);
+    statusCounts.set('ready', 0);
     statusCounts.set('in_progress', 0);
+    statusCounts.set('in_review', 0);
     statusCounts.set('completed', 0);
     statusCounts.set('blocked', 0);
 

@@ -445,10 +445,10 @@ Filter Options (same as 'find' command):
 
 Examples:
   # Preview batch status update
-  $ octie batch update-status in_progress --status pending --dry-run
+  $ octie batch update-status in_progress --status ready --dry-run
 
-  # Update all pending tasks to in_progress
-  $ octie batch update-status in_progress --status pending
+  # Update all ready tasks to in_progress
+  $ octie batch update-status in_progress --status ready
 
   # Delete all orphan tasks (requires --force)
   $ octie batch delete --orphans --force

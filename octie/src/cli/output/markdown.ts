@@ -149,9 +149,9 @@ export function formatProjectMarkdown(graph: TaskGraphStore): string {
 
   // Group by status
   const byStatus: Record<string, string[]> = {
-    not_started: [],
+    ready: [],
     in_progress: [],
-    pending: [],
+    in_review: [],
     blocked: [],
     completed: [],
   };
