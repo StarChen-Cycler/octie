@@ -2,7 +2,7 @@
  * Update command - Update an existing task
  */
 
-import { Command } from 'commander';
+import { Command, Option } from 'commander';
 import { getProjectPath, loadGraph, saveGraph, success, error, info, parseMultipleIds } from '../utils/helpers.js';
 import chalk from 'chalk';
 import { randomUUID } from 'node:crypto';
@@ -124,7 +124,14 @@ export const updateCommand = new Command('update')
   .option('--need-fix-source <source>', 'Source of need_fix: review, runtime, or regression (default: review)')
   .option('--need-fix-file <path>', 'Optional file path for need_fix item')
   .option('--complete-need-fix <id>', 'Mark need_fix item as resolved (supports short UUID)')
-  .option('--notes <text>', 'Append to notes')
+  .addOption(
+    new Option(
+      '--notes <text>',
+      'Append to notes (can be specified multiple times)'
+    )
+      .argParser((value: string, previous: string[]) => [...(previous || []), value])
+      .default([])
+  )
   .option('--notes-file <path>', 'Read notes from file and append (multi-line notes support)')
   .action(async (id, options, command) => {
     try {
@@ -354,9 +361,11 @@ export const updateCommand = new Command('update')
         updated = true;
       }
 
-      // Append notes
-      if (options.notes) {
-        task.appendNotes(options.notes);
+      // Append notes (supports multiple --notes flags)
+      if (options.notes && options.notes.length > 0) {
+        for (const note of options.notes) {
+          task.appendNotes(note);
+        }
         updated = true;
       }
 

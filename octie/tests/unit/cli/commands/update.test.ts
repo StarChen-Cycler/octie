@@ -286,6 +286,24 @@ describe('update command', () => {
       const task = graph.getNode(testTaskId);
       expect(task?.notes).toContain('bcrypt');
     });
+
+    it('should append multiple notes with multiple --notes flags', async () => {
+      const output = execSync(
+        `node ${cliPath} --project "${tempDir}" update ${testTaskId} ` +
+        `--notes "First note" ` +
+        `--notes "Second note" ` +
+        `--notes "Third note"`,
+        { encoding: 'utf-8' }
+      );
+
+      expect(output).toContain('Task updated');
+
+      const graph = await storage.load();
+      const task = graph.getNode(testTaskId);
+      expect(task?.notes).toContain('First note');
+      expect(task?.notes).toContain('Second note');
+      expect(task?.notes).toContain('Third note');
+    });
   });
 
   describe('remove operations', () => {
