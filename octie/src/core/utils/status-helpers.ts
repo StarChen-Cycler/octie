@@ -28,12 +28,29 @@ export function recalculateDependentStatuses(
   const updatedTaskIds: string[] = [];
 
   // Find all tasks that have this blocker in their blockers array
-  // Note: TaskGraphStore doesn't have a direct method for this, so we iterate
   for (const task of graph.getAllTasks()) {
     if (task.blockers.includes(blockerId)) {
-      // Recalculate status - this will handle the "all blockers resolved" case
       const oldStatus = task.status;
-      task.recalculateStatus();
+
+      // Check if ALL blockers are now resolved (completed or deleted)
+      const allBlockersResolved = areAllBlockersResolved(task.blockers, graph);
+
+      if (allBlockersResolved) {
+        // All blockers are resolved - calculate new status without considering blockers
+        // Use the standard status calculation logic but skip the blockers check
+        const newStatus = calculateStatusIgnoringBlockers(task);
+
+        if (newStatus !== task.status) {
+          task.status = newStatus;
+          // Touch the task to update timestamp
+          task.recalculateStatus(); // This will update timestamp
+          // Override the status since recalculateStatus() would set it back to blocked
+          task.status = newStatus;
+        }
+      } else {
+        // Still has active blockers - just recalculate normally
+        task.recalculateStatus();
+      }
 
       if (task.status !== oldStatus) {
         updatedTaskIds.push(task.id);
@@ -41,10 +58,44 @@ export function recalculateDependentStatuses(
     }
   }
 
-  // Note: Caller is responsible for saving if needed
-  // This allows for batch operations without multiple saves
-
   return updatedTaskIds;
+}
+
+/**
+ * Calculate task status ignoring blockers
+ *
+ * Used when all blockers are resolved to determine what the status should be.
+ * This is the same logic as TaskNode.calculateStatus() but skips the blockers check.
+ *
+ * @param task - The task to calculate status for
+ * @returns The calculated status (ready, in_progress, or in_review)
+ */
+function calculateStatusIgnoringBlockers(task: {
+  success_criteria: Array<{ completed: boolean }>;
+  deliverables: Array<{ completed: boolean }>;
+  need_fix: Array<{ completed: boolean }>;
+}): 'ready' | 'in_progress' | 'in_review' {
+  // Check if ready for review (all items complete)
+  const allCriteriaComplete = task.success_criteria.every(c => c.completed);
+  const allDeliverablesComplete = task.deliverables.every(d => d.completed);
+  const allNeedFixComplete = task.need_fix.every(f => f.completed);
+  const allComplete = allCriteriaComplete && allDeliverablesComplete && allNeedFixComplete;
+
+  if (allComplete) {
+    return 'in_review';
+  }
+
+  // Check if work has started
+  const anyCriteriaChecked = task.success_criteria.some(c => c.completed);
+  const anyDeliverableChecked = task.deliverables.some(d => d.completed);
+  const hasNeedFix = task.need_fix.length > 0;
+
+  if (anyCriteriaChecked || anyDeliverableChecked || hasNeedFix) {
+    return 'in_progress';
+  }
+
+  // Default - ready for work
+  return 'ready';
 }
 
 /**

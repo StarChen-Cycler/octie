@@ -11,6 +11,7 @@
 import { Command } from 'commander';
 import { ValidationError } from '../../types/index.js';
 import { getProjectPath, loadGraph, saveGraph } from '../utils/helpers.js';
+import { recalculateDependentStatuses } from '../../core/utils/status-helpers.js';
 import chalk from 'chalk';
 
 /**
@@ -59,6 +60,9 @@ export async function approveCommand(
     // Approve the task
     task.approve();
 
+    // Recalculate status of all tasks that were blocked by this task
+    const updatedTaskIds = recalculateDependentStatuses(task.id, graph);
+
     // Save the graph
     await saveGraph(projectPath, graph);
 
@@ -68,6 +72,11 @@ export async function approveCommand(
     console.log(chalk.gray(`  Status: ${task.status}`));
     if (task.completed_at) {
       console.log(chalk.gray(`  Completed: ${task.completed_at}`));
+    }
+
+    // Report if any dependent tasks were unblocked
+    if (updatedTaskIds.length > 0) {
+      console.log(chalk.cyan(`  Unblocked tasks: ${updatedTaskIds.length}`));
     }
   } catch (error) {
     if (error instanceof ValidationError) {
