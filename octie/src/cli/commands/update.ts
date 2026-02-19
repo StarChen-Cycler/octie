@@ -9,6 +9,7 @@ import { randomUUID } from 'node:crypto';
 import { readFileSync, existsSync } from 'node:fs';
 import { resolve } from 'node:path';
 import type { TaskNode } from '../../core/models/task-node.js';
+import { wouldCreateCycle } from '../../core/graph/algorithms.js';
 
 /**
  * Resolve a short UUID to a full criterion ID within a task
@@ -237,6 +238,17 @@ export const updateCommand = new Command('update')
         const blockerTask = graph.getNodeByIdOrPrefix(options.block);
         if (!blockerTask) {
           error(`Task with ID '${options.block}' not found`);
+          process.exit(1);
+        }
+        // Check for self-blocking
+        if (blockerTask.id === task.id) {
+          error('A task cannot block itself.');
+          process.exit(1);
+        }
+        // Check if adding this blocker would create a cycle
+        if (wouldCreateCycle(graph, blockerTask.id, task.id)) {
+          error(`Adding blocker '${blockerTask.id.substring(0, 8)}' would create a cycle.`);
+          info('Cycles are not allowed in the task graph. Use "octie graph cycles" to see existing cycles.');
           process.exit(1);
         }
         task.addBlocker(blockerTask.id);

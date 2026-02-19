@@ -922,6 +922,89 @@ describe('update command', () => {
       expect(errorMsg).toContain('not found');
       expect(errorMsg).toContain('invalid1');
     });
+
+    it('should reject self-blocking (task cannot block itself)', () => {
+      let errorMsg = '';
+      try {
+        execSync(
+          `node ${cliPath} --project "${tempDir}" update ${testTaskId} ` +
+          `--block "${testTaskId}" ` +
+          `--dependency-explanation "Self block test"`,
+          { encoding: 'utf-8', stdio: 'pipe' }
+        );
+      } catch (err: any) {
+        errorMsg = err.stderr?.toString() || err.stdout?.toString() || '';
+      }
+
+      expect(errorMsg).toContain('cannot block itself');
+    });
+
+    it('should reject adding blocker that would create a cycle', async () => {
+      // Create two tasks: A and B
+      const graph = await storage.load();
+
+      const taskAId = uuidv4();
+      const taskA = new TaskNode({
+        id: taskAId,
+        title: 'Task A for cycle test',
+        description: 'First task in potential cycle - testing that the system prevents cycle creation',
+        status: 'ready',
+        priority: 'top',
+        success_criteria: [{ id: uuidv4(), text: 'Complete', completed: false }],
+        deliverables: [{ id: uuidv4(), text: 'a.ts', completed: false }],
+        blockers: [],
+        dependencies: '',
+        related_files: [],
+        notes: '',
+        c7_verified: [],
+        sub_items: [],
+        edges: [],
+      });
+      graph.addNode(taskA);
+
+      const taskBId = uuidv4();
+      const taskB = new TaskNode({
+        id: taskBId,
+        title: 'Task B for cycle test',
+        description: 'Second task in potential cycle - testing that the system prevents cycle creation',
+        status: 'ready',
+        priority: 'top',
+        success_criteria: [{ id: uuidv4(), text: 'Complete', completed: false }],
+        deliverables: [{ id: uuidv4(), text: 'b.ts', completed: false }],
+        blockers: [],
+        dependencies: '',
+        related_files: [],
+        notes: '',
+        c7_verified: [],
+        sub_items: [],
+        edges: [],
+      });
+      graph.addNode(taskB);
+      await storage.save(graph);
+
+      // Make B block A
+      execSync(
+        `node ${cliPath} --project "${tempDir}" update ${taskAId} ` +
+        `--block "${taskBId}" ` +
+        `--dependency-explanation "B blocks A"`,
+        { encoding: 'utf-8' }
+      );
+
+      // Try to make A block B (would create cycle: A -> B -> A)
+      let errorMsg = '';
+      try {
+        execSync(
+          `node ${cliPath} --project "${tempDir}" update ${taskBId} ` +
+          `--block "${taskAId}" ` +
+          `--dependency-explanation "A blocks B"`,
+          { encoding: 'utf-8', stdio: 'pipe' }
+        );
+      } catch (err: any) {
+        errorMsg = err.stderr?.toString() || err.stdout?.toString() || '';
+      }
+
+      expect(errorMsg).toContain('cycle');
+    });
   });
 
   describe('need_fix operations', () => {

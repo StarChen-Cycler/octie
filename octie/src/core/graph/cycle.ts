@@ -295,3 +295,68 @@ export function validateReferences(graph: TaskGraphStore): ReferenceValidationRe
     invalidReferences,
   };
 }
+
+/**
+ * Check if adding an edge would create a cycle
+ *
+ * When adding a blocker relationship (blockerId → taskId), this function
+ * checks if there's already a path from taskId to blockerId. If so,
+ * adding the edge would create a cycle.
+ *
+ * Also rejects self-blocking (taskId === blockerId).
+ *
+ * @param graph - Task graph store
+ * @param blockerId - The task that will block (source of edge)
+ * @param taskId - The task being blocked (target of edge)
+ * @returns true if adding this edge would create a cycle
+ *
+ * @example
+ * ```ts
+ * // Before adding blocker, check for cycle
+ * if (wouldCreateCycle(graph, blockerId, taskId)) {
+ *   console.error('Cannot add blocker: would create a cycle');
+ * } else {
+ *   task.addBlocker(blockerId);
+ *   graph.addEdge(blockerId, taskId);
+ * }
+ * ```
+ */
+export function wouldCreateCycle(
+  graph: TaskGraphStore,
+  blockerId: string,
+  taskId: string
+): boolean {
+  // Self-blocking is always a cycle
+  if (blockerId === taskId) {
+    return true;
+  }
+
+  // Check if taskId can already reach blockerId through existing edges
+  // If so, adding blockerId → taskId would create a cycle
+  // We search 'forward' from taskId following outgoing edges
+  const visited = new Set<string>();
+  const queue: string[] = [taskId];
+
+  while (queue.length > 0) {
+    const currentId = queue.shift()!;
+
+    if (currentId === blockerId) {
+      return true; // Found path from taskId to blockerId
+    }
+
+    if (visited.has(currentId)) {
+      continue;
+    }
+    visited.add(currentId);
+
+    // Follow outgoing edges (tasks that this task blocks)
+    const neighbors = graph.getOutgoingEdges(currentId);
+    for (const neighbor of neighbors) {
+      if (!visited.has(neighbor)) {
+        queue.push(neighbor);
+      }
+    }
+  }
+
+  return false;
+}

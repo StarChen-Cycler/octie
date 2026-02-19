@@ -24,6 +24,7 @@ export {
   findCyclesForTask,
   validateAcyclic,
   getCycleStatistics,
+  wouldCreateCycle,
 } from './cycle.js';
 
 // Traversal
