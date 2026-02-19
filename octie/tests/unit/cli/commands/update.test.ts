@@ -171,6 +171,22 @@ describe('update command', () => {
       const task = graph.getNode(testTaskId);
       expect(task?.priority).toBe('later');
     });
+
+    it('should reject invalid priority value', () => {
+      let errorMsg = '';
+      try {
+        execSync(
+          `node ${cliPath} --project "${tempDir}" update ${testTaskId} --priority urgent`,
+          { encoding: 'utf-8', stdio: 'pipe' }
+        );
+      } catch (err: any) {
+        errorMsg = err.stderr?.toString() || err.stdout?.toString() || '';
+      }
+
+      expect(errorMsg).toContain('invalid');
+      expect(errorMsg).toContain('urgent');
+      expect(errorMsg).toContain('top, second, later');
+    });
   });
 
   describe('success criterion completion', () => {
@@ -533,15 +549,17 @@ describe('update command', () => {
       }).toThrow();
     });
 
-    it('should accept any priority value (Commander choice validation)', async () => {
-      // Note: Commander.js doesn't validate choice values at runtime for optional options
-      // The CLI may accept the value and store it. This test verifies behavior.
+    it('should accept valid priority value "second"', async () => {
       const output = execSync(
-        `node ${cliPath} --project "${tempDir}" update ${testTaskId} --priority later`,
+        `node ${cliPath} --project "${tempDir}" update ${testTaskId} --priority second`,
         { encoding: 'utf-8' }
       );
 
       expect(output).toContain('Task updated');
+
+      const graph = await storage.load();
+      const task = graph.getNode(testTaskId);
+      expect(task?.priority).toBe('second');
     });
   });
 
