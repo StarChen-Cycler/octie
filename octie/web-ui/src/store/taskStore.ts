@@ -23,7 +23,7 @@ interface TaskState {
   projectStats: ProjectStats | null;
 
   // Actions
-  setQueryOptions: (options: TaskQueryOptions) => void;
+  setQueryOptions: (options: TaskQueryOptions | ((prev: TaskQueryOptions) => TaskQueryOptions)) => void;
   setSelectedTask: (taskId: string | null) => void;
   setCurrentProjectPath: (path: string | null) => void;
   clearError: () => void;
@@ -69,7 +69,11 @@ export const useTaskStore = create<TaskState>()((set, get) => {
 
   // Actions
   setQueryOptions: (options) => {
-    set({ queryOptions: options });
+    set((state) => ({
+      queryOptions: typeof options === 'function'
+        ? options(state.queryOptions)
+        : options
+    }));
     get().fetchTasks();
   },
 

@@ -28,7 +28,6 @@ function App() {
     selectedTaskId,
     graphData,
     projectStats,
-    queryOptions,
     fetchTasks,
     fetchGraph,
     fetchStats,
@@ -117,23 +116,40 @@ function App() {
 
   const handleStatusChange = useCallback((status: TaskStatus | 'all') => {
     setFilterStatus(status)
-    setQueryOptions({
-      ...queryOptions,
+    setQueryOptions(prev => ({
+      ...prev,
       status: status === 'all' ? undefined : status,
-    })
-  }, [queryOptions, setQueryOptions])
+    }))
+  }, [setQueryOptions])
 
   const handlePriorityChange = useCallback((priority: TaskPriority | 'all') => {
     setFilterPriority(priority)
-    setQueryOptions({
-      ...queryOptions,
+    setQueryOptions(prev => ({
+      ...prev,
       priority: priority === 'all' ? undefined : priority,
-    })
-  }, [queryOptions, setQueryOptions])
+    }))
+  }, [setQueryOptions])
 
   const handleSearchChange = useCallback((query: string) => {
     setSearchInput(query)
-  }, [])
+    setQueryOptions(prev => ({
+      ...prev,
+      search: query || undefined,
+    }))
+  }, [setQueryOptions])
+
+  // Clear filters when switching to graph view - graph shows all tasks
+  const handleViewChange = useCallback((newView: 'list' | 'graph') => {
+    if (newView === 'graph') {
+      // Clear filters when switching to graph view
+      setFilterStatus('all')
+      setFilterPriority('all')
+      setSearchInput('')
+      setSearchQuery('')
+      setQueryOptions({})
+    }
+    setView(newView)
+  }, [setQueryOptions])
 
   const handleExportPNG = useCallback(() => {
     graphViewRef.current?.exportAsPNG()
@@ -163,11 +179,11 @@ function App() {
       }
 
       if (e.key === 'l' && !e.ctrlKey && !e.metaKey) {
-        setView('list')
+        handleViewChange('list')
       }
 
       if (e.key === 'g' && !e.ctrlKey && !e.metaKey) {
-        setView('graph')
+        handleViewChange('graph')
       }
 
       if (e.key === 't' && !e.ctrlKey && !e.metaKey) {
@@ -200,7 +216,7 @@ function App() {
 
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [view, tasks, selectedTaskId, handleRefresh, toggleTheme, setSelectedTask, toggleSidebar])
+  }, [view, tasks, selectedTaskId, handleRefresh, toggleTheme, setSelectedTask, toggleSidebar, handleViewChange])
 
   // Show home page if no project selected
   const showHomePage = !currentProjectPath
@@ -278,7 +294,7 @@ function App() {
               {/* Toolbar */}
               <Toolbar
                 view={view}
-                onViewChange={setView}
+                onViewChange={handleViewChange}
                 onRefresh={handleRefresh}
                 loading={loading}
                 onExportPNG={handleExportPNG}
