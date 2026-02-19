@@ -57,7 +57,7 @@ export class IndexManager {
     this._cachedIndexes = null;
 
     // Initialize status indexes
-    const statuses: TaskStatus[] = ['not_started', 'pending', 'in_progress', 'completed', 'blocked'];
+    const statuses: TaskStatus[] = ['ready', 'in_progress', 'in_review', 'completed', 'blocked'];
     for (const status of statuses) {
       this._byStatus.set(status, new Set());
     }
@@ -211,7 +211,7 @@ export class IndexManager {
     this._orphanTasks.clear();
 
     // Re-initialize status and priority maps
-    const statuses: TaskStatus[] = ['not_started', 'pending', 'in_progress', 'completed', 'blocked'];
+    const statuses: TaskStatus[] = ['ready', 'in_progress', 'in_review', 'completed', 'blocked'];
     for (const status of statuses) {
       this._byStatus.set(status, new Set());
     }
@@ -353,7 +353,7 @@ export class IndexManager {
     this._cachedIndexes = null;
 
     // Re-initialize status and priority maps
-    const statuses: TaskStatus[] = ['not_started', 'pending', 'in_progress', 'completed', 'blocked'];
+    const statuses: TaskStatus[] = ['ready', 'in_progress', 'in_review', 'completed', 'blocked'];
     for (const status of statuses) {
       this._byStatus.set(status, new Set());
     }
@@ -377,9 +377,9 @@ export class IndexManager {
     orphanTasksCount: number;
   } {
     const statusCounts: Record<TaskStatus, number> = {
-      not_started: 0,
-      pending: 0,
+      ready: 0,
       in_progress: 0,
+      in_review: 0,
       completed: 0,
       blocked: 0,
     };

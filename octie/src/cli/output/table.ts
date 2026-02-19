@@ -80,7 +80,8 @@ export function formatTasksTable(
   // Add summary
   const completed = tasks.filter(t => t.status === 'completed').length;
   const inProgress = tasks.filter(t => t.status === 'in_progress').length;
-  const pending = tasks.filter(t => t.status === 'pending').length;
+  const inReview = tasks.filter(t => t.status === 'in_review').length;
+  const ready = tasks.filter(t => t.status === 'ready').length;
   const blocked = tasks.filter(t => t.status === 'blocked').length;
 
   output += '\n' + chalk.gray(`Total: ${tasks.length} task${tasks.length !== 1 ? 's' : ''}`);
@@ -89,7 +90,8 @@ export function formatTasksTable(
     output += '\n' + chalk.gray(
       `  ${chalk.green('✓')} ${completed} completed | ` +
       `${chalk.blue('○')} ${inProgress} in progress | ` +
-      `${chalk.yellow('◐')} ${pending} pending | ` +
+      `${chalk.magenta('◎')} ${inReview} in review | ` +
+      `${chalk.cyan('○')} ${ready} ready | ` +
       `${chalk.red('⊘')} ${blocked} blocked`
     );
   }

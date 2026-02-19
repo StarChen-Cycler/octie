@@ -413,9 +413,9 @@ export class TaskStorage {
       edges: [],
       indexes: {
         byStatus: {
-          not_started: [],
-          pending: [],
+          ready: [],
           in_progress: [],
+          in_review: [],
           completed: [],
           blocked: [],
         },

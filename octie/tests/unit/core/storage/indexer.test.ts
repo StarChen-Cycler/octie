@@ -26,9 +26,9 @@ describe('IndexManager', () => {
     it('should initialize with empty indexes', () => {
       const indexes = indexManager.getIndexes();
 
-      expect(indexes.byStatus.not_started).toEqual([]);
-      expect(indexes.byStatus.pending).toEqual([]);
+      expect(indexes.byStatus.ready).toEqual([]);
       expect(indexes.byStatus.in_progress).toEqual([]);
+      expect(indexes.byStatus.in_review).toEqual([]);
       expect(indexes.byStatus.completed).toEqual([]);
       expect(indexes.byStatus.blocked).toEqual([]);
 
@@ -48,7 +48,7 @@ describe('IndexManager', () => {
         description: 'A test task to verify index management works correctly with proper updates.',
         success_criteria: [{ id: uuidv4(), text: 'Test returns 200 status code', completed: false }],
         deliverables: [{ id: uuidv4(), text: 'src/test.ts', completed: false }],
-        status: 'pending',
+        status: 'ready',
         priority: 'top',
       });
 
@@ -56,7 +56,7 @@ describe('IndexManager', () => {
       indexManager.updateTask(task, null, graph);
 
       const indexes = indexManager.getIndexes();
-      expect(indexes.byStatus.pending).toContain(task.id);
+      expect(indexes.byStatus.ready).toContain(task.id);
       expect(indexes.byPriority.top).toContain(task.id);
     });
 
@@ -66,7 +66,7 @@ describe('IndexManager', () => {
         description: 'A task to test status changes in the index system by modifying task states.',
         success_criteria: [{ id: uuidv4(), text: 'Status field changes to in_progress', completed: false }],
         deliverables: [{ id: uuidv4(), text: 'src/status.ts', completed: false }],
-        status: 'pending',
+        status: 'ready',
         priority: 'second',
       });
 
@@ -82,7 +82,7 @@ describe('IndexManager', () => {
       indexManager.updateTask(updatedTask, task, graph);
 
       const indexes = indexManager.getIndexes();
-      expect(indexes.byStatus.pending).not.toContain(task.id);
+      expect(indexes.byStatus.ready).not.toContain(task.id);
       expect(indexes.byStatus.in_progress).toContain(task.id);
     });
 
@@ -92,7 +92,7 @@ describe('IndexManager', () => {
         description: 'A task to test priority changes in the index system by modifying priority levels.',
         success_criteria: [{ id: uuidv4(), text: 'Priority field changes to top', completed: false }],
         deliverables: [{ id: uuidv4(), text: 'src/priority.ts', completed: false }],
-        status: 'not_started',
+        status: 'ready',
         priority: 'later',
       });
 
@@ -149,7 +149,7 @@ describe('IndexManager', () => {
         description: 'First task with pending status for testing index management.',
         success_criteria: [{ id: uuidv4(), text: 'First passes', completed: false }],
         deliverables: [{ id: uuidv4(), text: 'src/first.ts', completed: false }],
-        status: 'pending',
+        status: 'ready',
         priority: 'top',
       });
 
@@ -158,7 +158,7 @@ describe('IndexManager', () => {
         description: 'Second task with pending status for testing index management.',
         success_criteria: [{ id: uuidv4(), text: 'Second passes', completed: false }],
         deliverables: [{ id: uuidv4(), text: 'src/second.ts', completed: false }],
-        status: 'pending',
+        status: 'ready',
         priority: 'second',
       });
 
@@ -168,9 +168,9 @@ describe('IndexManager', () => {
       indexManager.updateTask(task2, null, graph);
 
       const indexes = indexManager.getIndexes();
-      expect(indexes.byStatus.pending).toHaveLength(2);
-      expect(indexes.byStatus.pending).toContain(task1.id);
-      expect(indexes.byStatus.pending).toContain(task2.id);
+      expect(indexes.byStatus.ready).toHaveLength(2);
+      expect(indexes.byStatus.ready).toContain(task1.id);
+      expect(indexes.byStatus.ready).toContain(task2.id);
     });
   });
 
@@ -181,7 +181,7 @@ describe('IndexManager', () => {
         description: 'First task for rebuild testing with proper initialization.',
         success_criteria: [{ id: uuidv4(), text: 'First rebuild returns correct status', completed: false }],
         deliverables: [{ id: uuidv4(), text: 'src/rebuild1.ts', completed: false }],
-        status: 'not_started',
+        status: 'ready',
         priority: 'top',
       });
 
@@ -215,7 +215,7 @@ describe('IndexManager', () => {
       indexManager.rebuildIndexes(graph['_nodes'], graph);
 
       const indexes = indexManager.getIndexes();
-      expect(indexes.byStatus.not_started).toContain(task1.id);
+      expect(indexes.byStatus.ready).toContain(task1.id);
       expect(indexes.byStatus.in_progress).toContain(task2.id);
       expect(indexes.byStatus.completed).toContain(task3.id);
 
@@ -235,7 +235,7 @@ describe('IndexManager', () => {
         description: 'A task with no connections to test orphan detection in the graph.',
         success_criteria: [{ id: uuidv4(), text: 'Orphan status detected correctly', completed: false }],
         deliverables: [{ id: uuidv4(), text: 'src/orphan.ts', completed: false }],
-        status: 'not_started',
+        status: 'ready',
         priority: 'later',
       });
 
@@ -252,7 +252,7 @@ describe('IndexManager', () => {
         description: 'Task added before rebuild to verify incremental updates.',
         success_criteria: [{ id: uuidv4(), text: 'Initial index contains task ID', completed: false }],
         deliverables: [{ id: uuidv4(), text: 'src/initial.ts', completed: false }],
-        status: 'pending',
+        status: 'ready',
         priority: 'top',
       });
 
@@ -273,7 +273,7 @@ describe('IndexManager', () => {
       indexManager.rebuildIndexes(graph["_nodes"], graph); // @ts-ignore
 
       const indexes = indexManager.getIndexes();
-      expect(indexes.byStatus.pending).toContain(task1.id);
+      expect(indexes.byStatus.ready).toContain(task1.id);
       expect(indexes.byStatus.completed).toContain(task2.id);
     });
   });
@@ -285,7 +285,7 @@ describe('IndexManager', () => {
         description: 'A pending task to test status search functionality and filtering.',
         success_criteria: [{ id: uuidv4(), text: 'Pending search returns task ID', completed: false }],
         deliverables: [{ id: uuidv4(), text: 'src/search-pending.ts', completed: false }],
-        status: 'pending',
+        status: 'ready',
         priority: 'top',
       });
 
@@ -302,7 +302,7 @@ describe('IndexManager', () => {
       graph.addNode(task2);
       indexManager.rebuildIndexes(graph["_nodes"], graph); // @ts-ignore
 
-      const pendingTasks = indexManager.getByStatus('pending');
+      const pendingTasks = indexManager.getByStatus('ready');
       const completedTasks = indexManager.getByStatus('completed');
 
       expect(pendingTasks).toEqual([task1.id]);
@@ -315,7 +315,7 @@ describe('IndexManager', () => {
         description: 'A top priority task to test priority search and filtering.',
         success_criteria: [{ id: uuidv4(), text: 'Top priority search returns task ID', completed: false }],
         deliverables: [{ id: uuidv4(), text: 'src/top.ts', completed: false }],
-        status: 'not_started',
+        status: 'ready',
         priority: 'top',
       });
 
@@ -324,7 +324,7 @@ describe('IndexManager', () => {
         description: 'A second priority task to test priority search and filtering.',
         success_criteria: [{ id: uuidv4(), text: 'Second priority search returns task ID', completed: false }],
         deliverables: [{ id: uuidv4(), text: 'src/second.ts', completed: false }],
-        status: 'not_started',
+        status: 'ready',
         priority: 'second',
       });
 
@@ -345,7 +345,7 @@ describe('IndexManager', () => {
         description: 'Add login and signup functionality with JWT tokens for secure user access.',
         success_criteria: [{ id: uuidv4(), text: 'Authentication endpoint returns 200 status', completed: false }],
         deliverables: [{ id: uuidv4(), text: 'src/auth/login.ts', completed: false }],
-        status: 'not_started',
+        status: 'ready',
         priority: 'top',
       });
 
@@ -354,7 +354,7 @@ describe('IndexManager', () => {
         description: 'Build profile management interface with settings and preferences.',
         success_criteria: [{ id: uuidv4(), text: 'Profile page renders in < 100ms', completed: false }],
         deliverables: [{ id: uuidv4(), text: 'src/profile/page.tsx', completed: false }],
-        status: 'not_started',
+        status: 'ready',
         priority: 'second',
       });
 
@@ -380,7 +380,7 @@ describe('IndexManager', () => {
         success_criteria: [{ id: uuidv4(), text: 'User model has new fields added', completed: false }],
         deliverables: [{ id: uuidv4(), text: 'src/models/user.ts', completed: false }],
         related_files: ['src/models/user.ts', 'src/types/user.ts'],
-        status: 'not_started',
+        status: 'ready',
         priority: 'top',
       });
 
@@ -390,7 +390,7 @@ describe('IndexManager', () => {
         success_criteria: [{ id: uuidv4(), text: 'Product model has pricing fields added', completed: false }],
         deliverables: [{ id: uuidv4(), text: 'src/models/product.ts', completed: false }],
         related_files: ['src/models/product.ts'],
-        status: 'not_started',
+        status: 'ready',
         priority: 'second',
       });
 
@@ -414,7 +414,7 @@ describe('IndexManager', () => {
         description: 'A task with no dependencies to test root task detection.',
         success_criteria: [{ id: uuidv4(), text: 'Root task has zero incoming edges', completed: false }],
         deliverables: [{ id: uuidv4(), text: 'src/root.ts', completed: false }],
-        status: 'not_started',
+        status: 'ready',
         priority: 'top',
       });
 
@@ -423,7 +423,7 @@ describe('IndexManager', () => {
         description: 'A task that depends on the root task for dependency testing.',
         success_criteria: [{ id: uuidv4(), text: 'Child task has one incoming edge', completed: false }],
         deliverables: [{ id: uuidv4(), text: 'src/child.ts', completed: false }],
-        status: 'not_started',
+        status: 'ready',
         priority: 'second',
       });
 
@@ -443,7 +443,7 @@ describe('IndexManager', () => {
         description: 'A task with no edges to test orphan detection in the graph.',
         success_criteria: [{ id: uuidv4(), text: 'Orphan task has zero edges total', completed: false }],
         deliverables: [{ id: uuidv4(), text: 'src/orphan.ts', completed: false }],
-        status: 'not_started',
+        status: 'ready',
         priority: 'later',
       });
 
@@ -462,7 +462,7 @@ describe('IndexManager', () => {
         description: 'First task for statistics testing with proper counters.',
         success_criteria: [{ id: uuidv4(), text: 'First statistics count matches', completed: false }],
         deliverables: [{ id: uuidv4(), text: 'src/stats1.ts', completed: false }],
-        status: 'pending',
+        status: 'ready',
         priority: 'top',
       });
 
@@ -471,7 +471,7 @@ describe('IndexManager', () => {
         description: 'Second task for statistics testing with proper counters.',
         success_criteria: [{ id: uuidv4(), text: 'Second statistics count matches', completed: false }],
         deliverables: [{ id: uuidv4(), text: 'src/stats2.ts', completed: false }],
-        status: 'pending',
+        status: 'ready',
         priority: 'top',
       });
 
@@ -491,9 +491,9 @@ describe('IndexManager', () => {
 
       const stats = indexManager.getStats();
 
-      expect(stats.statusCounts.pending).toBe(2);
+      expect(stats.statusCounts.ready).toBe(2);
       expect(stats.statusCounts.completed).toBe(1);
-      expect(stats.statusCounts.not_started).toBe(0);
+      expect(stats.statusCounts.in_review).toBe(0);
       expect(stats.statusCounts.in_progress).toBe(0);
       expect(stats.statusCounts.blocked).toBe(0);
 
@@ -510,7 +510,7 @@ describe('IndexManager', () => {
         description: 'A task to test clearing the index system by removing all tracked data.',
         success_criteria: [{ id: uuidv4(), text: 'All indexes return empty arrays', completed: false }],
         deliverables: [{ id: uuidv4(), text: 'src/clear.ts', completed: false }],
-        status: 'pending',
+        status: 'ready',
         priority: 'top',
       });
 
@@ -521,7 +521,7 @@ describe('IndexManager', () => {
       indexManager.clear();
 
       const indexes = indexManager.getIndexes();
-      expect(indexes.byStatus.pending).toEqual([]);
+      expect(indexes.byStatus.ready).toEqual([]);
       expect(indexes.byPriority.top).toEqual([]);
       expect(indexes.rootTasks).toEqual([]);
       expect(indexes.orphanTasks).toEqual([]);

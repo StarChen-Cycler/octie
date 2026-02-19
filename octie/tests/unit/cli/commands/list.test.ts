@@ -44,7 +44,7 @@ describe('list command', () => {
       id: taskIds[0],
       title: 'Implement login endpoint',
       description: 'Create login endpoint with JWT authentication for secure user access',
-      status: 'not_started',
+      status: 'ready',
       priority: 'top',
       success_criteria: [{ id: successCriteriaIds[0], text: 'Endpoint returns 200 with valid JWT', completed: false }],
       deliverables: [{ id: deliverableIds[0], text: 'login.ts', completed: false }],
@@ -132,7 +132,7 @@ describe('list command', () => {
   describe('status filtering', () => {
     it('should filter tasks by status', () => {
       const output = execSync(
-        `node ${cliPath} --project "${tempDir}" list --status not_started`,
+        `node ${cliPath} --project "${tempDir}" list --status ready`,
         { encoding: 'utf-8' }
       );
 

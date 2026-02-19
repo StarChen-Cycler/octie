@@ -49,7 +49,7 @@ describe('CLI workflow integration', () => {
         id: uuidv4(),
         title: 'Implement login endpoint',
         description: 'Create POST /auth/login endpoint that validates credentials and returns JWT token',
-        status: 'not_started',
+        status: 'ready',
         priority: 'top',
         success_criteria: [
           { id: uuidv4(), text: 'Endpoint returns 200 with valid JWT', completed: false },
@@ -70,7 +70,7 @@ describe('CLI workflow integration', () => {
         id: uuidv4(),
         title: 'Write unit tests',
         description: 'Create comprehensive unit tests for login functionality with full coverage',
-        status: 'not_started',
+        status: 'ready',
         priority: 'second',
         success_criteria: [
           { id: uuidv4(), text: 'All tests pass', completed: false },
@@ -145,7 +145,7 @@ describe('CLI workflow integration', () => {
         id: uuidv4(),
         title: 'Create button component',
         description: 'Implement button component that extends base component with button specific functionality',
-        status: 'not_started',
+        status: 'ready',
         priority: 'second',
         success_criteria: [
           { id: uuidv4(), text: 'Button component extends base', completed: false },
@@ -166,7 +166,7 @@ describe('CLI workflow integration', () => {
         id: uuidv4(),
         title: 'Create input component',
         description: 'Implement input component that extends base component with input specific functionality',
-        status: 'not_started',
+        status: 'ready',
         priority: 'second',
         success_criteria: [
           { id: uuidv4(), text: 'Input component extends base', completed: false },
@@ -268,7 +268,7 @@ describe('CLI workflow integration', () => {
           id: uuidv4(),
           title: `Create task ${i}`,
           description: `Implement task number ${i} with full functionality and comprehensive testing`,
-          status: 'not_started',
+          status: 'ready',
           priority: 'second',
           success_criteria: [
             { id: uuidv4(), text: `Task ${i} works correctly`, completed: false },
@@ -343,7 +343,7 @@ describe('CLI workflow integration', () => {
           id: uuidv4(),
           title: `Concurrent test task ${i}`,
           description: `Task for testing concurrent read operations with comprehensive testing coverage`,
-          status: 'not_started',
+          status: 'ready',
           priority: 'second',
           success_criteria: [
             { id: uuidv4(), text: `Task ${i} works`, completed: false },
@@ -386,7 +386,7 @@ describe('CLI workflow integration', () => {
           id: uuidv4(),
           title: `Write test task ${i}`,
           description: `Task for testing sequential write operations with comprehensive testing coverage`,
-          status: 'not_started',
+          status: 'ready',
           priority: 'second',
           success_criteria: [
             { id: uuidv4(), text: `Task ${i} saved`, completed: false },
@@ -423,7 +423,7 @@ describe('CLI workflow integration', () => {
           id: uuidv4(),
           title: `Create rapid cycle task ${i}`,
           description: `Implement task ${i} for testing rapid save and load cycle data integrity with comprehensive coverage and verification`,
-          status: 'not_started',
+          status: 'ready',
           priority: 'second',
           success_criteria: [
             { id: uuidv4(), text: `Task ${i} data persists after save/load cycle`, completed: false },
@@ -465,7 +465,7 @@ describe('CLI workflow integration', () => {
           id: uuidv4(),
           title: `Initial task ${i}`,
           description: `Initial task for mixed operations testing with comprehensive coverage`,
-          status: 'not_started',
+          status: 'ready',
           priority: 'second',
           success_criteria: [
             { id: uuidv4(), text: `Initial ${i} works`, completed: false },
@@ -504,7 +504,7 @@ describe('CLI workflow integration', () => {
         id: uuidv4(),
         title: 'Add mixed operation task',
         description: 'Implement task that is added during mixed read/write operations testing with comprehensive coverage',
-        status: 'not_started',
+        status: 'ready',
         priority: 'top',
         success_criteria: [
           { id: uuidv4(), text: 'Task survives concurrent read/write operations', completed: false },
@@ -538,7 +538,7 @@ describe('CLI workflow integration', () => {
         id: uuidv4(),
         title: 'Create test task',
         description: 'Test task for empty file recovery scenario with comprehensive coverage',
-        status: 'not_started',
+        status: 'ready',
         priority: 'second',
         success_criteria: [
           { id: uuidv4(), text: 'Test works', completed: false },
@@ -573,7 +573,7 @@ describe('CLI workflow integration', () => {
         id: uuidv4(),
         title: 'Create malformed test task',
         description: 'Test task for malformed JSON recovery scenario with comprehensive coverage',
-        status: 'not_started',
+        status: 'ready',
         priority: 'second',
         success_criteria: [
           { id: uuidv4(), text: 'Test works', completed: false },
@@ -681,7 +681,7 @@ describe('CLI workflow integration', () => {
         id: uuidv4(),
         title: 'Add second backup test task',
         description: 'Implement second task to trigger backup creation of first task',
-        status: 'not_started',
+        status: 'ready',
         priority: 'second',
         success_criteria: [
           { id: uuidv4(), text: 'Second task triggers backup', completed: false },
@@ -741,7 +741,7 @@ describe('CLI workflow integration', () => {
         id: uuidv4(),
         title: maxTitle,
         description: maxDescription,
-        status: 'not_started',
+        status: 'ready',
         priority: 'top',
         success_criteria: Array(10).fill(null).map((_, i) => ({
           id: uuidv4(),
@@ -785,7 +785,7 @@ describe('CLI workflow integration', () => {
         id: uuidv4(),
         title: 'Implement 用户认证功能 🔐',
         description: '创建用户认证系统，支持中文字符和表情符号 🎉 这是一个全面的测试描述文本，用于验证系统对Unicode字符的完整支持',
-        status: 'not_started',
+        status: 'ready',
         priority: 'top',
         success_criteria: [
           { id: uuidv4(), text: '认证功能返回200状态码 ✓', completed: false },
@@ -825,7 +825,7 @@ describe('CLI workflow integration', () => {
         id: uuidv4(),
         title: 'Create task A for circular test',
         description: 'Task A for circular dependency detection testing with comprehensive coverage',
-        status: 'not_started',
+        status: 'ready',
         priority: 'second',
         success_criteria: [
           { id: uuidv4(), text: 'A works', completed: false },
@@ -846,7 +846,7 @@ describe('CLI workflow integration', () => {
         id: uuidv4(),
         title: 'Create task B for circular test',
         description: 'Task B for circular dependency detection testing with comprehensive coverage',
-        status: 'not_started',
+        status: 'ready',
         priority: 'second',
         success_criteria: [
           { id: uuidv4(), text: 'B works', completed: false },
@@ -867,7 +867,7 @@ describe('CLI workflow integration', () => {
         id: uuidv4(),
         title: 'Create task C for circular test',
         description: 'Task C for circular dependency detection testing with comprehensive coverage',
-        status: 'not_started',
+        status: 'ready',
         priority: 'second',
         success_criteria: [
           { id: uuidv4(), text: 'C works', completed: false },
@@ -954,7 +954,7 @@ describe('CLI workflow integration', () => {
           id: uuidv4(),
           title: 'Add special path task',
           description: 'Implement task for testing special characters in file paths with comprehensive coverage',
-          status: 'not_started',
+          status: 'ready',
           priority: 'second',
           success_criteria: [
             { id: uuidv4(), text: 'System handles paths with special characters', completed: false },
@@ -1070,7 +1070,7 @@ describe('CLI workflow integration', () => {
         id: uuidv4(),
         title: 'Create second task',
         description: 'Second task description for testing backup functionality and data persistence',
-        status: 'not_started',
+        status: 'ready',
         priority: 'second',
         success_criteria: [
           { id: uuidv4(), text: 'Complete', completed: false },

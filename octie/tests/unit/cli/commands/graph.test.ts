@@ -74,7 +74,7 @@ describe('graph command', () => {
       id: uuidv4(),
       title: 'Create orphan test node for isolation testing',
       description: 'Create an orphan task node with no dependencies to test graph isolation and orphan detection',
-      status: 'not_started',
+      status: 'ready',
       priority: 'later',
       success_criteria: [{ id: uuidv4(), text: 'Node has no edges', completed: false }],
       deliverables: [{ id: uuidv4(), text: 'src/graph/orphan.ts', completed: false }],

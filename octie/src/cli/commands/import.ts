@@ -83,12 +83,17 @@ function extractStatus(lines: string[], startIndex: number): TaskStatus {
     if (statusMatch && statusMatch[1]) {
       // Normalize: convert spaces to underscores, trim
       const status = statusMatch[1].toLowerCase().trim().replace(/\s+/g, '_');
-      if (['not_started', 'pending', 'in_progress', 'completed', 'blocked'].includes(status)) {
+      // Support both old and new status values for backward compatibility
+      if (['ready', 'in_progress', 'in_review', 'completed', 'blocked'].includes(status)) {
         return status as TaskStatus;
+      }
+      // Migrate old statuses to new ones
+      if (status === 'not_started' || status === 'pending') {
+        return 'ready';
       }
     }
   }
-  return 'not_started';
+  return 'ready';
 }
 
 /**

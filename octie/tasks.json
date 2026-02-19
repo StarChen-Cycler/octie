@@ -1,36 +1,38 @@
 {
   "$schema": "https://octie.dev/schemas/project-v1.json",
   "nodes": {
-    "d6f91a97-19c7-434b-a0c8-fc1eab705064": {
-      "id": "d6f91a97-19c7-434b-a0c8-fc1eab705064",
+    "f33d62f6-0fda-4e94-94bb-515325cbe8ac": {
+      "id": "f33d62f6-0fda-4e94-94bb-515325cbe8ac",
       "title": "Implement login",
       "description": "Create login endpoint with JWT authentication for secure user access",
       "status": "in_progress",
       "priority": "top",
       "success_criteria": [
         {
-          "id": "0dba1af8-75f1-4166-85c2-71c88c6463bb",
+          "id": "7241bdb6-2244-44fc-b3a9-dfbc22fbfa70",
           "text": "Login endpoint returns JWT",
           "completed": true
         },
         {
-          "id": "e86441e9-07f7-4711-8c22-6798e26db9b6",
+          "id": "23e7195d-7f03-4296-a549-78a29b236871",
           "text": "Invalid credentials return 401",
           "completed": false
         }
       ],
       "deliverables": [
         {
-          "id": "01c06738-d7c8-40c8-bafc-a4cfbac4856e",
+          "id": "a9e44a10-d340-4f60-ba89-c61ec9e69a7c",
           "text": "login.ts",
           "completed": true
         },
         {
-          "id": "a7f099bd-e21e-49da-8ef0-b1d06a20a9b7",
+          "id": "95aee97b-272a-4adc-bee0-8c861c5842f5",
           "text": "login.test.ts",
           "completed": false
         }
       ],
+      "need_fix": [],
+      "assignee": null,
       "blockers": [],
       "dependencies": "",
       "sub_items": [],
@@ -39,22 +41,22 @@
       ],
       "notes": "Use bcrypt",
       "c7_verified": [],
-      "created_at": "2026-02-17T16:17:04.437Z",
-      "updated_at": "2026-02-17T16:17:04.437Z",
+      "created_at": "2026-02-19T19:01:38.372Z",
+      "updated_at": "2026-02-19T19:01:38.372Z",
       "completed_at": null,
       "edges": []
     }
   },
   "outgoingEdges": {
-    "d6f91a97-19c7-434b-a0c8-fc1eab705064": []
+    "f33d62f6-0fda-4e94-94bb-515325cbe8ac": []
   },
   "incomingEdges": {
-    "d6f91a97-19c7-434b-a0c8-fc1eab705064": []
+    "f33d62f6-0fda-4e94-94bb-515325cbe8ac": []
   },
   "metadata": {
     "project_name": "test-project",
     "version": "1.0.0",
-    "created_at": "2026-02-17T16:17:04.431Z",
-    "updated_at": "2026-02-17T16:17:05.172Z"
+    "created_at": "2026-02-19T19:01:38.365Z",
+    "updated_at": "2026-02-19T19:01:39.145Z"
   }
 }

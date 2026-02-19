@@ -48,7 +48,7 @@ describe('import command', () => {
           id: taskId,
           title: 'Create imported test task from JSON',
           description: 'Create a test task by importing from JSON file to test the import functionality',
-          status: 'not_started',
+          status: 'ready',
           priority: 'second',
           success_criteria: [
             { id: criterionId, text: 'Import command loads task successfully', completed: false },
@@ -342,7 +342,7 @@ This is a test task for markdown import.
 
       const task = graph.getAllTasks()[0];
       expect(task.title).toBe('Create test task for markdown import');
-      expect(task.status).toBe('not_started');
+      expect(task.status).toBe('ready');
       expect(task.priority).toBe('top');
       expect(task.success_criteria.length).toBe(3);
       expect(task.deliverables.length).toBe(2);
@@ -510,7 +510,7 @@ Second task that is already completed and has sufficient description length for 
 
       const task1 = graph.getNode('task-001');
       expect(task1).toBeDefined();
-      expect(task1?.status).toBe('not_started');
+      expect(task1?.status).toBe('ready');
 
       const task2 = graph.getNode('task-002');
       expect(task2).toBeDefined();
@@ -774,7 +774,7 @@ Task with explicit format specification to test that the --format md flag works 
         id: 'task-notstarted-roundtrip',
         title: 'Implement pending notification feature',
         description: 'Task with no items completed to verify the not_started status is preserved through the export/import roundtrip process.',
-        status: 'not_started',
+        status: 'ready',
         priority: 'later',
         success_criteria: [
           { id: sc1, text: 'Nothing done yet', completed: false },
@@ -821,7 +821,7 @@ Task with explicit format specification to test that the --format md flag works 
       const importedTask = importedGraph.getNode('task-notstarted-roundtrip');
 
       expect(importedTask).toBeDefined();
-      expect(importedTask?.status).toBe('not_started');
+      expect(importedTask?.status).toBe('ready');
       expect(importedTask?.success_criteria[0].completed).toBe(false);
       expect(importedTask?.deliverables[0].completed).toBe(false);
 
@@ -868,7 +868,7 @@ Task with explicit format specification to test that the --format md flag works 
         id: 'multi-task-003',
         title: 'Implement pending feature C',
         description: 'Third task that is not started for multi-task roundtrip testing with sufficient description length.',
-        status: 'not_started',
+        status: 'ready',
         success_criteria: [{ id: uuidv4(), text: 'Feature C not started', completed: false }],
         deliverables: [{ id: uuidv4(), text: 'src/feature-c.ts', completed: false, file_path: 'src/feature-c.ts' }],
         blockers: [],
@@ -912,7 +912,7 @@ Task with explicit format specification to test that the --format md flag works 
       expect(imported2?.deliverables[1].completed).toBe(false);
 
       const imported3 = importedGraph.getNode('multi-task-003');
-      expect(imported3?.status).toBe('not_started');
+      expect(imported3?.status).toBe('ready');
       expect(imported3?.success_criteria[0].completed).toBe(false);
 
       // Clean up

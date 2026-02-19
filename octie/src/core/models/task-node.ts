@@ -19,6 +19,7 @@ import type {
   SuccessCriterion,
   Deliverable,
   C7Verification,
+  FixItem,
 } from '../../types/index.js';
 import {
   ValidationError,
@@ -438,14 +439,26 @@ export function validateAtomicTask(taskData: {
 }
 
 /**
- * Valid status transitions
+ * Valid status transitions for the new status model
+ *
+ * Most transitions are AUTOMATIC via calculateStatus():
+ * - ready → in_progress (when item checked or need_fix added)
+ * - in_progress → in_review (when all criteria + deliverables + need_fix complete)
+ * - ANY → blocked (when blocker added)
+ * - blocked → ready (when all blockers resolved)
+ * - in_review → in_progress (when need_fix added)
+ * - completed → in_progress (when need_fix added - regression)
+ *
+ * MANUAL TRANSITIONS:
+ * - in_review → completed (reviewer approval via approve() method)
+ * - in_progress → completed (backward compatibility, prefer approve() for new code)
  */
 const VALID_TRANSITIONS: Record<TaskStatus, TaskStatus[]> = {
-  not_started: ['pending', 'in_progress', 'blocked'],
-  pending: ['in_progress', 'blocked', 'not_started'],
-  in_progress: ['completed', 'blocked', 'pending'],
-  completed: ['in_progress', 'pending'], // Can reopen completed tasks
-  blocked: ['pending', 'in_progress', 'not_started'],
+  ready: ['in_progress', 'blocked'],
+  in_progress: ['in_review', 'completed', 'blocked'],
+  in_review: ['completed', 'in_progress', 'blocked'],
+  completed: ['in_progress', 'blocked'],
+  blocked: ['ready'],
 };
 
 /**
@@ -469,6 +482,10 @@ export class TaskNode implements TaskNodeType {
   priority: TaskPriority;
   success_criteria: SuccessCriterion[];
   deliverables: Deliverable[];
+  /** Blocking issues that must be resolved before review (equal importance to criteria/deliverables) */
+  need_fix: FixItem[];
+  /** Optional agent/session that owns this task (decoupled from status) */
+  assignee: string | null;
   blockers: string[];
   /** Explanatory text describing WHY this task depends on its blockers */
   dependencies: string;
@@ -521,6 +538,8 @@ export class TaskNode implements TaskNodeType {
     priority?: TaskPriority;
     success_criteria?: SuccessCriterion[];
     deliverables?: Deliverable[];
+    need_fix?: FixItem[];
+    assignee?: string | null;
     blockers?: string[];
     /** Explanatory text describing WHY this task depends on its blockers */
     dependencies?: string;
@@ -613,10 +632,12 @@ export class TaskNode implements TaskNodeType {
     this.id = data.id || uuidv4();
     this.title = data.title.trim();
     this.description = data.description.trim();
-    this.status = data.status || 'not_started';
+    this.status = data.status || 'ready';
     this.priority = data.priority || 'second';
     this.success_criteria = [...(data.success_criteria || [])];
     this.deliverables = [...(data.deliverables || [])];
+    this.need_fix = [...(data.need_fix || [])];
+    this.assignee = data.assignee ?? null;
     this.blockers = [...(data.blockers || [])];
     this.dependencies = data.dependencies || '';
     this.sub_items = [...(data.sub_items || [])];
@@ -670,6 +691,11 @@ export class TaskNode implements TaskNodeType {
    * @param status - New status
    */
   setStatus(status: TaskStatus): void {
+    // Allow setting to same status (no-op)
+    if (status === this.status) {
+      return;
+    }
+
     // Validate transition
     const allowedTransitions = VALID_TRANSITIONS[this.status];
     if (!allowedTransitions.includes(status)) {
@@ -792,6 +818,50 @@ export class TaskNode implements TaskNodeType {
     deliverable.completed = false;
     this._touch();
     this._checkCompletion();
+  }
+
+  /**
+   * Add a need_fix item
+   * Need_fix items are blocking issues that must be resolved before review
+   * @param text - Description of what needs to be fixed
+   * @param options - Optional file_path and source
+   */
+  addNeedFix(text: string, options?: { file_path?: string; source?: FixItem['source'] }): void {
+    const fixItem: FixItem = {
+      id: uuidv4(),
+      text: text.trim(),
+      completed: false,
+      file_path: options?.file_path,
+      added_at: new Date().toISOString(),
+      source: options?.source,
+    };
+    this.need_fix.push(fixItem);
+    this._touch();
+    this._checkCompletion();
+  }
+
+  /**
+   * Mark a need_fix item as complete
+   * @param fixId - ID of the need_fix item to mark complete
+   */
+  completeNeedFix(fixId: string): void {
+    const fixItem = this.need_fix.find(f => f.id === fixId);
+    if (!fixItem) {
+      throw new ValidationError(`Need_fix item with ID '${fixId}' not found.`, 'need_fix');
+    }
+    fixItem.completed = true;
+    this._touch();
+    this._checkCompletion();
+  }
+
+  /**
+   * Set the assignee for this task
+   * Assignee is decoupled from status - just a placeholder for future team management
+   * @param agentId - Agent/session ID, or null to clear
+   */
+  setAssignee(agentId: string | null): void {
+    this.assignee = agentId;
+    this._touch();
   }
 
   /**
@@ -982,19 +1052,21 @@ export class TaskNode implements TaskNodeType {
   }
 
   /**
-   * Check if the task is complete
-   * @returns True if all success criteria and deliverables are complete
+   * Check if the task is complete (ready for review)
+   * All three must be complete: success_criteria, deliverables, and need_fix
+   * @returns True if all success criteria, deliverables, and need_fix items are complete
    * @private
    */
   private _isComplete(): boolean {
     const allCriteriaComplete = this.success_criteria.every(c => c.completed);
     const allDeliverablesComplete = this.deliverables.every(d => d.completed);
-    return allCriteriaComplete && allDeliverablesComplete;
+    const allNeedFixComplete = this.need_fix.every(f => f.completed);
+    return allCriteriaComplete && allDeliverablesComplete && allNeedFixComplete;
   }
 
   /**
    * Update completed_at timestamp and status based on completion state
-   * Called automatically after any change to success_criteria or deliverables
+   * Called automatically after any change to success_criteria, deliverables, or need_fix
    * @private
    */
   private _checkCompletion(): void {
@@ -1007,9 +1079,9 @@ export class TaskNode implements TaskNodeType {
       // Not all complete but timestamp is set - clear it
       this._completed_at = null;
 
-      // Auto-reset status from 'completed' to 'in_progress' when task becomes incomplete
-      // This happens when a new criterion/deliverable is added to a completed task
-      if (this.status === 'completed') {
+      // Auto-reset status from 'completed' or 'in_review' to 'in_progress' when task becomes incomplete
+      // This happens when a new criterion/deliverable/need_fix is added
+      if (this.status === 'completed' || this.status === 'in_review') {
         this.status = 'in_progress';
       }
     }
@@ -1025,6 +1097,97 @@ export class TaskNode implements TaskNodeType {
   }
 
   /**
+   * Calculate the derived status based on task state
+   *
+   * Status is DERIVED from state, not set directly:
+   * Priority order: blocked > in_review > in_progress > ready
+   *
+   * Rules:
+   * 1. Has unresolved blockers → 'blocked'
+   * 2. All criteria + deliverables + need_fix complete → 'in_review'
+   * 3. Any item checked OR need_fix exists → 'in_progress'
+   * 4. Default → 'ready'
+   *
+   * NOTE: This is a pure calculation function. It does NOT modify status.
+   * Use recalculateStatus() to apply the calculated status.
+   *
+   * @returns The calculated status based on current task state
+   */
+  calculateStatus(): TaskStatus {
+    // Rule 1: Check if blocked (highest priority)
+    // Note: This only checks if blockers exist, not if they're resolved
+    // The caller (graph) is responsible for checking blocker status
+    if (this.blockers.length > 0) {
+      return 'blocked';
+    }
+
+    // Rule 2: Check if ready for review (all items complete)
+    const allCriteriaComplete = this.success_criteria.every(c => c.completed);
+    const allDeliverablesComplete = this.deliverables.every(d => d.completed);
+    const allNeedFixComplete = this.need_fix.every(f => f.completed);
+    const allComplete = allCriteriaComplete && allDeliverablesComplete && allNeedFixComplete;
+
+    if (allComplete) {
+      return 'in_review';
+    }
+
+    // Rule 3: Check if work has started
+    const anyCriteriaChecked = this.success_criteria.some(c => c.completed);
+    const anyDeliverableChecked = this.deliverables.some(d => d.completed);
+    const hasNeedFix = this.need_fix.length > 0;
+
+    if (anyCriteriaChecked || anyDeliverableChecked || hasNeedFix) {
+      return 'in_progress';
+    }
+
+    // Rule 4: Default - ready for work
+    return 'ready';
+  }
+
+  /**
+   * Recalculate and update status based on task state
+   * This is the main method to call when task state changes
+   *
+   * NOTE: This will NOT change status from 'completed' (the only manual transition)
+   * Use approve() method to transition from in_review to completed
+   *
+   * @returns The new status (may be same as current)
+   */
+  recalculateStatus(): TaskStatus {
+    // Don't auto-change from 'completed' - that requires manual approval
+    if (this.status === 'completed') {
+      return this.status;
+    }
+
+    const newStatus = this.calculateStatus();
+
+    // Only update if status actually changed
+    if (newStatus !== this.status) {
+      this.status = newStatus;
+      this._touch();
+    }
+
+    return this.status;
+  }
+
+  /**
+   * Approve a task that is in review
+   * This is the ONLY manual status transition in the new system
+   *
+   * @throws {ValidationError} If task is not in 'in_review' status
+   */
+  approve(): void {
+    if (this.status !== 'in_review') {
+      throw new ValidationError(
+        `Cannot approve task in '${this.status}' status. Task must be in 'in_review' status.`,
+        'status'
+      );
+    }
+    this.status = 'completed';
+    this._touch();
+  }
+
+  /**
    * Serialize the task node to plain object
    * Useful for JSON serialization
    */
@@ -1037,6 +1200,8 @@ export class TaskNode implements TaskNodeType {
       priority: this.priority,
       success_criteria: this.success_criteria,
       deliverables: this.deliverables,
+      need_fix: this.need_fix,
+      assignee: this.assignee,
       blockers: this.blockers,
       dependencies: this.dependencies,
       sub_items: this.sub_items,
@@ -1056,14 +1221,23 @@ export class TaskNode implements TaskNodeType {
    * Skips atomic validation since task was already validated when created
    */
   static fromJSON(data: TaskNodeType): TaskNode {
+    // Migrate old statuses to new ones (handle legacy data with old status values)
+    const statusStr = data.status as string;
+    let migratedStatus: TaskStatus = data.status;
+    if (statusStr === 'not_started' || statusStr === 'pending') {
+      migratedStatus = 'ready';
+    }
+
     const node = new TaskNode({
       id: data.id,
       title: data.title,
       description: data.description,
-      status: data.status,
+      status: migratedStatus,
       priority: data.priority,
       success_criteria: data.success_criteria,
       deliverables: data.deliverables,
+      need_fix: data.need_fix || [], // Default to empty array for legacy data
+      assignee: data.assignee ?? null, // Default to null for legacy data
       blockers: data.blockers,
       dependencies: data.dependencies,
       sub_items: data.sub_items,

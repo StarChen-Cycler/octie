@@ -26,7 +26,7 @@ function createTestTask(id: string, index: number): TaskNode {
     id,
     title: `Implement feature ${index}`,
     description: `This is a detailed description for task ${index}. It provides comprehensive information about what needs to be implemented and how to verify the implementation is correct.`,
-    status: index % 5 === 0 ? 'completed' : index % 3 === 0 ? 'in_progress' : 'pending',
+    status: index % 5 === 0 ? 'completed' : index % 3 === 0 ? 'in_progress' : 'ready',
     priority: index % 10 === 0 ? 'top' : index % 5 === 0 ? 'second' : 'later',
     success_criteria: [
       { id: `${id}-sc1`, text: 'Unit tests pass with 100% coverage', completed: index % 5 === 0 },

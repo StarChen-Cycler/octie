@@ -44,7 +44,7 @@ describe('wire command', () => {
       id: taskAId,
       title: 'Implement API specification',
       description: 'Create the API specification document for the authentication endpoints with all request and response schemas.',
-      status: 'not_started',
+      status: 'ready',
       priority: 'top',
       success_criteria: [
         { id: uuidv4(), text: 'All endpoints documented with OpenAPI spec', completed: false },
@@ -68,7 +68,7 @@ describe('wire command', () => {
       id: taskCId,
       title: 'Build frontend login page',
       description: 'Create the login page component with form validation and authentication state management.',
-      status: 'not_started',
+      status: 'ready',
       priority: 'top',
       success_criteria: [
         { id: uuidv4(), text: 'Login form validates email and password', completed: false },
@@ -95,7 +95,7 @@ describe('wire command', () => {
       id: taskBId,
       title: 'Create TypeScript data models',
       description: 'Generate TypeScript interfaces from the API specification for type-safe frontend development.',
-      status: 'not_started',
+      status: 'ready',
       priority: 'top',
       success_criteria: [
         { id: uuidv4(), text: 'All API types have corresponding TS interfaces', completed: false },
@@ -119,7 +119,7 @@ describe('wire command', () => {
       id: taskDId,
       title: 'Write documentation',
       description: 'Write user documentation for the application features.',
-      status: 'not_started',
+      status: 'ready',
       priority: 'later',
       success_criteria: [
         { id: uuidv4(), text: 'All features documented', completed: false },
@@ -263,7 +263,7 @@ describe('wire command', () => {
         id: taskEId,
         title: 'Implement user dashboard component',
         description: 'A test task that blocks on B for testing duplicate edge detection in the wire command.',
-        status: 'not_started',
+        status: 'ready',
         priority: 'top',
         success_criteria: [{ id: uuidv4(), text: 'Dashboard renders user data', completed: false }],
         deliverables: [{ id: uuidv4(), text: 'src/components/Dashboard.tsx', completed: false }],

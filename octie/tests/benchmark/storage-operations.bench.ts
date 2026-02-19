@@ -24,8 +24,8 @@ import { IndexManager } from '../../src/core/storage/indexer.js';
  * Helper to create a valid task for testing
  */
 function createTestTask(id: string, index: number): TaskNode {
-  const statuses: Array<'not_started' | 'pending' | 'in_progress' | 'completed' | 'blocked'> =
-    ['not_started', 'pending', 'in_progress', 'completed', 'blocked'];
+  const statuses: Array<'ready' | 'ready' | 'in_progress' | 'completed' | 'blocked'> =
+    ['ready', 'ready', 'in_progress', 'completed', 'blocked'];
   const priorities: Array<'top' | 'second' | 'later'> = ['top', 'second', 'later'];
 
   return new TaskNode({
@@ -202,19 +202,19 @@ describe('Index Operations - Filtering', () => {
   });
 
   bench('getByStatus - 100 tasks', () => {
-    smallIndexer.getByStatus('pending');
+    smallIndexer.getByStatus('ready');
     smallIndexer.getByStatus('completed');
     smallIndexer.getByStatus('in_progress');
   });
 
   bench('getByStatus - 500 tasks', () => {
-    mediumIndexer.getByStatus('pending');
+    mediumIndexer.getByStatus('ready');
     mediumIndexer.getByStatus('completed');
     mediumIndexer.getByStatus('in_progress');
   });
 
   bench('getByStatus - 1000 tasks', () => {
-    largeIndexer.getByStatus('pending');
+    largeIndexer.getByStatus('ready');
     largeIndexer.getByStatus('completed');
     largeIndexer.getByStatus('in_progress');
   });

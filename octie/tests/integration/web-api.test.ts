@@ -65,7 +65,7 @@ describe('Web API Integration Tests', () => {
     title: string;
     description: string;
     priority: 'top' | 'second' | 'later';
-    status: 'not_started' | 'pending' | 'in_progress' | 'completed' | 'blocked';
+    status: 'ready' | 'in_review' | 'in_progress' | 'completed' | 'blocked';
   }> = {}): TaskNode {
     const id = overrides.id || uuidv4();
     return new TaskNode({
@@ -400,6 +400,7 @@ describe('Web API Integration Tests', () => {
             successCriteria: [{ text: 'Test criterion for validation' }],
             deliverables: [{ text: 'test.ts' }],
             blockers: [fakeBlockerId],
+            dependencies: 'Needs output from this task',
           })
           .expect(400);
 
@@ -443,7 +444,7 @@ describe('Web API Integration Tests', () => {
       });
 
       it('should update task status', async () => {
-        const task = createTestTask({ status: 'not_started' });
+        const task = createTestTask({ status: 'ready' });
         graph.addNode(task);
         await storage.save(graph);
 
@@ -699,8 +700,8 @@ describe('Web API Integration Tests', () => {
           .expect(200);
 
         expect(response.body.success).toBe(true);
-        expect(response.body.data.taskCount).toBe(2);
-        expect(response.body.data.tasks).toBeDefined();
+        expect(response.body.data.nodes).toBeDefined();
+        expect(response.body.data.nodes.length).toBe(2);
         expect(response.body.data.outgoingEdges).toBeDefined();
         expect(response.body.data.incomingEdges).toBeDefined();
         expect(response.body.data.metadata).toBeDefined();
@@ -871,7 +872,7 @@ describe('Web API Integration Tests', () => {
       it('should return project statistics', async () => {
         const task1 = createTestTask({ status: 'completed', priority: 'top' });
         const task2 = createTestTask({ status: 'in_progress', priority: 'second' });
-        const task3 = createTestTask({ status: 'not_started', priority: 'later' });
+        const task3 = createTestTask({ status: 'ready', priority: 'later' });
 
         graph.addNode(task1);
         graph.addNode(task2);
@@ -886,7 +887,7 @@ describe('Web API Integration Tests', () => {
         expect(response.body.data.tasks.total).toBe(3);
         expect(response.body.data.tasks.statusCounts.completed).toBe(1);
         expect(response.body.data.tasks.statusCounts.in_progress).toBe(1);
-        expect(response.body.data.tasks.statusCounts.not_started).toBe(1);
+        expect(response.body.data.tasks.statusCounts.ready).toBe(1);
         expect(response.body.data.tasks.priorityCounts.top).toBe(1);
         expect(response.body.data.project.name).toBe('test-api-project');
       });

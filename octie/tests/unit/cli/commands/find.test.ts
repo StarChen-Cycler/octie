@@ -298,12 +298,12 @@ describe('find command', () => {
   describe('--status and --priority filters', () => {
     it('should filter by status', () => {
       const output = execSync(
-        `node "${cliPath}" find --status not_started --project "${tempDir}" --format json`,
+        `node "${cliPath}" find --status ready --project "${tempDir}" --format json`,
         { encoding: 'utf-8' }
       );
 
       const tasks = JSON.parse(output);
-      // All tasks are not_started by default
+      // All tasks are ready by default
       expect(tasks.length).toBe(4);
     });
 

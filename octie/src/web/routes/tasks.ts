@@ -42,7 +42,8 @@ const TaskCreateSchema = z.object({
   })).min(1, 'At least one deliverable is required')
     .max(5, 'Cannot have more than 5 deliverables'),
   priority: z.enum(['top', 'second', 'later']).optional().default('second'),
-  status: z.enum(['not_started', 'pending', 'in_progress', 'completed', 'blocked']).optional().default('not_started'),
+  // Status is now derived from task state, but we allow it for backward compatibility
+  status: z.enum(['ready', 'in_progress', 'in_review', 'completed', 'blocked']).optional(),
   blockers: z.array(z.string().uuid()).default([]),
   dependencies: z.string().default(''), // Explanatory text (twin to blockers)
   relatedFiles: z.array(z.string()).default([]),
@@ -66,7 +67,7 @@ const TaskUpdateSchema = z.object({
     .min(50, 'Description must be at least 50 characters')
     .max(10000, 'Description must be 10000 characters or less')
     .optional(),
-  status: z.enum(['not_started', 'pending', 'in_progress', 'completed', 'blocked']).optional(),
+  status: z.enum(['ready', 'in_progress', 'in_review', 'completed', 'blocked']).optional(),
   priority: z.enum(['top', 'second', 'later']).optional(),
   addSuccessCriterion: z.string().optional(),
   completeCriterion: z.string().uuid().optional(),

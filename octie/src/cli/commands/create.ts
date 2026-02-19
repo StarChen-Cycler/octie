@@ -233,7 +233,7 @@ export const createCommand = new Command('create')
         id: taskId,
         title: options.title.trim(),
         description: options.description.trim(),
-        status: 'not_started' as const,
+        // Status is now derived by TaskNode constructor (defaults to 'ready' if no blockers)
         priority: options.priority as 'top' | 'second' | 'later',
         success_criteria: successCriteria.map((text: string) => ({
           id: uuidv4(),

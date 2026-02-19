@@ -188,11 +188,14 @@ export function formatTaskId(id: string): string {
  */
 export function formatStatus(status: string): string {
   const statusColors: Record<string, (msg: string) => string> = {
-    not_started: chalk.gray,
-    pending: chalk.yellow,
+    ready: chalk.cyan,
     in_progress: chalk.blue,
+    in_review: chalk.magenta,
     completed: chalk.green,
     blocked: chalk.red,
+    // Legacy status support (for backward compatibility with old data)
+    not_started: chalk.gray,
+    pending: chalk.yellow,
   };
 
   const colorFn = statusColors[status] || chalk.white;

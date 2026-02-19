@@ -47,7 +47,7 @@ describe('create command', () => {
         id: taskId,
         title: 'Implement login endpoint',
         description: 'Create POST /auth/login endpoint that validates credentials and returns JWT token',
-        status: 'not_started' as const,
+        status: 'ready' as const,
         priority: 'second' as const,
         success_criteria: [
           { id: uuidv4(), text: 'Endpoint returns 200 with valid JWT', completed: false },
@@ -70,7 +70,7 @@ describe('create command', () => {
 
       const retrieved = graph.getNode(taskId);
       expect(retrieved?.title).toBe('Implement login endpoint');
-      expect(retrieved?.status).toBe('not_started');
+      expect(retrieved?.status).toBe('ready');
       expect(retrieved?.priority).toBe('second');
     });
 
@@ -80,7 +80,7 @@ describe('create command', () => {
         id: taskId,
         title: 'Add password hashing',
         description: 'Create hashPassword function using bcrypt with 10 salt rounds for secure password storage',
-        status: 'not_started' as const,
+        status: 'ready' as const,
         priority: 'second' as const,
         success_criteria: [
           { id: uuidv4(), text: 'hashPassword function returns bcrypt hash', completed: false },
@@ -109,7 +109,7 @@ describe('create command', () => {
         id: taskId,
         title: 'Write unit tests',
         description: 'Create comprehensive unit tests for User model with full coverage of all methods and edge cases',
-        status: 'not_started' as const,
+        status: 'ready' as const,
         priority: 'second' as const,
         success_criteria: [
           { id: uuidv4(), text: 'All tests pass', completed: false },
@@ -138,7 +138,7 @@ describe('create command', () => {
         id: uuidv4(),
         title: 'Fix stuff',
         description: 'Fix various issues in the codebase to improve overall quality and performance',
-        status: 'not_started' as const,
+        status: 'ready' as const,
         priority: 'second' as const,
         success_criteria: [
           { id: uuidv4(), text: 'Issues are fixed', completed: false },
@@ -163,7 +163,7 @@ describe('create command', () => {
         id: uuidv4(),
         title: 'Implement login',
         description: 'Add login',
-        status: 'not_started' as const,
+        status: 'ready' as const,
         priority: 'second' as const,
         success_criteria: [
           { id: uuidv4(), text: 'Login works', completed: false },
@@ -194,7 +194,7 @@ describe('create command', () => {
         id: uuidv4(),
         title: 'Too many criteria',
         description: 'This task has too many success criteria and should be split into smaller tasks',
-        status: 'not_started' as const,
+        status: 'ready' as const,
         priority: 'second' as const,
         success_criteria: criteria,
         deliverables: [
@@ -223,7 +223,7 @@ describe('create command', () => {
         id: uuidv4(),
         title: 'Too many deliverables',
         description: 'This task has too many deliverables and should be split into smaller tasks',
-        status: 'not_started' as const,
+        status: 'ready' as const,
         priority: 'second' as const,
         success_criteria: [
           { id: uuidv4(), text: 'All deliverables complete', completed: false },
@@ -246,7 +246,7 @@ describe('create command', () => {
         id: uuidv4(),
         title: 'Make code better',
         description: 'Improve the code quality significantly through refactoring and optimization',
-        status: 'not_started' as const,
+        status: 'ready' as const,
         priority: 'second' as const,
         success_criteria: [
           { id: uuidv4(), text: 'Code is good', completed: false },
@@ -271,7 +271,7 @@ describe('create command', () => {
         id: uuidv4(),
         title: 'Implement login endpoint with JWT',
         description: 'Create POST /auth/login endpoint that accepts username/password and returns JWT token with 1 hour expiration',
-        status: 'not_started' as const,
+        status: 'ready' as const,
         priority: 'second' as const,
         success_criteria: [
           { id: uuidv4(), text: 'Endpoint returns 200 with valid JWT on correct credentials', completed: false },
@@ -302,7 +302,7 @@ describe('create command', () => {
         id: uuidv4(),
         title: '',
         description: 'Valid description that is long enough to meet minimum requirements',
-        status: 'not_started' as const,
+        status: 'ready' as const,
         priority: 'second' as const,
         success_criteria: [
           { id: uuidv4(), text: 'Criterion', completed: false },
@@ -327,7 +327,7 @@ describe('create command', () => {
         id: uuidv4(),
         title: 'Implement feature',
         description: '',
-        status: 'not_started' as const,
+        status: 'ready' as const,
         priority: 'second' as const,
         success_criteria: [
           { id: uuidv4(), text: 'Criterion', completed: false },
@@ -355,7 +355,7 @@ describe('create command', () => {
         id: taskId,
         title: 'Critical fix',
         description: 'Fix critical security vulnerability in authentication system immediately',
-        status: 'not_started' as const,
+        status: 'ready' as const,
         priority: 'top' as const,
         success_criteria: [
           { id: uuidv4(), text: 'Vulnerability fixed', completed: false },
@@ -381,7 +381,7 @@ describe('create command', () => {
         id: uuidv4(),
         title: 'Create test task',
         description: 'Valid description that is long enough to meet minimum requirements for testing',
-        status: 'not_started' as const,
+        status: 'ready' as const,
         priority: 'second' as const,
         success_criteria: [
           { id: uuidv4(), text: 'Criterion', completed: false },
@@ -413,7 +413,7 @@ describe('create command', () => {
         id: blockerId,
         title: 'Implement blocker task',
         description: 'Valid description that is long enough to meet minimum requirements',
-        status: 'not_started' as const,
+        status: 'ready' as const,
         priority: 'top' as const,
         success_criteria: [
           { id: uuidv4(), text: 'Blocker complete', completed: false },
@@ -438,7 +438,7 @@ describe('create command', () => {
         id: taskId,
         title: 'Create dependent task',
         description: 'Valid description that is long enough to meet minimum requirements',
-        status: 'not_started' as const,
+        status: 'ready' as const,
         priority: 'second' as const,
         success_criteria: [
           { id: uuidv4(), text: 'Dependent complete', completed: false },
@@ -469,7 +469,7 @@ describe('create command', () => {
         id: blocker1Id,
         title: 'Implement first blocker task',
         description: 'Valid description that is long enough to meet minimum requirements',
-        status: 'not_started' as const,
+        status: 'ready' as const,
         priority: 'top' as const,
         success_criteria: [
           { id: uuidv4(), text: 'Complete', completed: false },
@@ -490,7 +490,7 @@ describe('create command', () => {
         id: blocker2Id,
         title: 'Implement second blocker task',
         description: 'Valid description that is long enough to meet minimum requirements',
-        status: 'not_started' as const,
+        status: 'ready' as const,
         priority: 'top' as const,
         success_criteria: [
           { id: uuidv4(), text: 'Complete', completed: false },
@@ -514,7 +514,7 @@ describe('create command', () => {
         id: taskId,
         title: 'Create dependent task',
         description: 'Valid description that is long enough to meet minimum requirements',
-        status: 'not_started' as const,
+        status: 'ready' as const,
         priority: 'second' as const,
         success_criteria: [
           { id: uuidv4(), text: 'Dependent complete', completed: false },
@@ -543,7 +543,7 @@ describe('create command', () => {
         id: taskId,
         title: 'Implement login endpoint',
         description: 'Create POST /auth/login endpoint that validates credentials and returns JWT token',
-        status: 'not_started' as const,
+        status: 'ready' as const,
         priority: 'second' as const,
         success_criteria: [
           { id: uuidv4(), text: 'Endpoint returns 200 with valid JWT', completed: false },
@@ -573,7 +573,7 @@ describe('create command', () => {
         id: taskId,
         title: 'Implement login endpoint',
         description: 'Create POST /auth/login endpoint that validates credentials and returns JWT token',
-        status: 'not_started' as const,
+        status: 'ready' as const,
         priority: 'second' as const,
         success_criteria: [
           { id: uuidv4(), text: 'Endpoint returns 200 with valid JWT', completed: false },

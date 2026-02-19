@@ -8,8 +8,15 @@
 /**
  * Task status enumeration
  * Represents the current state of a task in the workflow
+ *
+ * Status is DERIVED from task state, not set directly:
+ * - ready: Task available for any agent to work
+ * - in_progress: Work in progress (item checked or need_fix added)
+ * - in_review: All items complete, awaiting review
+ * - completed: Approved by reviewer (ONLY manual transition)
+ * - blocked: Automatically set when blocker relationship exists
  */
-export type TaskStatus = 'not_started' | 'pending' | 'in_progress' | 'completed' | 'blocked';
+export type TaskStatus = 'ready' | 'in_progress' | 'in_review' | 'completed' | 'blocked';
 
 /**
  * Task priority enumeration
@@ -54,6 +61,26 @@ export interface Deliverable {
 }
 
 /**
+ * Fix item for blocking issues that must be resolved before review
+ * Has equal importance to success_criteria and deliverables
+ * All three must be complete before task can enter in_review status
+ */
+export interface FixItem {
+  /** Unique identifier for the fix item */
+  id: string;
+  /** Description of what needs to be fixed */
+  text: string;
+  /** Whether the fix has been applied */
+  completed: boolean;
+  /** Optional file path indicating which file needs fixing */
+  file_path?: string;
+  /** ISO 8601 timestamp when item was added */
+  added_at: string;
+  /** Source of the fix item */
+  source?: 'review' | 'runtime' | 'regression';
+}
+
+/**
  * C7 MCP library verification entry
  * Records external library best practice verifications
  */
@@ -89,7 +116,7 @@ export interface TaskData {
   title: string;
   /** Detailed task explanation (markdown-supported, 50-10000 characters) */
   description: string;
-  /** Current status of the task */
+  /** Current status of the task (derived from state, not set directly) */
   status: TaskStatus;
   /** Priority level for execution ordering */
   priority: TaskPriority;
@@ -97,6 +124,10 @@ export interface TaskData {
   success_criteria: SuccessCriterion[];
   /** Array of specific expected outputs (min 1, max 5) */
   deliverables: Deliverable[];
+  /** Blocking issues that must be resolved before review (equal importance to criteria/deliverables) */
+  need_fix: FixItem[];
+  /** Optional agent/session that owns this task (decoupled from status) */
+  assignee: string | null;
   /** Task IDs that must complete before this task can start (creates graph edges) */
   blockers: string[];
   /** Explanatory text describing WHY this task depends on its blockers (twin to blockers) */

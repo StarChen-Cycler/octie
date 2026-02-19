@@ -67,7 +67,7 @@ describe('merge command', () => {
       id: targetTaskId,
       title: 'Build authentication system with session',
       description: 'Build complete authentication system with JWT tokens and session management for user access',
-      status: 'not_started',
+      status: 'ready',
       priority: 'second',
       success_criteria: [
         { id: criterion2Id, text: 'Authentication system accepts valid credentials', completed: false },

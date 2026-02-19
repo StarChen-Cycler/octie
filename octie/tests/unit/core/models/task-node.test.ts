@@ -37,7 +37,7 @@ describe('TaskNode', () => {
 
       expect(task.id).toBeDefined();
       expect(task.title).toBe('Implement login endpoint');
-      expect(task.status).toBe('not_started');
+      expect(task.status).toBe('ready');
       expect(task.priority).toBe('second');
       expect(task.success_criteria).toHaveLength(3);
       expect(task.deliverables).toHaveLength(2);
@@ -523,8 +523,8 @@ describe('TaskNode', () => {
         ],
       });
 
-      task.setStatus('pending');
-      expect(task.status).toBe('pending');
+      task.setStatus('in_progress');
+      expect(task.status).toBe('in_progress');
 
       task.setStatus('in_progress');
       expect(task.status).toBe('in_progress');
@@ -1159,13 +1159,13 @@ describe('TaskNode', () => {
         deliverables: [
           { id: uuidv4(), text: 'src/api/auth/login.ts', completed: true },
         ],
-        status: 'pending',
+        status: 'ready',
       });
 
       // Uncomplete a criterion - status should remain pending (not auto-changed)
       task.uncompleteCriterion(task.success_criteria[0].id);
 
-      expect(task.status).toBe('pending');
+      expect(task.status).toBe('ready');
     });
   });
 });
