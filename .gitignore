@@ -60,7 +60,6 @@ desktop.ini
 
 # AI/memo generated
 .claude/
-.memo/
 htmlcov/
 .tox/
 .coverage
