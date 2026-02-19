@@ -92,7 +92,19 @@ export const deleteCommand = new Command('delete')
         success(`Deleted ${deletedIds.length} task(s): ${deletedIds.map(id => id.substring(0, 8)).join(', ')}`);
         process.exit(0);
       } else {
-        // Simple removal
+        // Simple removal - clean up blocker references from dependent tasks
+        // Get tasks that this task is blocking (outgoing edges)
+        const dependentTasks = graph.getOutgoingEdges(fullId);
+        for (const depId of dependentTasks) {
+          const depTask = graph.getNode(depId);
+          if (depTask && depTask.blockers.includes(fullId)) {
+            depTask.removeBlocker(fullId);
+            // Recalculate status since blocker was removed
+            depTask.recalculateStatus();
+          }
+        }
+
+        // Remove the node (this also removes graph edges)
         graph.removeNode(fullId);
       }
 
