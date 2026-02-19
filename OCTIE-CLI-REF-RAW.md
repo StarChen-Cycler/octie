@@ -18,6 +18,7 @@ Options:
   -h, --help                             display help for command
 
 Commands:
+  approve <task-id>                      Approve a task in review (in_review → completed)
   create [options]                       Create a new atomic task in the project
   delete [options] <id>                  Delete a task from the project
   export [options]                       Export project data to file
@@ -138,6 +139,32 @@ Blockers & Dependencies (Twin Feature):
     --dependencies without --blockers → Error: twin required
 ```
 
+## approve
+
+```
+Usage: octie approve [options] <task-id>
+
+Approve a task in review (in_review → completed). This is the only manual status transition.
+
+Arguments:
+  task-id            Task ID to approve (full UUID or first 7-8 characters)
+
+Options:
+  -p, --project <path>  Path to Octie project directory
+  -h, --help            display help for command
+
+Status Model:
+  The new status model uses automatic transitions based on task state:
+  - ready: Task has all blockers resolved, ready to start
+  - in_progress: Task has work started (items checked OR need_fix exists)
+  - in_review: All criteria, deliverables, and need_fix items complete
+  - completed: Manually approved via this command (in_review → completed)
+  - blocked: Task has unresolved blockers
+
+  The ONLY manual transition is in_review → completed via this command.
+  All other transitions happen automatically based on task state.
+```
+
 ## list
 
 ```
@@ -146,7 +173,7 @@ Usage: octie list [options]
 List tasks with filtering options
 
 Options:
-  -s, --status <status>      Filter by status
+  -s, --status <status>      Filter by status (ready|in_progress|in_review|completed|blocked)
   -p, --priority <priority>  Filter by priority
   --graph                    Show graph structure
   --tree                     Show tree view
@@ -181,7 +208,7 @@ Arguments:
                                    characters)
 
 Options:
-  --status <status>                Task status
+  --status <status>                Task status (ready|in_progress|in_review|completed|blocked)
   --priority <priority>            Task priority
   --add-deliverable <text>         Add a deliverable
   --complete-deliverable <id>      Mark deliverable(s) as complete (supports:
@@ -353,7 +380,7 @@ Options:
   --orphans                  Show tasks with no relationships (no edges)
   --leaves                   Show tasks with no outgoing edges (end tasks)
   --status <status>          Filter by status
-                             (not_started|pending|in_progress|completed|blocked)
+                             (ready|in_progress|in_review|completed|blocked)
   -p, --priority <priority>  Filter by priority (top|second|later)
   -h, --help                 display help for command
 
@@ -364,7 +391,7 @@ Examples:
   $ octie find --verified "/express"           Find tasks verified against Express docs
   $ octie find --without-blockers              Find tasks ready to start
   $ octie find --orphans                       Find disconnected tasks
-  $ octie find --leaves --status pending       Find pending end tasks
+  $ octie find --leaves --status ready         Find ready end tasks
   $ octie find --title "API" --priority top    Combine multiple filters
 
 Output formats:
