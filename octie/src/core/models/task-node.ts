@@ -305,18 +305,22 @@ export function validateAtomicTask(taskData: {
   const titleLower = taskData.title.toLowerCase().trim();
 
   // Check title specificity
-  const hasActionVerb = ACTION_VERBS.some(verb =>
+  // Skip action verb check for Unicode titles (non-ASCII characters)
+  // as they may be valid in other languages (Chinese, Japanese, etc.)
+  const isUnicodeTitle = /[^\x00-\x7F]/.test(taskData.title);
+  const hasActionVerb = !isUnicodeTitle && ACTION_VERBS.some(verb =>
     titleLower.includes(verb.toLowerCase())
   );
 
-  if (!hasActionVerb) {
+  if (!isUnicodeTitle && !hasActionVerb) {
     violations.push(
       'Title should contain an action verb (implement, create, fix, add, write, test, etc.)'
     );
   }
 
   // Check for vague titles (vague words anywhere in title)
-  const isVague = VAGUE_PATTERNS.some(pattern => {
+  // Skip vague check for Unicode titles (non-ASCII characters)
+  const isVague = !isUnicodeTitle && VAGUE_PATTERNS.some(pattern => {
     const patternLower = pattern.toLowerCase();
     // Match if title is exactly the pattern, starts with it, or contains it as a word
     return titleLower === patternLower ||
@@ -324,14 +328,15 @@ export function validateAtomicTask(taskData: {
            titleLower.includes(' ' + patternLower);
   });
 
-  if (isVague) {
+  if (!isUnicodeTitle && isVague) {
     violations.push(
       'Title is too vague. Be specific about what the task does. Avoid words like "stuff", "things", "various", "etc", "fix", "update", "work on"'
     );
   }
 
   // Check title isn't just a generic verb
-  if (titleLower.length < 10) {
+  // Skip length check for Unicode titles (non-ASCII characters)
+  if (!isUnicodeTitle && titleLower.length < 10) {
     violations.push(
       'Title is too short. Provide more context about what will be done (e.g., "Implement login endpoint" instead of just "Implement")'
     );

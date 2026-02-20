@@ -19,7 +19,11 @@ export const initCommand = new Command('init')
       // Get project path from parent's options (global --project option)
       const projectOption = command.parent?.opts().project;
       const projectPath = path.resolve(projectOption || process.cwd());
-      const projectName = options.name;
+      // Validate project name - use default if empty
+      let projectName = options.name?.trim() || 'my-project';
+      if (!projectName) {
+        projectName = 'my-project';
+      }
 
       info(`Initializing Octie project at ${projectPath}`);
 
