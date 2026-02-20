@@ -117,7 +117,8 @@ Examples:
 
       if (options.status) {
         tasks = tasks.filter(task => task.status === options.status);
-      } else if (options.priority) {
+      }
+      if (options.priority) {
         tasks = tasks.filter(task => task.priority === options.priority);
       }
 

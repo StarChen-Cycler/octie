@@ -133,6 +133,14 @@ export const createCommand = new Command('create')
       const successCriteria = options.successCriterion || [];
       const deliverables = options.deliverable || [];
 
+      // Validate priority - must be one of: top, second, later
+      const VALID_PRIORITIES = ['top', 'second', 'later'];
+      const priority = options.priority?.toLowerCase();
+      if (!VALID_PRIORITIES.includes(priority)) {
+        console.error(`Error: Invalid priority "${options.priority}". Must be one of: ${VALID_PRIORITIES.join(', ')}`);
+        process.exit(1);
+      }
+
       // Parse C7 verifications (format: library-id or library-id:notes)
       const c7Verifications = (options.c7Verified || []).map((entry: string) => {
               // Handle Windows Git Bash path conversion: "/path" becomes "C:/Program Files/Git/path"
@@ -234,7 +242,7 @@ export const createCommand = new Command('create')
         title: options.title.trim(),
         description: options.description.trim(),
         // Status is now derived by TaskNode constructor (defaults to 'ready' if no blockers)
-        priority: options.priority as 'top' | 'second' | 'later',
+        priority: priority as 'top' | 'second' | 'later',
         success_criteria: successCriteria.map((text: string) => ({
           id: uuidv4(),
           text: text.trim(),
