@@ -234,53 +234,38 @@ export const updateCommand = new Command('update')
         updated = true;
       }
 
-      // Add blocker(s) (twin validation: requires --dependency-explanation)
-      // Support both --block and --blockers, and comma-separated IDs
-      const blockerIds = options.block || options.blockers;
-      if (blockerIds) {
+      // Add blocker (twin validation: requires --dependency-explanation)
+      // Support both --block and --blockers
+      const blockerId = options.block || options.blockers;
+      if (blockerId) {
         if (!options.dependencyExplanation) {
           error('When using --block/--blockers, --dependency-explanation is required (twin feature).');
           info(`Current dependencies: "${task.dependencies || '(none)'}"`);
           info('Example: --block abc123 --dependency-explanation "Needs API spec from abc123"');
           process.exit(1);
         }
-        // Parse comma-separated IDs
-        const blockerIdList = blockerIds.split(',').map((id: string) => id.trim()).filter((id: string) => Boolean(id));
-        if (blockerIdList.length === 0) {
-          error('No blocker IDs provided.');
+        // Resolve short UUID to full UUID
+        const blockerTask = graph.getNodeByIdOrPrefix(blockerId);
+        if (!blockerTask) {
+          error(`Task with ID '${blockerId}' not found`);
           process.exit(1);
         }
-        // Process each blocker
-        for (const blockerId of blockerIdList) {
-          // Resolve short UUID to full UUID
-          const blockerTask = graph.getNodeByIdOrPrefix(blockerId);
-          if (!blockerTask) {
-            error(`Task with ID '${blockerId}' not found`);
-            process.exit(1);
-          }
-          // Check for self-blocking
-          if (blockerTask.id === task.id) {
-            error('A task cannot block itself.');
-            process.exit(1);
-          }
-          // Check if adding this blocker would create a cycle
-          if (wouldCreateCycle(graph, blockerTask.id, task.id)) {
-            error(`Adding blocker '${blockerTask.id.substring(0, 8)}' would create a cycle.`);
-            info('Cycles are not allowed in the task graph. Use "octie graph cycles" to see existing cycles.');
-            process.exit(1);
-          }
-          // Add blocker if not already present
-          if (!task.blockers.includes(blockerTask.id)) {
-            task.addBlocker(blockerTask.id);
-            graph.addEdge(blockerTask.id, task.id);
-          }
+        // Check for self-blocking
+        if (blockerTask.id === task.id) {
+          error('A task cannot block itself.');
+          process.exit(1);
         }
+        // Check if adding this blocker would create a cycle
+        if (wouldCreateCycle(graph, blockerTask.id, task.id)) {
+          error(`Adding blocker '${blockerTask.id.substring(0, 8)}' would create a cycle.`);
+          info('Cycles are not allowed in the task graph. Use "octie graph cycles" to see existing cycles.');
+          process.exit(1);
+        }
+        task.addBlocker(blockerTask.id);
+        graph.addEdge(blockerTask.id, task.id);
         // Update dependencies explanation (append to existing)
         const existingDeps = task.dependencies || '';
-        const depText = blockerIdList.length > 1
-          ? `[${blockerIdList.map((id: string) => id.substring(0, 8)).join(', ')}] ${options.dependencyExplanation}`
-          : options.dependencyExplanation;
-        task.setDependencies(existingDeps ? `${existingDeps}\n${depText}` : depText);
+        task.setDependencies(existingDeps ? `${existingDeps}\n${options.dependencyExplanation}` : options.dependencyExplanation);
         updated = true;
       }
 
