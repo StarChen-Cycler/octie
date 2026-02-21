@@ -114,7 +114,8 @@ export const updateCommand = new Command('update')
   .option('--add-success-criterion <text>', 'Add a success criterion')
   .option('--complete-criterion <id>', 'Mark success criterion(s) as complete (supports: id, id1,id2, or "id1","id2")', parseMultipleIds, [])
   .option('--remove-criterion <id>', 'Remove a success criterion by ID (NOTE: cannot remove completed items)')
-  .option('--block <id>', 'Add a blocker (requires --dependency-explanation)')
+  .option('--block <ids>', 'Add blocker(s) - supports comma-separated IDs (requires --dependency-explanation)')
+  .option('--blockers <ids>', 'Add blocker(s) - alias for --block (requires --dependency-explanation)')
   .option('--unblock <id>', 'Remove a blocker (removes graph edge)')
   .option('--dependency-explanation <text>', 'Set/update dependencies explanation (required with --block)')
   .option('--clear-dependencies', 'Clear dependencies explanation (for removing last blocker)')
@@ -233,36 +234,53 @@ export const updateCommand = new Command('update')
         updated = true;
       }
 
-      // Add blocker (twin validation: requires --dependency-explanation)
-      if (options.block) {
+      // Add blocker(s) (twin validation: requires --dependency-explanation)
+      // Support both --block and --blockers, and comma-separated IDs
+      const blockerIds = options.block || options.blockers;
+      if (blockerIds) {
         if (!options.dependencyExplanation) {
-          error('When using --block, --dependency-explanation is required (twin feature).');
+          error('When using --block/--blockers, --dependency-explanation is required (twin feature).');
           info(`Current dependencies: "${task.dependencies || '(none)'}"`);
           info('Example: --block abc123 --dependency-explanation "Needs API spec from abc123"');
           process.exit(1);
         }
-        // Resolve short UUID to full UUID
-        const blockerTask = graph.getNodeByIdOrPrefix(options.block);
-        if (!blockerTask) {
-          error(`Task with ID '${options.block}' not found`);
+        // Parse comma-separated IDs
+        const blockerIdList = blockerIds.split(',').map((id: string) => id.trim()).filter((id: string) => Boolean(id));
+        if (blockerIdList.length === 0) {
+          error('No blocker IDs provided.');
           process.exit(1);
         }
-        // Check for self-blocking
-        if (blockerTask.id === task.id) {
-          error('A task cannot block itself.');
-          process.exit(1);
+        // Process each blocker
+        for (const blockerId of blockerIdList) {
+          // Resolve short UUID to full UUID
+          const blockerTask = graph.getNodeByIdOrPrefix(blockerId);
+          if (!blockerTask) {
+            error(`Task with ID '${blockerId}' not found`);
+            process.exit(1);
+          }
+          // Check for self-blocking
+          if (blockerTask.id === task.id) {
+            error('A task cannot block itself.');
+            process.exit(1);
+          }
+          // Check if adding this blocker would create a cycle
+          if (wouldCreateCycle(graph, blockerTask.id, task.id)) {
+            error(`Adding blocker '${blockerTask.id.substring(0, 8)}' would create a cycle.`);
+            info('Cycles are not allowed in the task graph. Use "octie graph cycles" to see existing cycles.');
+            process.exit(1);
+          }
+          // Add blocker if not already present
+          if (!task.blockers.includes(blockerTask.id)) {
+            task.addBlocker(blockerTask.id);
+            graph.addEdge(blockerTask.id, task.id);
+          }
         }
-        // Check if adding this blocker would create a cycle
-        if (wouldCreateCycle(graph, blockerTask.id, task.id)) {
-          error(`Adding blocker '${blockerTask.id.substring(0, 8)}' would create a cycle.`);
-          info('Cycles are not allowed in the task graph. Use "octie graph cycles" to see existing cycles.');
-          process.exit(1);
-        }
-        task.addBlocker(blockerTask.id);
-        graph.addEdge(blockerTask.id, task.id);
         // Update dependencies explanation (append to existing)
         const existingDeps = task.dependencies || '';
-        task.setDependencies(existingDeps ? `${existingDeps}\n${options.dependencyExplanation}` : options.dependencyExplanation);
+        const depText = blockerIdList.length > 1
+          ? `[${blockerIdList.map((id: string) => id.substring(0, 8)).join(', ')}] ${options.dependencyExplanation}`
+          : options.dependencyExplanation;
+        task.setDependencies(existingDeps ? `${existingDeps}\n${depText}` : depText);
         updated = true;
       }
 
