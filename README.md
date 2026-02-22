@@ -46,7 +46,7 @@ octie create \
   --deliverable "src/db/schema.sql"
 
 # List tasks
-octie list --status pending --priority top
+octie list --status ready --priority top
 
 # Get task details (multiple formats)
 octie get <task-id>              # Default table format
@@ -54,7 +54,7 @@ octie get <task-id> --format md   # Markdown for AI
 octie get <task-id> --format json # JSON for parsing
 
 # Update task
-octie update <task-id> --status in_progress
+octie update <task-id> --complete-criterion <criterion-id>
 
 # Delete task
 octie delete <task-id> --reconnect --force
@@ -92,7 +92,7 @@ npm run serve
 octie/
 ├── src/                      # Source files
 │   ├── cli/                  # CLI interface
-│   │   ├── commands/         # CLI commands (init, create, list, get, update, delete, merge, export, import, graph, serve)
+│   │   ├── commands/         # CLI commands (init, create, list, get, update, delete, merge, export, import, graph, serve, approve, find, wire)
 │   │   └── utils/            # CLI helpers
 │   ├── core/                 # Core functionality
 │   │   ├── graph/            # Graph data structures and algorithms
@@ -116,24 +116,26 @@ These options apply to all commands:
 
 | Option | Description |
 |--------|-------------|
-| `--project <path>` | Specify project directory (default: current directory) |
-| `--format <type>` | Output format: `table`, `json`, `md` |
-| `--verbose` | Show detailed output |
-| `--quiet` | Suppress non-essential output |
+| `-v, --version` | Display version number |
+| `-p, --project <path>` | Path to Octie project directory (default: current) |
+| `--format <format>` | Output format: `json`, `md`, `table` (default: `table`) |
+| `--verbose` | Enable verbose output |
+| `--quiet` | Suppress non-error output |
+| `-h, --help` | Display help for command |
 
 ### `octie init`
 
-Initialize a new Octie project in the current or specified directory.
+Initialize a new Octie project in current or specified directory.
 
 ```bash
 octie init                           # Initialize in current directory
-octie init --project ./my-project    # Initialize in specific directory
+octie init --name "my-project"       # Specify project name
 ```
 
 **Options:**
 | Flag | Description |
 |------|-------------|
-| `--project <path>` | Directory to initialize (default: current) |
+| `-n, --name <name>` | Project name (default: "my-project") |
 
 ### `octie create`
 
@@ -151,7 +153,9 @@ octie create \
   --success-criterion "Token refresh works correctly" \
   --deliverable "src/auth/login.ts" \
   --deliverable "tests/auth/login.test.ts" \
-  --priority top
+  --priority top \
+  --blockers abc123,def456 \
+  --dependencies "Needs API spec from abc123 and auth from def456"
 ```
 
 **Required Options:**
@@ -165,21 +169,53 @@ octie create \
 **Optional Options:**
 | Flag | Description |
 |------|-------------|
-| `--priority <level>` | `top`, `second`, or `later` (default: `second`) |
-| `--blockers <ids>` | Comma-separated task IDs that block this task |
-| `--dependencies <ids>` | Comma-separated soft dependency task IDs |
-| `--related-files <paths>` | Comma-separated file paths |
-| `--notes <text>` | Additional context |
-| `--interactive` | Use interactive prompts |
+| `-p, --priority <level>` | `top`, `second`, or `later` (default: `second`) |
+| `-b, --blockers <ids>` | Comma-separated task IDs that block this task |
+| `-d, --dependencies <text>` | Explanatory text WHY task depends on blockers (required with --blockers) |
+| `-f, --related-files <paths>` | File paths relevant to task (comma-separated or multiple) |
+| `-c, --c7-verified <library:notes>` | C7 library verification (format: library-id or library-id:notes) |
+| `-n, --notes <text>` | Additional context (can be specified multiple times) |
+| `--notes-file <path>` | Read notes from file (multi-line support) |
+| `-i, --interactive` | Use interactive prompts |
 
-**Atomic Task Validation:**
-Tasks must be specific, executable, and verifiable. The CLI will reject:
-- Titles without action verbs (implement, create, fix, etc.)
-- Vague titles ("fix stuff", "do things")
-- Descriptions under 50 characters
-- More than 10 success criteria (suggests non-atomic)
-- More than 5 deliverables (suggests non-atomic)
-- Subjective criteria ("make it better", "good performance")
+**Atomic Task Policy:**
+Tasks MUST be atomic - small, specific, executable, and verifiable:
+- Single purpose: Does ONE thing well
+- Executable: Can be completed in 2-8 hours (typical) or 1-2 days (max)
+- Verifiable: Has quantitative success criteria
+- Independent: Minimizes dependencies
+
+**Blockers & Dependencies (Twin Feature):**
+- `--blockers`: Creates GRAPH EDGES affecting execution order. Task A blocks Task B → A must complete before B starts.
+- `--dependencies`: Explanatory text WHY this task depends on its blockers. REQUIRED when --blockers is set (twin validation).
+
+### `octie approve`
+
+Approve a task in review (`in_review` → `completed`). This is the ONLY manual status transition.
+
+```bash
+octie approve <task-id>
+octie approve abc12345 --project /path/to/project
+```
+
+**Options:**
+| Flag | Description |
+|------|-------------|
+| `-p, --project <path>` | Project directory path |
+
+**Status System:**
+- Manual transition (this command): `in_review` → `completed`
+- All other transitions happen automatically:
+  - `ready` → `in_progress`: When any criterion/deliverable is checked
+  - `in_progress` → `in_review`: When all items are complete
+  - `any` → `blocked`: When a blocker is added
+  - `blocked` → `in_progress`/`ready`: When all blockers completed (depends on item state)
+
+**Prerequisites for Approval:**
+- Task must be in `in_review` status
+- All success criteria must be complete
+- All deliverables must be complete
+- All need_fix items must be resolved
 
 ### `octie list`
 
@@ -187,7 +223,7 @@ List all tasks with optional filtering.
 
 ```bash
 octie list                           # List all tasks
-octie list --status pending          # Filter by status
+octie list --status in_progress       # Filter by status
 octie list --priority top            # Filter by priority
 octie list --tree                    # Show as tree view
 octie list --graph                   # Show graph structure
@@ -197,11 +233,19 @@ octie list --format json             # JSON output
 **Options:**
 | Flag | Description |
 |------|-------------|
-| `--status <status>` | Filter by: `not_started`, `pending`, `in_progress`, `completed`, `blocked` |
-| `--priority <level>` | Filter by: `top`, `second`, `later` |
-| `--format <type>` | Output format: `table`, `json`, `md` |
-| `--tree` | Display as hierarchical tree |
-| `--graph` | Display graph structure |
+| `-s, --status <status>` | Filter by: `ready`, `in_progress`, `in_review`, `completed`, `blocked` |
+| `-p, --priority <level>` | Filter by: `top`, `second`, `later` |
+| `--graph` | Show graph structure |
+| `--tree` | Show tree view |
+
+**Status Values:**
+| Status | Description |
+|--------|-------------|
+| `ready` | Task has no blockers and no work started |
+| `in_progress` | Work has begun (items checked or need_fix added) |
+| `in_review` | All items complete, awaiting approval |
+| `completed` | Task approved (use `octie approve`) |
+| `blocked` | Task has unresolved blockers |
 
 ### `octie get`
 
@@ -213,40 +257,87 @@ octie get <task-id> --format md      # Markdown format
 octie get <task-id> --format json    # JSON format
 ```
 
-**Options:**
-| Flag | Description |
-|------|-------------|
-| `--format <type>` | Output format: `table`, `json`, `md` |
+**Task ID Format:**
+- Full UUID: `12345678-1234-1234-1234-123456789012`
+- Short UUID: First 7-8 characters (e.g., `abc12345`)
 
 ### `octie update`
 
-Update an existing task.
+Update an existing task. Status is AUTOMATICALLY calculated from task state.
 
 ```bash
-octie update <task-id> --status in_progress
 octie update <task-id> --priority top
 octie update <task-id> --complete-criterion <criterion-id>
 octie update <task-id> --complete-deliverable <deliverable-id>
-octie update <task-id> --notes "Additional context"
+octie update <task-id> --add-need-fix "Bug found" --need-fix-source review
+octie update <task-id> --block xyz --dependency-explanation "Needs xyz output"
 ```
 
 **Options:**
 | Flag | Description |
 |------|-------------|
-| `--status <status>` | Set status: `not_started`, `pending`, `in_progress`, `completed`, `blocked` |
 | `--priority <level>` | Set priority: `top`, `second`, `later` |
-| `--add-success-criterion <text>` | Add a new success criterion |
-| `--complete-criterion <id>` | Mark criterion as complete |
 | `--add-deliverable <text>` | Add a new deliverable |
-| `--complete-deliverable <id>` | Mark deliverable as complete |
-| `--block <task-id>` | Add blocker |
-| `--unblock <task-id>` | Remove blocker |
-| `--add-dependency <task-id>` | Add dependency |
-| `--notes <text>` | Append to notes |
+| `--complete-deliverable <id>` | Mark deliverable(s) complete (supports: `id`, `id1,id2`, `"id1","id2"`) |
+| `--remove-deliverable <id>` | Remove deliverable by ID (cannot remove completed items) |
+| `--add-success-criterion <text>` | Add a new success criterion |
+| `--complete-criterion <id>` | Mark criterion(s) complete (supports: `id`, `id1,id2`, `"id1","id2"`) |
+| `--remove-criterion <id>` | Remove criterion by ID (cannot remove completed items) |
+| `--block <id>` | Add blocker (requires --dependency-explanation) |
+| `--unblock <id>` | Remove blocker (removes graph edge) |
+| `--dependency-explanation <text>` | Set/update dependencies explanation (required with --block) |
+| `--clear-dependencies` | Clear dependencies explanation (when removing last blocker) |
+| `--add-related-file <path>` | Add a related file path |
+| `--remove-related-file <path>` | Remove a related file path |
+| `--verify-c7 <library:notes>` | Add C7 library verification |
+| `--remove-c7-verified <library>` | Remove C7 verification by library ID |
+| `--add-need-fix <text>` | Add blocking issue found during work |
+| `--need-fix-source <source>` | Source of need_fix: `review`, `runtime`, `regression` |
+| `--need-fix-file <path>` | Optional file path for need_fix item |
+| `--complete-need-fix <id>` | Mark need_fix item as resolved |
+| `--notes <text>` | Append to notes (can be specified multiple times) |
+| `--notes-file <path>` | Read notes from file and append |
 
-**Auto-managed Timestamps:**
-- `updated_at` is automatically updated on any field change
-- `completed_at` is automatically set when ALL success criteria AND deliverables are complete
+**Need Fix Items (Blocking Issues):**
+- `--add-need-fix <text>`: Add a blocking issue (status auto-changes to in_progress)
+- Sources: `review` (code review), `runtime` (testing), `regression` (after completion)
+- `--complete-need-fix <id>`: Mark issue as resolved (supports short UUID)
+
+**Blockers & Dependencies (Twin Feature):**
+- `--block <id>`: Add blocker (creates graph edge). REQUIRES --dependency-explanation.
+- `--unblock <id>`: Remove blocker (removes graph edge). Auto-clears dependencies if last one.
+- `--dependency-explanation <text>`: Set/update dependencies explanation.
+
+**Short UUID Support:**
+All ID parameters support short UUIDs (first 7-8 characters).
+
+### `octie find`
+
+Search and filter tasks with advanced options.
+
+```bash
+octie find --title "auth"                      # Find tasks with "auth" in title
+octie find --search "JWT token"                # Full-text search
+octie find --has-file "auth.ts"                # Find tasks referencing auth.ts
+octie find --verified "/express"               # Find tasks verified against Express
+octie find --without-blockers                   # Find tasks ready to start
+octie find --orphans                            # Find disconnected tasks
+octie find --leaves --status ready              # Find ready end tasks
+octie find --title "API" --priority top         # Combine filters
+```
+
+**Options:**
+| Flag | Description |
+|------|-------------|
+| `-t, --title <pattern>` | Search task titles (case-insensitive substring) |
+| `-s, --search <text>` | Full-text search in description, notes, criteria, deliverables |
+| `-f, --has-file <path>` | Find tasks referencing a specific file |
+| `-v, --verified <library>` | Find tasks with C7 verification from specific library |
+| `--without-blockers` | Show tasks with no blockers (ready to start) |
+| `--orphans` | Show tasks with no relationships (no edges) |
+| `--leaves` | Show tasks with no outgoing edges (end tasks) |
+| `--status <status>` | Filter by status |
+| `-p, --priority <priority>` | Filter by priority |
 
 ### `octie delete`
 
@@ -262,9 +353,14 @@ octie delete <task-id> --cascade     # Delete all dependent tasks
 **Options:**
 | Flag | Description |
 |------|-------------|
-| `--reconnect` | Reconnect incoming to outgoing edges after deletion |
+| `--reconnect` | Reconnect incoming to outgoing edges after deletion (A→B→C → A→C) |
 | `--cascade` | Delete all tasks that depend on this task |
 | `--force` | Skip confirmation prompt |
+
+**Deletion Modes:**
+- Default: Removes task and its edges; dependents have this task removed from blockers
+- `--reconnect`: Splice into chain (A→B→C becomes A→C)
+- `--cascade`: Delete this task AND all tasks that depend on it
 
 ### `octie merge`
 
@@ -274,14 +370,11 @@ Merge two tasks into one.
 octie merge <source-id> <target-id>  # Merge source into target
 ```
 
-The merge combines:
-- Description (concatenated)
-- Success criteria (deduplicated by ID)
-- Deliverables (deduplicated by ID)
-- Related files (deduplicated)
-- Notes (concatenated)
-
-Edges are reconnected from source to target.
+**Merge Behavior:**
+- Source task is DELETED after merge
+- Target receives: all success criteria, deliverables, notes, related files (appended)
+- Blockers are transferred from source to target
+- Cannot undo - backup is created automatically
 
 ### `octie export`
 
@@ -289,15 +382,15 @@ Export project data to file.
 
 ```bash
 octie export                         # Export to stdout
-octie export --type json --output backup.json
-octie export --type md --output tasks.md
+octie export -o backup.json
+octie export --type md -o tasks.md
 ```
 
 **Options:**
 | Flag | Description |
 |------|-------------|
-| `--type <format>` | Export format: `json`, `md` (default: `json`) |
-| `--output <path>` | Output file path |
+| `-t, --type <format>` | Export format: `json`, `md` (default: `json`) |
+| `-o, --output <path>` | Output file path |
 
 ### `octie import`
 
@@ -305,15 +398,13 @@ Import tasks from file.
 
 ```bash
 octie import backup.json             # Import from JSON file
-octie import tasks.md --format md    # Import from Markdown
-octie import backup.json --merge     # Merge with existing tasks
+octie import tasks.md --merge       # Import from Markdown and merge
 ```
 
 **Options:**
 | Flag | Description |
 |------|-------------|
-| `--file <path>` | Input file path (required) |
-| `--format <type>` | Input format: `json`, `md` (auto-detected from extension) |
+| `--format <format>` | Input format: `json`, `md` (auto-detected from extension) |
 | `--merge` | Merge with existing tasks instead of replacing |
 
 ### `octie graph`
@@ -321,30 +412,36 @@ octie import backup.json --merge     # Merge with existing tasks
 Graph analysis and validation commands.
 
 ```bash
-octie graph validate                 # Check graph integrity
+octie graph validate                 # Check graph integrity (cycles, orphan references)
 octie graph cycles                   # Detect and display cycles
-octie graph topology                 # Show topological order
-octie graph critical-path            # Show longest dependency path
-octie graph orphans                  # Show disconnected tasks
 octie graph stats                    # Display graph statistics
 ```
 
+**Subcommands:**
+| Command | Description |
+|---------|-------------|
+| `validate` | Check graph integrity (cycles, orphan references) |
+| `cycles` | Detect and display all cycles in graph |
+
 ### `octie serve`
 
-Start the web UI server.
+Start web UI server for task visualization.
 
 ```bash
 octie serve                          # Default: localhost:3000
-octie serve --port 8080              # Custom port
+octie serve -p 8080                  # Custom port
 octie serve --host 0.0.0.0           # Listen on all interfaces
+octie serve --open                    # Open browser automatically
 ```
 
 **Options:**
 | Flag | Description |
 |------|-------------|
-| `--port <number>` | Server port (default: 3000) |
-| `--host <address>` | Host address (default: localhost) |
+| `-p, --port <number>` | Server port (default: 3000) |
+| `-h, --host <host>` | Host address (default: localhost) |
+| `--open` | Open browser automatically |
 | `--no-cors` | Disable CORS headers |
+| `--no-logging` | Disable request logging |
 
 ### `octie wire`
 
@@ -352,11 +449,11 @@ Insert an existing task between two connected tasks on a blocker chain.
 
 ```bash
 # Wire task B between A and C
-octie wire <task-b-id> \
-  --after <task-a-id> \
-  --before <task-c-id> \
-  --dep-on-after "Why B depends on A" \
-  --dep-on-before "Why C depends on B"
+octie wire xyz789 \
+  --after abc123 \
+  --before def456 \
+  --dep-on-after "Needs API spec to create models" \
+  --dep-on-before "Frontend needs TypeScript models"
 ```
 
 **Visual Example:**
@@ -366,30 +463,16 @@ After:  A → B → C (A blocks B, B blocks C)
 ```
 
 **Workflow:**
-1. Create the intermediate task first (using `octie create`)
-2. Wire it into the chain using `octie wire`
+1. Create intermediate task first (using `octie create`)
+2. Wire it into chain using `octie wire`
 
 **Required Options:**
 | Flag | Description |
 |------|-------------|
-| `--after <id>` | Source task ID - will become the inserted task's blocker |
-| `--before <id>` | Target task ID - will block on the inserted task instead |
-| `--dep-on-after <text>` | Why the inserted task depends on the --after task (twin validation) |
-| `--dep-on-before <text>` | Why the --before task depends on the inserted task |
-
-**Example:**
-```bash
-# Step 1: Create the intermediate task
-octie create --title "Review API spec" --description "..." \
-  --success-criterion "..." --deliverable "..."
-
-# Step 2: Wire it between two connected tasks
-octie wire xyz789 \
-  --after abc123 \
-  --before def456 \
-  --dep-on-after "Needs API spec to create TypeScript models" \
-  --dep-on-before "Frontend needs TypeScript models for implementation"
-```
+| `--after <id>` | Source task ID - will become inserted task's blocker |
+| `--before <id>` | Target task ID - will block on inserted task instead |
+| `--dep-on-after <text>` | Why inserted task depends on --after task (twin validation) |
+| `--dep-on-before <text>` | Why --before task depends on inserted task |
 
 ## Web API Reference
 
@@ -447,12 +530,12 @@ Tasks are stored in `.octie/project.json` with the following structure:
       "id": "uuid",
       "title": "Task title",
       "description": "Detailed description",
-      "status": "not_started|pending|in_progress|completed|blocked",
+      "status": "ready|in_progress|in_review|completed|blocked",
       "priority": "top|second|later",
       "success_criteria": [...],
       "deliverables": [...],
       "blockers": [],
-      "dependencies": [],
+      "dependencies": "",
       "edges": [],
       "related_files": [],
       "notes": "",
@@ -503,7 +586,7 @@ npm run bench
 - ✅ Core data structures (TaskNode, TaskGraphStore with O(1) lookup)
 - ✅ Storage layer with atomic writes and backup rotation
 - ✅ Graph algorithms (topological sort, cycle detection, traversal, operations)
-- ✅ CLI commands (init, create, list, get, update, delete, merge, export, import, graph, serve)
+- ✅ CLI commands (init, create, list, get, update, delete, merge, export, import, graph, serve, approve, find, wire)
 - ✅ Output formatters (Markdown, JSON, Table)
 - ✅ Web API server with RESTful endpoints (Express.js)
 - ✅ Web UI (React + ReactFlow + Zustand + Tailwind CSS)
