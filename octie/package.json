@@ -5,11 +5,9 @@
   "main": "dist/core/index.js",
   "types": "dist/core/index.d.ts",
   "type": "module",
-  "bin": {
-    "octie": "./dist/cli/index.js"
-  },
   "files": [
     "dist",
+    "bin",
     "README.md",
     "LICENSE"
   ],
