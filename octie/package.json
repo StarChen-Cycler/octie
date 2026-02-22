@@ -1,5 +1,5 @@
 {
-  "name": "octie",
+  "name": "@starcycler/octie",
   "version": "1.0.0",
   "description": "A graph-based task management system with CLI and web UI for atomic, verifiable tasks",
   "main": "dist/core/index.js",
@@ -52,13 +52,12 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/anthropics/octie.git",
-    "directory": "octie"
+    "url": "git+https://github.com/StarChen-Cycler/octie.git"
   },
   "bugs": {
-    "url": "https://github.com/anthropics/octie/issues"
+    "url": "https://github.com/StarChen-Cycler/octie/issues"
   },
-  "homepage": "https://github.com/anthropics/octie#readme",
+  "homepage": "https://github.com/StarChen-Cycler/octie#readme",
   "engines": {
     "node": ">=20.0.0"
   },
